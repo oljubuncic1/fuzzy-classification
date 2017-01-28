@@ -44,23 +44,42 @@ def matching_degree(example, x):
 
 	return reduce(mul, l, 1)
 
-def rule(example, db, examples):
+def rule(example, db):
 	data = input_data(example)
 	rw = 0.1
-	rule = ([], classification(example), rw)
+	rule = [[], classification(example), rw]
 
 	for i in range(len(db)):
 		rule[0].append( max(db[i], key=lambda x: x(data[i])) )
 
+	return rule
+
+def weight(rule, examples):
 	examples_in_class = [x for x in examples if x[1] == rule[1]]
 	examples_out_of_class = [x for x in examples if x[1] != rule[1]]
 
-	# rule[2] = sum([ matching_degree(input_data(x), rule) for x in examples_in_class ])
+	# print(examples_in_class)
+	# print(matching_degree(examples_in_class[0][0], rule))
+	# input("Hello")
 
-	return rule
+	# print(len(examples_in_class))
+	# print(len(examples_out_of_class))
+
+	in_class_md = sum(matching_degree(e[0], rule) for e in examples_in_class)
+	out_of_class_md = sum(matching_degree(e[0], rule) for e in examples_out_of_class)
+
+	if in_class_md == 0 and out_of_class_md == 0:
+		return 0
+
+	weight = (in_class_md - out_of_class_md) / (in_class_md + out_of_class_md)
+
+	# print(weight)
+
+	return weight
 
 def update_weights(rb, examples):
-	return
+	for r in rb:
+		r[2] = weight(r, examples)
 
 def generate_rb(examples, db):
 	rb = ([rule(e, db) for e in examples])
@@ -72,6 +91,41 @@ def classify(example, rb):
 	max_rule = max(rb, key=lambda x: matching_degree(example, x))
 
 	return max_rule[1]
+
+def example_from_line(line, attribute_indices, class_index):
+	parts = line.split(',')
+
+	classification = parts[ class_index ]
+	parts = [ parts[i].strip() for i in attribute_indices ]
+
+	example = (
+		parts,
+		classification
+	)
+
+	return example
+
+def load_csv_data(file_name, attribute_indices, class_index):
+	with open(file_name) as f:
+		content = f.readlines()
+		lines = [x.strip() for x in content]
+		data = [
+			example_from_line(l,attribute_indices, class_index)
+			for l in lines
+		]
+
+		return data
+
+def find_ranges(examples, indices):
+	ranges = []
+	for i in indices:
+		ranges.append((
+			min([float(e[0][i]) for e in examples]),
+			max([float(e[0][i]) for e in examples])
+		))
+
+	return ranges
+
 
 from inspect import ismethod
 
@@ -190,32 +244,15 @@ class Test:
 			0.25
 		)
 
+	def test_weight(self):
+		return
+
+	def test_find_ranges(self):
+		return
+
+
 test_suite = Test()
 test_suite.main()
-
-def example_from_line(line, attribute_indices, class_index):
-	parts = line.split(',')
-
-	classification = parts[ class_index ]
-	parts = [ parts[i].strip() for i in attribute_indices ]
-
-	example = (
-		parts,
-		classification
-	)
-
-	return example
-
-def load_csv_data(file_name, attribute_indices, class_index):
-	with open(file_name) as f:
-		content = f.readlines()
-		lines = [x.strip() for x in content]
-		data = [
-			example_from_line(l,attribute_indices, class_index)
-			for l in lines
-		]
-
-		return data
 
 data = load_csv_data("haberman.dat", range(3), 3)
 random.shuffle(data)
@@ -227,7 +264,8 @@ training_data = data[:-validation_examples]
 verification_data = data[validation_examples:]
 
 label_count = 3
-db = generate_db([ (0, 1) for i in range(3) ], 3)
+ranges = find_ranges(data, [0, 1, 2])
+db = generate_db(ranges, label_count)
 
 rb = generate_rb(training_data, db)
 
