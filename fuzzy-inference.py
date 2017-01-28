@@ -55,7 +55,7 @@ def rule(example, db, examples):
 	examples_in_class = [x for x in examples if x[1] == rule[1]]
 	examples_out_of_class = [x for x in examples if x[1] != rule[1]]
 
-	rule[2] = sum([ matching_degree(input_data(x), rule) for x in examples_in_class ])
+	# rule[2] = sum([ matching_degree(input_data(x), rule) for x in examples_in_class ])
 
 	return rule
 
