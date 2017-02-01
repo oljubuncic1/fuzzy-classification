@@ -3,22 +3,25 @@ from functools import reduce
 import random
 
 
-def triangular(center, width):
+def triangular(center, width, name='x'):
 	def triangle(x):
-		x = float(x)
-
-		r = width / 2
-		k = 1 / r
-		
-		left = center - r
-		right = center + r
-
-		if left <= x <= center:
-			return k * (x - left) + 0
-		elif center <= x <= right:
-			return -k * (x - center) + 1
+		if x == 'name':
+			return name
 		else:
-			return 0
+			x = float(x)
+
+			r = width / 2
+			k = 1 / r
+			
+			left = center - r
+			right = center + r
+
+			if left <= x <= center:
+				return k * (x - left) + 0
+			elif center <= x <= right:
+				return -k * (x - center) + 1
+			else:
+				return 0
 
 	return triangle
 
@@ -27,7 +30,7 @@ def labels(rng, label_count):
 	w = 2 * L / (label_count + 1)
 
 	return (
-		[triangular( rng[0] + (i + 1) * w / 2, w ) for i in range(label_count)]
+		[triangular( rng[0] + (i + 1) * w / 2, w, str(i) ) for i in range(label_count)]
 	)
 
 def generate_db(ranges, label_count):
@@ -58,13 +61,6 @@ def weight(rule, examples):
 	examples_in_class = [x for x in examples if x[1] == rule[1]]
 	examples_out_of_class = [x for x in examples if x[1] != rule[1]]
 
-	# print(examples_in_class)
-	# print(matching_degree(examples_in_class[0][0], rule))
-	# input("Hello")
-
-	# print(len(examples_in_class))
-	# print(len(examples_out_of_class))
-
 	in_class_md = sum(matching_degree(e[0], rule) for e in examples_in_class)
 	out_of_class_md = sum(matching_degree(e[0], rule) for e in examples_out_of_class)
 
@@ -73,17 +69,19 @@ def weight(rule, examples):
 
 	weight = (in_class_md - out_of_class_md) / (in_class_md + out_of_class_md)
 
-	# print(weight)
-
 	return weight
 
 def update_weights(rb, examples):
 	for r in rb:
 		r[2] = weight(r, examples)
 
+def remove_duplicates(rb)
+	return
+
 def generate_rb(examples, db):
-	rb = ([rule(e, db) for e in examples])
+	rb = [rule(e, db) for e in examples]
 	update_weights(rb, examples)
+	remove_duplicates(rb)
 
 	return rb
 
@@ -269,9 +267,17 @@ db = generate_db(ranges, label_count)
 
 rb = generate_rb(training_data, db)
 
+for rule in rb:
+	rule_str = ''
+	i = 0
+	for f in rule[0]:
+		rule_str +=  'x' + str(i) + ' is ' + f('name') + '   '
+		i += 1
+	print(rule_str)
+
 total = 0
 for verification in verification_data:
 	if classify(verification[0], rb) == str(verification[1]):
 		total += 1
 
-print(total / len(verification_data))
+print( "Accuracy% " + str(100 * total / len(verification_data)) )
