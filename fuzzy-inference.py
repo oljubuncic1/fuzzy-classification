@@ -8,16 +8,16 @@ from functools import partial
 logging.basicConfig(level=logging.DEBUG)
 
 def triangle(center, width, name, x):
+	r = width / 2
+	k = 1 / r
+	
+	left = center - r
+	right = center + r
+
 	if x == 'name':
-		return name
+		return str(left) + " " + str(right)
 	else:
 		x = float(x)
-
-		r = width / 2
-		k = 1 / r
-		
-		left = center - r
-		right = center + r
 
 		if left <= x <= center:
 			return k * (x - left) + 0
@@ -31,17 +31,17 @@ def triangular(center, width, name='x'):
 
 def labels(rng, label_count):
 	L = rng[1] - rng[0]
-	w = 2 * L / (label_count + 1)
+	w = 2 * L / (label_count - 1)
 
 	if w == 0:
-		w = 1 # hacky
+		w = 1 # hacky, because division by zero
 
 	return (
-		[triangular( rng[0] + (i + 1) * w / 2, w, str(i) ) for i in range(label_count)]
+		[triangular( rng[0] + (i) * w / 2, w, str(i) ) for i in range(label_count)]
 	)
 
 def generate_db(ranges, label_count):
-	return  [labels(r, label_count) for r in ranges]
+	return [labels(r, label_count) for r in ranges]
 
 def classification(example):
 	return example[1]
@@ -50,9 +50,14 @@ def input_data(example):
 	return example[0]
 
 def matching_degree(example, x):
-	l = [ x[0][i](example[i]) for i in range(len(example)) ]
+	strn = [ ( example[i], x[0][i]('name'), x[0][i](float(example[i])) ) for i in range(len(example)) ]
+	# [print(s) for s in strn]
 
-	return reduce(mul, l, 1)
+	# input("stop.")
+
+	l = [ x[0][i](float(example[i])) for i in range(len(example)) ]
+	dgr = reduce(mul, l, 1)
+	return dgr
 
 def rule(example, db):
 	data = input_data(example)
@@ -81,6 +86,7 @@ def weight(rule, examples):
 def update_weights(rb, examples):
 	for r in rb:
 		r[2] = weight(r, examples)
+	return rb
 
 def update_weight(r, examples):
 	r[2] = weight(r, examples)
@@ -91,6 +97,7 @@ def rule_desc(rule):
 
 	for f in rule[0]:
 		rule_desc_str += f('name')
+	rule_desc_str += rule[1]
 
 	return rule_desc_str
 
@@ -98,9 +105,6 @@ def remove_duplicates(rb):
 	rule_map = defaultdict(list)
 	for r in rb:
 		rule_map[rule_desc(r)].append(r)
-		rule_map[rule_desc(r)] = [ max(rule_map[rule_desc(r)], key=lambda x: x[2]) ]
-
-	return [rule_map[k][0] for k in rule_map]
 
 	best_rules = []
 	
@@ -109,23 +113,39 @@ def remove_duplicates(rb):
 
 	rb = best_rules
 
-from multiprocessing import Pool
-
 from itertools import product
 from multiprocessing import Pool
 
 def generate_rb(examples, db):
 	rb = None
 	with Pool(processes=4) as pool:
+		logging.debug("Creating rules...")
 		rb = pool.starmap(rule, [ (e, db) for e in examples ])
+		# remove really same rules
+		logging.debug("Updating weights...")
 		rb = pool.starmap(update_weight, [ (r, list(examples)) for r in rb ] )
+
+	# logging.debug("Updating weights...")
+	# rb = update_weights(rb, examples)
 	
+	logging.debug("Removing duplicates...")
 	remove_duplicates(rb)
 
 	return rb
 
 def classify(example, rb):
-	max_rule = max(rb, key=lambda x: matching_degree(example, x))
+	# max_rule = rb[0]
+	# max_rule_degree = matching_degree(example, rb[0]) * rb[0][2]
+
+	# for r in rb:
+	# 	if r[2] >= max_rule_degree:
+	# 		rule_degree = matching_degree(example, r) * r[2]
+
+	# 		if rule_degree > max_rule_degree:
+	# 			max_rule = r
+	# 			max_rule_degree = rule_degree
+
+	max_rule = max(rb, key=lambda x: matching_degree(example, x) * x[2])
 
 	return max_rule[1]
 
@@ -135,10 +155,10 @@ def example_from_line(line, attribute_indices, class_index):
 	classification = parts[ class_index ]
 	parts = [ parts[i].strip() for i in attribute_indices ]
 
-	example = (
+	example = [
 		parts,
 		classification
-	)
+	]
 
 	return example
 
@@ -153,7 +173,7 @@ def load_csv_data(file_name, attribute_indices, class_index, line_cnt):
 
 		return data
 
-def find_ranges(examples, indices):
+def find_ranges(examples, indices, discrete_indices = []):
 	ranges = []
 	for i in indices:
 		ranges.append((
@@ -211,10 +231,10 @@ class Test:
 		self.should_eq( "label count", len(lbls), 3 )
 
 		f = lbls[0]
-		self.should_eq( "label0 left", f(0), 0 )
-		self.should_eq( "label0 middle left", f(0.5), 0.5 )
-		self.should_eq( "label0 center", f(1), 1 )
-		self.should_eq( "label0 middle right", f(1.5), 0.5 )
+		self.should_eq( "label0 left", f(0), 1 )
+		self.should_eq( "label0 middle left", f(0.5), 0.75 )
+		self.should_eq( "label0 center", f(1), 0.5 )
+		self.should_eq( "label0 middle right", f(1.5), 0.25 )
 		self.should_eq( "label0 right", f(2), 0 )
 
 		f = lbls[1]
@@ -285,8 +305,20 @@ class Test:
 			0.25
 		)
 
-	def test_weight(self):
+	def test_matching_degree(self):
 		return
+
+	def test_weight(self):
+		ranges = [ (1, 2), (2, 3) ]
+		label_cnt = 3
+		db = generate_db(ranges, label_cnt)
+
+		examples = [ [ [1.5, 2.5 - 1/8], 2 ] ]
+		r = rule(examples[0], db)
+
+		w = weight(r, examples)
+
+		self.should_eq("weight", w, 1.0)
 
 	def test_find_ranges(self):
 		return
@@ -297,9 +329,9 @@ class Test:
 	def test_remove_duplicates(self):
 		return
 
-
-test_suite = Test()
-test_suite.main()
+def test():
+	test_suite = Test()
+	test_suite.main()
 
 def print_rb(rb, rw_pos = 3):
 	for rule in rb:
@@ -311,43 +343,56 @@ def print_rb(rb, rw_pos = 3):
 		rule_str += " class is " + str(rule[1]) + " with rw " + str(round(rule[2], rw_pos))
 		print(rule_str)
 
-logging.info("Loading data...")
-cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
-	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-data = load_csv_data(
-	"kddcupfull.data", 
-	cols,
-	41,
-	2000
-)
-logging.info("Data loaded")
-random.shuffle(data)
-data = data[-2000:]
+def main():
+	logging.info("Loading data...")
+	cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
+		30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+	data = load_csv_data(
+		"kddcupfull.data", 
+		cols,
+		41,
+		2000000
+	)
+	logging.info("Data loaded")
+	random.shuffle(data)
+	data = data[-2000:]
 
-validation_data_perc = 0.1
-validation_examples = int(validation_data_perc * len(data))
+	# for item in data:
+	# 	if item[1] != 'normal.':
+	# 		item[1] = 'ddos.'
 
-training_data = data[:-validation_examples]
-verification_data = data[validation_examples:]
+	validation_data_perc = 0.1
+	validation_examples = int(validation_data_perc * len(data))
 
-logging.info("Generating db...")
-label_count = 3
-ranges = find_ranges(data, range(len(cols)))
-db = generate_db(ranges, label_count)
+	training_data = data[:-validation_examples]
+	verification_data = data[validation_examples:]
 
-logging.info("Generating rb...")
-rb = generate_rb(training_data, db)
+	logging.info("Generating db...")
+	label_count = 3
+	ranges = find_ranges(data, range(len(cols)))
+	db = generate_db(ranges, label_count)
 
-logging.info("Classifying...")
-total = 0
+	logging.info("Generating rb...")
+	rb = generate_rb(training_data, db)
 
-with Pool(processes=4) as pool:
-	classifications = pool.starmap(classify, [ (v, list(rb)) for v in verification_data])
+	print_rb(rb)
 
-print(classifications)
+	logging.info("Classifying...")
 
-# for verification in verification_data:
-# 	if classify(verification[0], rb) == str(verification[1]):
-# 		total += 1
+	with Pool(processes=4) as pool:
+		classifications = pool.starmap(classify, [ (v[0], list(rb)) for v in verification_data])
 
-# print( "Accuracy% " + str(100 * total / len(verification_data)) )
+	total = 0
+	for i in range(len(verification_data)):
+		verification = verification_data[i]
+		if classifications[i] == str(verification[1]):
+			total += 1
+
+	print( "Accuracy% " + str(100 * total / len(verification_data)) )
+
+	for c in set( [ x[1] for x in verification_data ] ):
+		print(
+			c + " " + str( len( [x for x in verification_data if x[1] == c] ) )
+		)
+
+main()
