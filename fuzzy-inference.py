@@ -19,6 +19,13 @@ def triangle(center, width, name, x):
 	else:
 		x = float(x)
 
+		# print("r " + str(r) + " x " + str(x) + " center " + str(center))
+
+		# if r**2 - (x - center) ** 2 <= 0:
+		# 	return 0
+		# else:
+		# 	return (1 / r) * float( (r**2 - (x - center) ** 2) ** 0.5 )
+
 		if left <= x <= center:
 			return k * (x - left) + 0
 		elif center <= x <= right:
@@ -55,8 +62,17 @@ def matching_degree(example, x):
 
 	# input("stop.")
 
-	l = [ x[0][i](float(example[i])) for i in range(len(example)) ]
-	dgr = reduce(mul, l, 1)
+	# l = [  for i in range(len(example)) ]
+	# dgr = reduce(mul, l, 1)
+
+	dgr = 1
+	for i in range(len(example)):
+		curr = x[0][i](float(example[i]))
+		if curr == 0:
+			return 0
+		else:
+			dgr = dgr * curr
+
 	return dgr
 
 def rule(example, db):
@@ -66,6 +82,8 @@ def rule(example, db):
 
 	for i in range(len(db)):
 		rule[0].append( max(db[i], key=lambda x: x(data[i])) )
+
+	rule[2] = matching_degree(data, rule)
 
 	return rule
 
@@ -110,6 +128,9 @@ def remove_duplicates(rb):
 	
 	for k in rule_map:
 		best_rules.append(max(rule_map[k], key=lambda x: x[2]))
+		# same_rules = rule_map[k]
+		# for s in same_rules:
+
 
 	rb = best_rules
 
@@ -125,32 +146,18 @@ def generate_rb(examples, db):
 		logging.debug("Updating weights...")
 		rb = pool.starmap(update_weight, [ (r, list(examples)) for r in rb ] )
 
-	# logging.debug("Updating weights...")
-	# rb = update_weights(rb, examples)
-	
 	logging.debug("Removing duplicates...")
 	remove_duplicates(rb)
 
 	return rb
 
 def classify(example, rb):
-	# max_rule = rb[0]
-	# max_rule_degree = matching_degree(example, rb[0]) * rb[0][2]
-
-	# for r in rb:
-	# 	if r[2] >= max_rule_degree:
-	# 		rule_degree = matching_degree(example, r) * r[2]
-
-	# 		if rule_degree > max_rule_degree:
-	# 			max_rule = r
-	# 			max_rule_degree = rule_degree
-
 	max_rule = max(rb, key=lambda x: matching_degree(example, x) * x[2])
 
 	return max_rule[1]
 
-def example_from_line(line, attribute_indices, class_index):
-	parts = line.split(',')
+def example_from_line(line, attribute_indices, class_index, symbol):
+	parts = line.split(symbol)
 
 	classification = parts[ class_index ]
 	parts = [ parts[i].strip() for i in attribute_indices ]
@@ -162,12 +169,12 @@ def example_from_line(line, attribute_indices, class_index):
 
 	return example
 
-def load_csv_data(file_name, attribute_indices, class_index, line_cnt):
+def load_csv_data(file_name, attribute_indices, class_index, line_cnt, symbol):
 	with open(file_name) as f:
 		content = head = [next(f) for x in range(line_cnt)]
 		lines = [x.strip() for x in content]
 		data = [
-			example_from_line(l,attribute_indices, class_index)
+			example_from_line(l,attribute_indices, class_index, symbol)
 			for l in lines
 		]
 
@@ -343,23 +350,130 @@ def print_rb(rb, rw_pos = 3):
 		rule_str += " class is " + str(rule[1]) + " with rw " + str(round(rule[2], rw_pos))
 		print(rule_str)
 
+def load_metadata():
+	metadata = {}
+
+	metadata[0] = 'banana'
+	metadata[1] = 'wine'
+	metadata[2] = 'wine'
+	metadata[3] = 'banana'
+	metadata[4] = 'wine'
+	metadata[5] = 'banana'
+	metadata[6] = 'wine'
+	metadata[7] = 'banana'
+	metadata[8] = 'wine'
+	metadata[9] = 'banana'
+	metadata[10] = 'banana'
+	metadata[11] = 'banana'
+	metadata[12] = 'wine'
+	metadata[13] = 'banana'
+	metadata[14] = 'wine'
+	metadata[15] = 'banana'
+	metadata[16] = 'banana'
+	metadata[17] = 'banana'
+	metadata[18] = 'banana'
+	metadata[19] = 'wine'
+	metadata[20] = 'wine'
+	metadata[21] = 'banana'
+	metadata[22] = 'banana'
+	metadata[23] = 'wine'
+	metadata[24] = 'wine'
+	metadata[25] = 'wine'
+	metadata[26] = 'wine'
+	metadata[27] = 'banana'
+	metadata[28] = 'wine'
+	metadata[29] = 'wine'
+	metadata[30] = 'banana'
+	metadata[31] = 'wine'
+	metadata[32] = 'wine'
+	metadata[33] = 'banana'
+	metadata[34] = 'banana'
+	metadata[35] = 'banana'
+	metadata[36] = 'wine'
+	metadata[37] = 'wine'
+	metadata[38] = 'wine'
+	metadata[39] = 'banana'
+	metadata[40] = 'banana'
+	metadata[41] = 'wine'
+	metadata[42] = 'wine'
+	metadata[43] = 'banana'
+	metadata[44] = 'wine'
+	metadata[45] = 'wine'
+	metadata[46] = 'wine'
+	metadata[47] = 'banana'
+	metadata[48] = 'banana'
+	metadata[49] = 'wine'
+	metadata[50] = 'wine'
+	metadata[51] = 'banana'
+	metadata[52] = 'banana'
+	metadata[53] = 'wine'
+	metadata[54] = 'wine'
+	metadata[55] = 'banana'
+	metadata[56] = 'wine'
+	metadata[57] = 'banana'
+	metadata[58] = 'wine'
+	metadata[59] = 'banana'
+	metadata[60] = 'banana'
+	metadata[61] = 'wine'
+	metadata[62] = 'banana'
+	metadata[63] = 'banana'
+	metadata[64] = 'wine'
+	metadata[65] = 'banana'
+	metadata[66] = 'wine'
+	metadata[67] = 'wine'
+	metadata[68] = 'wine'
+	metadata[69] = 'background'
+	metadata[70] = 'background'
+	metadata[71] = 'background'
+	metadata[72] = 'background'
+	metadata[73] = 'background'
+	metadata[74] = 'background'
+	metadata[75] = 'background'
+	metadata[76] = 'background'
+	metadata[77] = 'background'
+	metadata[78] = 'background'
+	metadata[79] = 'background'
+	metadata[80] = 'background'
+	metadata[81] = 'background'
+	metadata[82] = 'background'
+	metadata[83] = 'background'
+	metadata[84] = 'background'
+	metadata[85] = 'background'
+	metadata[86] = 'background'
+	metadata[87] = 'background'
+	metadata[88] = 'background'
+	metadata[89] = 'background'
+	metadata[90] = 'background'
+	metadata[91] = 'background'
+	metadata[92] = 'background'
+	metadata[93] = 'background'
+	metadata[94] = 'background'
+	metadata[95] = 'background'
+	metadata[96] = 'background'
+	metadata[97] = 'background'
+	metadata[98] = 'background'
+	metadata[99] = 'background'
+
+	return metadata
+
 def main():
 	logging.info("Loading data...")
-	cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
-		30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+	cols = range(10)
 	data = load_csv_data(
-		"kddcupfull.data", 
+		"poker-hand-testing.data", 
 		cols,
-		41,
-		2000000
+		10,
+		999999 + 1,
+		','
 	)
 	logging.info("Data loaded")
 	random.shuffle(data)
 	data = data[-2000:]
 
+	# metadata = load_metadata()
+
 	# for item in data:
-	# 	if item[1] != 'normal.':
-	# 		item[1] = 'ddos.'
+	# 	item[1] = metadata[int(item[1])]
 
 	validation_data_perc = 0.1
 	validation_examples = int(validation_data_perc * len(data))
@@ -375,7 +489,7 @@ def main():
 	logging.info("Generating rb...")
 	rb = generate_rb(training_data, db)
 
-	print_rb(rb)
+	# print_rb(rb)
 
 	logging.info("Classifying...")
 
