@@ -19,12 +19,10 @@ def triangle(center, width, name, x):
 	else:
 		x = float(x)
 
-		# print("r " + str(r) + " x " + str(x) + " center " + str(center))
-
-		# if r**2 - (x - center) ** 2 <= 0:
-		# 	return 0
-		# else:
-		# 	return (1 / r) * float( (r**2 - (x - center) ** 2) ** 0.5 )
+		if r**2 - (x - center) ** 2 <= 0:
+			return 0
+		else:
+			return (1 / r) * float( (r**2 - (x - center) ** 2) ** 0.5 )
 
 		if left <= x <= center:
 			return k * (x - left) + 0
@@ -56,14 +54,16 @@ def classification(example):
 def input_data(example):
 	return example[0]
 
-def matching_degree(example, x):
+def matching_degree(example, x, so_far_max = 0):
 	strn = [ ( example[i], x[0][i]('name'), x[0][i](float(example[i])) ) for i in range(len(example)) ]
 	# [print(s) for s in strn]
 
 	# input("stop.")
 
-	# l = [  for i in range(len(example)) ]
-	# dgr = reduce(mul, l, 1)
+	l = [  x[0][i](float(example[i])) for i in range(len(example)) ]
+	dgr = reduce(mul, l, 1)
+
+	return dgr
 
 	dgr = 1
 	for i in range(len(example)):
@@ -72,6 +72,9 @@ def matching_degree(example, x):
 			return 0
 		else:
 			dgr = dgr * curr
+
+			if dgr < so_far_max:
+				return dgr
 
 	return dgr
 
@@ -152,8 +155,18 @@ def generate_rb(examples, db):
 	return rb
 
 def classify(example, rb):
-	max_rule = max(rb, key=lambda x: matching_degree(example, x) * x[2])
+	max_rule = rb[0]
+	max_rule_dgr = matching_degree(example, max_rule)
+	
+	for r in rb:
+		curr_matching_degree = matching_degree(example, r, max_rule_dgr)
+		if(curr_matching_degree > max_rule_dgr):
+			max_rule_dgr = curr_matching_degree
+			max_rule = r
 
+	return max_rule[1]
+
+	max_rule = max(rb, key=lambda x: matching_degree(example, x) * x[2])
 	return max_rule[1]
 
 def example_from_line(line, attribute_indices, class_index, symbol):
@@ -458,17 +471,18 @@ def load_metadata():
 
 def main():
 	logging.info("Loading data...")
-	cols = range(10)
+	cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
+		30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 	data = load_csv_data(
-		"poker-hand-testing.data", 
+		"kddcupfull.data", 
 		cols,
-		10,
-		999999 + 1,
+		41,
+		100,
 		','
 	)
 	logging.info("Data loaded")
-	random.shuffle(data)
-	data = data[-2000:]
+	# random.shuffle(data)
+	data = data[-100:]
 
 	# metadata = load_metadata()
 
@@ -489,7 +503,7 @@ def main():
 	logging.info("Generating rb...")
 	rb = generate_rb(training_data, db)
 
-	# print_rb(rb)
+	print_rb(rb)
 
 	logging.info("Classifying...")
 
