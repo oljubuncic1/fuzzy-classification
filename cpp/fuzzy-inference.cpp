@@ -316,17 +316,13 @@ void remove_duplicates(rb_t &rb) {
 	rb_t best_rules;
 	
 	for(auto kv : rule_map) {
-		// best_rules.push_back(
-		// 	*max_element(
-		// 		kv.second.begin(),
-		// 		kv.second.end(), 
-		// 		[](rule_t x, rule_t y) { return get<2>(x) < get<2>(y); }
-		// 	)
-		// );
-		
-		for(auto r : kv.second) {
-
-		}
+		best_rules.push_back(
+			*max_element(
+				kv.second.begin(),
+				kv.second.end(), 
+				[](rule_t x, rule_t y) { return get<2>(x) < get<2>(y); }
+			)
+		);
 	}
 
 	rb = best_rules;
