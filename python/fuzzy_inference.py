@@ -55,7 +55,6 @@ def input_data(example):
 
 def matching_degree(example, x):
 	l = [  x[0][i](float(example[i])) for i in range(len(example)) ]
-	return min(l)
 	
 	dgr = reduce(mul, l, 1)
 	return dgr
@@ -68,17 +67,12 @@ def rule(example, db):
 	for i in range(len(db)):
 		max_label = max(db[i], key=lambda x: x(data[i]))
 		rule[0].append( max_label )
+		# print("Max label for " + str(data[i]) + " is " + max_label('name'))
+		# for j in range(len(db[i])):
+			# f = db[i][j]
+			# print("\t" + str( f('name') ) + " (" + data[i] + ") = " + str( f(data[i]) ) )
 
 	return rule
-
-def rule_desc(rule):
-	rule_desc_str = ""
-
-	for f in rule[0]:
-		rule_desc_str += f('name')
-	rule_desc_str += rule[1]
-
-	return rule_desc_str
 
 def rule_str(r):
 	r_str = ""
@@ -86,28 +80,36 @@ def rule_str(r):
 		r_str += r[0][i]('name')
 	return r_str
 
-def print_map(m):
-	for e in m:
-		print( (e, m[e]) )
-		print()
-
 def my_classification(rule, examples):
+	logging.debug("Getting rule weight for rule " + rule_str(rule))
 	positive_sum = 0
 	negative_sum = 0
+	total_sum = 0
 	for e in examples:
+		curr_md = matching_degree(e[0], rule)
+		logging.debug("\tMatching degree " + str(e[0]) + " -> " + str(e[1]) + "\t\t= \t" + str(curr_md) )
 		if e[1] == '1':
-			positive_sum += matching_degree(e[0], rule)
+			positive_sum += curr_md
 		elif e[1] == '0':
-			negative_sum += matching_degree(e[0], rule)
+			negative_sum += curr_md
+		total_sum += curr_md
+
+	coefficient = abs(positive_sum - negative_sum) / total_sum
 
 	if positive_sum > negative_sum:
-		return '0'
+		classification = '1'
 	else:
-		return '1'
+		classification = '0'
+
+	print("")
+	logging.debug("\tCoefficient " + str(coefficient) + "\tClassification " + str(classification))
+	print("")
+
+	return [coefficient, classification]
 
 def add_classifications(rb_map):
 	for r in rb_map:
-		rb_map[r].append(my_classification(rb_map[r][0], rb_map[r][1]))
+		rb_map[r].extend(my_classification(rb_map[r][0], rb_map[r][1]))
 
 def generate_rb(examples, db, ranges, label_cnt):
 	rb_map = {}
@@ -171,10 +173,10 @@ def classify(example, rb, ranges, label_cnt):
 	for r in possible_rules:
 		if r not in rb:
 			continue
-		curr_md = matching_degree(example, rb[r][0])
+		curr_md = matching_degree(example, rb[r][0]) * rb[r][2]
 		if curr_md > max_degree:
 			max_degree = curr_md
-			max_classification = rb[r][2]
+			max_classification = rb[r][3]
 
 	return max_classification
 
@@ -209,31 +211,24 @@ def find_ranges(examples, indices, discrete_indices = []):
 
 	return ranges
 
-def print_rb(rb, rw_pos = 3):
-	for rule in rb:
-		rule_str = ''
-		i = 0
-		for f in rule[0]:
-			rule_str +=  'x' + str(i) + ' is ' + f('name') + '   '
-			i += 1
-		rule_str += " class is " + str(rule[1]) + " with rw " + str(round(rule[2], rw_pos))
-		print(rule_str)
+def print_real_rule_weights(rb, examples):
+
 
 def main():
 	logging.info("Loading data...")
 	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
 		# 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-	cols = range(10)
+	cols = [1, 3, 5]
 	data = load_csv_data(
 		"../data/poker-hand-testing.data", 
 		cols,
 		10,
-		1000000,
+		10,
 		','
 	)
 	logging.info("Data loaded")
-	random.shuffle(data)
-	data = data[0:1000]
+	# random.shuffle(data)
+	data = data[0:10]
 
 	for d in data:
 		if d[1] == '4':
@@ -250,11 +245,20 @@ def main():
 	logging.info("Generating db...")
 	label_cnt = 3
 	ranges = find_ranges(data, range(len(cols)))
+	ranges = [(1,13) for i in range(3)]
 
 	db = generate_db( ranges , label_cnt)
 
+	[logging.debug( str(d) + "\t" + rule_str( rule(d, db) ) + "\t" + \
+		str(generate_possible_rules(d[0], ranges, label_cnt)) ) for d in training_data]
+
 	logging.info("Generating rb...")
 	rb = generate_rb(training_data, db, ranges, label_cnt)
+
+	[ print(str(r) + " -> " + rule_str(rb[r][0]) + " " + str(rb[r][1]) + "\n") for r in rb ]
+
+	old_rb = old_generate_rb()
+	print_real_rule_weights(rb, examples)
 
 	logging.info("Classifying...")
 
