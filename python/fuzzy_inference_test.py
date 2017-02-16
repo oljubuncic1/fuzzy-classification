@@ -132,6 +132,18 @@ class Test:
 		self.should_eq("label1 right middle", get_possible_labels(1.75, rng, label_cnt), ("1", "2"))
 		self.should_eq("label2 middle", get_possible_labels(2, rng, label_cnt), ("1", "2"))
 
+	def test_zinference(self):
+		training_examples = [
+
+		]
+
+		validation_examples = [
+
+		]
+
+		ranges = [ (1, 3), (2, 10), (1, 4) ]
+		label_cnt = 3
+
 def test():
 	test_suite = Test()
 	test_suite.main()
