@@ -8,8 +8,12 @@ import math
 import ann
 from itertools import product
 from multiprocessing import Pool
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+from sklearn.linear_model import SGDClassifier
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def triangle(center, width, name, x):
 	r = width / 2
@@ -67,10 +71,10 @@ def rule(example, db):
 	for i in range(len(db)):
 		max_label = max(db[i], key=lambda x: x(data[i]))
 		rule[0].append( max_label )
-		# print("Max label for " + str(data[i]) + " is " + max_label('name'))
-		# for j in range(len(db[i])):
-			# f = db[i][j]
-			# print("\t" + str( f('name') ) + " (" + data[i] + ") = " + str( f(data[i]) ) )
+		logger.debug("Max label for " + str(data[i]) + " is " + max_label('name'))
+		for j in range(len(db[i])):
+			f = db[i][j]
+			logger.debug("\t" + str( f('name') ) + " (" + data[i] + ") = " + str( f(data[i]) ) )
 
 	return rule
 
@@ -81,13 +85,23 @@ def rule_str(r):
 	return r_str
 
 def my_classification(rule, examples):
-	logging.debug("Getting rule weight for rule " + rule_str(rule))
+	logger.debug("Getting rule weight for rule " + rule_str(rule))
+
+	x = []
+	y = []
+	for e in examples:
+		x.append( [ float(v) for v in e[0] ] )
+		y.append( int(e[1]) )
+
+	neural_net = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(), random_state = 1)
+	neural_net.fit(x, y)	
+	
 	positive_sum = 0
 	negative_sum = 0
 	total_sum = 0
 	for e in examples:
 		curr_md = matching_degree(e[0], rule)
-		logging.debug("\tMatching degree " + str(e[0]) + " -> " + str(e[1]) + "\t\t= \t" + str(curr_md) )
+		logger.debug("\tMatching degree " + str(e[0]) + " -> " + str(e[1]) + "\t\t= \t" + str(curr_md) )
 		if e[1] == '1':
 			positive_sum += curr_md
 		elif e[1] == '0':
@@ -101,15 +115,21 @@ def my_classification(rule, examples):
 	else:
 		classification = '0'
 
-	print("")
-	logging.debug("\tCoefficient " + str(coefficient) + "\tClassification " + str(classification))
-	print("")
+	logger.debug("\tCoefficient " + str(coefficient) + "\tClassification " + str(classification))
 
-	return [coefficient, classification]
+	return [coefficient, classification, neural_net]
 
 def add_classifications(rb_map):
 	for r in rb_map:
 		rb_map[r].extend(my_classification(rb_map[r][0], rb_map[r][1]))
+
+def rule_from_rule_str(rule_str, db):
+	r = [[], 0, 0]
+	for i in range(len(rule_str)):
+		curr_r = rule_str[i]
+		r[0].append( db[i][int(curr_r)] )
+
+	return r
 
 def generate_rb(examples, db, ranges, label_cnt):
 	rb_map = {}
@@ -130,7 +150,7 @@ def generate_rb(examples, db, ranges, label_cnt):
 			if p in rb_map:
 				rb_map[p][2].append(e)
 			else:
-				rb_map[p] = [ 0, r, [e] ]
+				rb_map[p] = [ 0, rule_from_rule_str(p, db), [e] ]
 
 	rb_map = dict( [ (r, [ rb_map[r][1], rb_map[r][2] ]) for r in rb_map if rb_map[r][0] != 0 ] )
 	add_classifications(rb_map)
@@ -140,6 +160,8 @@ def generate_rb(examples, db, ranges, label_cnt):
 def get_possible_labels(val, range, label_cnt):
 	val = float(val)
 	L = range[1] - range[0]
+	if L == 0:
+		L = 1
 	half_cnt = label_cnt - 1
 	half_w = L / half_cnt
 
@@ -164,7 +186,7 @@ def generate_possible_rules(example, ranges, label_cnt, lvl = 0, curr = ""):
 		return generate_possible_rules(example, ranges, label_cnt, lvl + 1, curr + first) + \
 			generate_possible_rules(example, ranges, label_cnt, lvl + 1, curr + second)
 
-def classify(example, rb, ranges, label_cnt):
+def classify(example, rb, ranges, label_cnt, is_old = 0):
 	# example is just list of atttributes here
 	possible_rules = generate_possible_rules(example, ranges, label_cnt)
 	
@@ -176,7 +198,11 @@ def classify(example, rb, ranges, label_cnt):
 		curr_md = matching_degree(example, rb[r][0]) * rb[r][2]
 		if curr_md > max_degree:
 			max_degree = curr_md
-			max_classification = rb[r][3]
+			float_values = [ float(v) for v in example ]
+			if is_old == 1:
+				max_classification = rb[r][3]
+			else:
+				max_classification = str( int(round(rb[r][4].predict([ float_values ])[0], 0)) )
 
 	return max_classification
 
@@ -211,24 +237,28 @@ def find_ranges(examples, indices, discrete_indices = []):
 
 	return ranges
 
-def print_real_rule_weights(rb, examples):
-
-
 def main():
-	logging.info("Loading data...")
+	logger.info("Loading data...")
 	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
-		# 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-	cols = [1, 3, 5]
+	# 	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+	cols = range(10)
 	data = load_csv_data(
 		"../data/poker-hand-testing.data", 
 		cols,
 		10,
-		10,
+		1000000,
 		','
 	)
-	logging.info("Data loaded")
-	# random.shuffle(data)
-	data = data[0:10]
+	logger.info("Data loaded.")
+
+	logger.info(" Generating ranges...")
+	ranges = find_ranges(data, range(len(cols)))
+
+	logger.info("Shuffling data...")
+	random.shuffle(data)
+	data = data[0:15000]
+
+	logger.info("Data fully ready.")
 
 	for d in data:
 		if d[1] == '4':
@@ -242,25 +272,15 @@ def main():
 	training_data = data[:-validation_examples]
 	verification_data = data[-validation_examples:]
 
-	logging.info("Generating db...")
+	logger.info("Generating db...")
 	label_cnt = 3
-	ranges = find_ranges(data, range(len(cols)))
-	ranges = [(1,13) for i in range(3)]
-
+	
 	db = generate_db( ranges , label_cnt)
 
-	[logging.debug( str(d) + "\t" + rule_str( rule(d, db) ) + "\t" + \
-		str(generate_possible_rules(d[0], ranges, label_cnt)) ) for d in training_data]
-
-	logging.info("Generating rb...")
+	logger.info("Generating rb...")
 	rb = generate_rb(training_data, db, ranges, label_cnt)
 
-	[ print(str(r) + " -> " + rule_str(rb[r][0]) + " " + str(rb[r][1]) + "\n") for r in rb ]
-
-	old_rb = old_generate_rb()
-	print_real_rule_weights(rb, examples)
-
-	logging.info("Classifying...")
+	logger.info("Classifying...")
 
 	with Pool(processes=4) as pool:
 		classifications = pool.starmap(classify, [ (v[0], rb, list(ranges), label_cnt) for v in verification_data])
@@ -271,10 +291,22 @@ def main():
 		if classifications[i] == str(verification[1]):
 			total += 1
 
-	print( "Accuracy% " + str(100 * total / len(verification_data)) )
+	logger.info( "Accuracy% " + str(100 * total / len(verification_data)) )
 
+	with Pool(processes=4) as pool:
+		classifications = pool.starmap(classify, [ (v[0], rb, list(ranges), label_cnt, 1) for v in verification_data])
+
+	total = 0
+	for i in range(len(verification_data)):
+		verification = verification_data[i]
+		if classifications[i] == str(verification[1]):
+			total += 1
+
+	logger.info( "Accuracy% " + str(100 * total / len(verification_data)) )
+
+	logger.info("Class distribution for validation data")
 	for c in set( [ x[1] for x in verification_data ] ):
-		print(
+		logger.info(
 			c + " " + str( len( [x for x in verification_data if x[1] == c] ) )
 		)
 

@@ -28,9 +28,10 @@ def forward(net, x):
 
 	return layer_outputs
 
-def backpropagate(net, x, y):
-	alpha = 0.1
+def output(net, x):
+	return forward(net, x)[-1]
 
+def backpropagate(net, x, y, alpha = 0.1):
 	layer_outputs = forward(net, x)
 
 	weights = net[0]
