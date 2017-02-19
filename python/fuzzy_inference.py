@@ -11,10 +11,9 @@ from multiprocessing import Pool
 import numpy as np
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter("\033[92m%(asctime)s %(levelname)s\033[0m\t%(message)s")
 ch.setFormatter(formatter)
 logger.handlers = []
@@ -236,16 +235,7 @@ def find_ranges(examples, indices, discrete_indices = []):
 
 	return ranges
 
-def get_accuracy(
-	file_name, 
-	cols, class_col, 
-	row_cnt, 
-	delimiter_char, 
-	data_items_cnt, 
-	validation_data_perc, 
-	label_cnt, 
-	data_transformation = None
-):
+def get_data_and_ranges(file_name, cols, class_col, row_cnt, delimiter_char):
 	logger.info("Loading data...")
 	data = load_csv_data(
 		file_name, 
@@ -259,6 +249,16 @@ def get_accuracy(
 	logger.info("Generating ranges...")
 	ranges = find_ranges(data, range(len(cols)))
 
+	return data, ranges
+
+def get_accuracy(
+	data,
+	ranges,
+	data_items_cnt, 
+	validation_data_perc, 
+	label_cnt, 
+	data_transformation = None
+):
 	logger.info("Shuffling data...")
 	random.shuffle(data)
 	data = data[0:data_items_cnt]
@@ -318,12 +318,11 @@ if __name__ == "__main__":
 		
 		return d
 
+	data_ranges = get_data_and_ranges(file_name, cols, class_col, row_cnt, delimiter_char)
+
 	get_accuracy(
-		file_name, 
-		cols, 
-		class_col, 
-		row_cnt, 
-		delimiter_char, 
+		data_ranges[0],
+		data_ranges[1],
 		data_items_cnt, 
 		validation_data_perc, 
 		label_cnt, 
