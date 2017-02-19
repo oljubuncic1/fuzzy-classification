@@ -9,11 +9,16 @@ import ann
 from itertools import product
 from multiprocessing import Pool
 import numpy as np
-from sklearn.neural_network import MLPClassifier
-from sklearn.linear_model import SGDClassifier
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter("\033[92m%(asctime)s %(levelname)s\033[0m\t%(message)s")
+ch.setFormatter(formatter)
+logger.handlers = []
+logger.addHandler(ch)
 
 def triangle(center, width, name, x):
 	r = width / 2
@@ -231,10 +236,17 @@ def find_ranges(examples, indices, discrete_indices = []):
 
 	return ranges
 
-def get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items_cnt, validation_data_perc, label_cnt, data_transformation = None):
+def get_accuracy(
+	file_name, 
+	cols, class_col, 
+	row_cnt, 
+	delimiter_char, 
+	data_items_cnt, 
+	validation_data_perc, 
+	label_cnt, 
+	data_transformation = None
+):
 	logger.info("Loading data...")
-	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
-	# 	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 	data = load_csv_data(
 		file_name, 
 		cols,
@@ -263,14 +275,12 @@ def get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items
 	verification_data = data[-validation_examples:]
 
 	logger.info("Generating db...")
-	
 	db = generate_db( ranges , label_cnt)
 
 	logger.info("Generating rb...")
 	rb = generate_rb(training_data, db, ranges, label_cnt)
 
 	logger.info("Classifying...")
-
 	with Pool(processes=4) as pool:
 		classifications = pool.starmap(classify, [ (v[0], rb, list(ranges), label_cnt) for v in verification_data])
 
@@ -285,10 +295,13 @@ def get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items
 	logger.info("Class distribution")
 	for c in set( [ x[1] for x in verification_data ] ):
 		logger.info(
-			c + " " + str( len( [x for x in verification_data if x[1] == c] ) )
+			"\tData items with class " + c + " -> " + \
+				str( len( [x for x in verification_data if x[1] == c] ) )
 		)
 
 if __name__ == "__main__":
+	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
+	# 	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
 	file_name = "../data/poker-hand-testing.data"
 	cols = [1,3, 5, 7, 9]
 	class_col = 10
@@ -305,4 +318,14 @@ if __name__ == "__main__":
 		
 		return d
 
-	get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items_cnt, validation_data_perc, label_cnt, data_transform)
+	get_accuracy(
+		file_name, 
+		cols, 
+		class_col, 
+		row_cnt, 
+		delimiter_char, 
+		data_items_cnt, 
+		validation_data_perc, 
+		label_cnt, 
+		data_transform
+	)
