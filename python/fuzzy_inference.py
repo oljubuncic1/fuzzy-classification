@@ -231,17 +231,16 @@ def find_ranges(examples, indices, discrete_indices = []):
 
 	return ranges
 
-def main():
+def get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items_cnt, validation_data_perc, label_cnt, data_transformation = None):
 	logger.info("Loading data...")
 	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
 	# 	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-	cols = [1, 3, 5, 7, 9]
 	data = load_csv_data(
-		"../data/poker-hand-testing.data", 
+		file_name, 
 		cols,
-		10,
-		1000000,
-		','
+		class_col,
+		row_cnt,
+		delimiter_char
 	)
 	logger.info("Data loaded.")
 
@@ -250,24 +249,20 @@ def main():
 
 	logger.info("Shuffling data...")
 	random.shuffle(data)
-	data = data[0:1000]
+	data = data[0:data_items_cnt]
 
 	logger.info("Data fully ready.")
 
-	for d in data:
-		if d[1] == '4':
-			d[1] = '1'
-		elif d[1] != '1':
-			d[1] = '0'
+	if(data_transformation != None):
+		for d in data:
+			d = data_transformation(d)
 
-	validation_data_perc = 0.1
 	validation_examples = int(validation_data_perc * len(data))
 
 	training_data = data[:-validation_examples]
 	verification_data = data[-validation_examples:]
 
 	logger.info("Generating db...")
-	label_cnt = 3
 	
 	db = generate_db( ranges , label_cnt)
 
@@ -287,10 +282,27 @@ def main():
 
 	logger.info( "Accuracy% " + str(100 * total / len(verification_data)) )
 
+	logger.info("Class distribution")
 	for c in set( [ x[1] for x in verification_data ] ):
 		logger.info(
 			c + " " + str( len( [x for x in verification_data if x[1] == c] ) )
 		)
 
 if __name__ == "__main__":
-	main()
+	file_name = "../data/poker-hand-testing.data"
+	cols = [1,3, 5, 7, 9]
+	class_col = 10
+	row_cnt = 1000
+	data_items_cnt = 1000
+	delimiter_char = ','
+	validation_data_perc = 0.1
+	label_cnt = 3
+	def data_transform(d):
+		if d[1] == '4':
+			d[1] = '1'
+		elif d[1] != '1':
+			d[1] = '0'
+		
+		return d
+
+	get_accuracy(file_name, cols, class_col, row_cnt, delimiter_char, data_items_cnt, validation_data_perc, label_cnt, data_transform)
