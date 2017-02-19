@@ -93,9 +93,6 @@ def my_classification(rule, examples):
 		x.append( [ float(v) for v in e[0] ] )
 		y.append( int(e[1]) )
 
-	neural_net = MLPClassifier(solver='lbfgs', hidden_layer_sizes=(), random_state = 1)
-	neural_net.fit(x, y)	
-	
 	positive_sum = 0
 	negative_sum = 0
 	total_sum = 0
@@ -117,7 +114,7 @@ def my_classification(rule, examples):
 
 	logger.debug("\tCoefficient " + str(coefficient) + "\tClassification " + str(classification))
 
-	return [coefficient, classification, neural_net]
+	return [coefficient, classification]
 
 def add_classifications(rb_map):
 	for r in rb_map:
@@ -186,7 +183,7 @@ def generate_possible_rules(example, ranges, label_cnt, lvl = 0, curr = ""):
 		return generate_possible_rules(example, ranges, label_cnt, lvl + 1, curr + first) + \
 			generate_possible_rules(example, ranges, label_cnt, lvl + 1, curr + second)
 
-def classify(example, rb, ranges, label_cnt, is_old = 0):
+def classify(example, rb, ranges, label_cnt):
 	# example is just list of atttributes here
 	possible_rules = generate_possible_rules(example, ranges, label_cnt)
 	
@@ -199,10 +196,7 @@ def classify(example, rb, ranges, label_cnt, is_old = 0):
 		if curr_md > max_degree:
 			max_degree = curr_md
 			float_values = [ float(v) for v in example ]
-			if is_old == 1:
-				max_classification = rb[r][3]
-			else:
-				max_classification = str( int(round(rb[r][4].predict([ float_values ])[0], 0)) )
+			max_classification = rb[r][3]
 
 	return max_classification
 
@@ -241,7 +235,7 @@ def main():
 	logger.info("Loading data...")
 	# cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29, 
 	# 	30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
-	cols = range(10)
+	cols = [1, 3, 5, 7, 9]
 	data = load_csv_data(
 		"../data/poker-hand-testing.data", 
 		cols,
@@ -251,12 +245,12 @@ def main():
 	)
 	logger.info("Data loaded.")
 
-	logger.info(" Generating ranges...")
+	logger.info("Generating ranges...")
 	ranges = find_ranges(data, range(len(cols)))
 
 	logger.info("Shuffling data...")
 	random.shuffle(data)
-	data = data[0:15000]
+	data = data[0:1000]
 
 	logger.info("Data fully ready.")
 
@@ -293,18 +287,6 @@ def main():
 
 	logger.info( "Accuracy% " + str(100 * total / len(verification_data)) )
 
-	with Pool(processes=4) as pool:
-		classifications = pool.starmap(classify, [ (v[0], rb, list(ranges), label_cnt, 1) for v in verification_data])
-
-	total = 0
-	for i in range(len(verification_data)):
-		verification = verification_data[i]
-		if classifications[i] == str(verification[1]):
-			total += 1
-
-	logger.info( "Accuracy% " + str(100 * total / len(verification_data)) )
-
-	logger.info("Class distribution for validation data")
 	for c in set( [ x[1] for x in verification_data ] ):
 		logger.info(
 			c + " " + str( len( [x for x in verification_data if x[1] == c] ) )
