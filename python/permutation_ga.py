@@ -75,6 +75,7 @@ class PermuatationGA():
     def mutate_single(self, p):
         if random.random() < self.mutation_probability:
             not_in_p = list( set(self.values) - set(p) )
+            
             random.shuffle(p)
             random.shuffle(not_in_p)
 
@@ -100,12 +101,16 @@ class PermuatationGA():
         pop = self.init_pop(init_pop_size, sample_size)
 
         for i in range(generation_cnt):
+            [print(p) for p in pop]
+            print()
+            print()
+
             logger.debug("Crossing over...")
             pop = self.crossover(pop, crossover_percent, objective_function)
 
             pop = sorted(pop, key=lambda x: objective_function(x), reverse=True)
             
-            # print("Best accuracy " + str( objective_function(pop[0]) ) + " in " + str(pop[0]) )
+            print("Best accuracy " + str( objective_function(pop[0]) ) + " in " + str(pop[0]) )
 
             pop = self.mutate(pop[1:])
             pop = pop[:init_pop_size]
