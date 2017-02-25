@@ -101,9 +101,7 @@ class PermuatationGA():
         pop = self.init_pop(init_pop_size, sample_size)
 
         for i in range(generation_cnt):
-            [print(p) for p in pop]
-            print()
-            print()
+            logger.info("GA generation " + str(i))
 
             logger.debug("Crossing over...")
             pop = self.crossover(pop, crossover_percent, objective_function)

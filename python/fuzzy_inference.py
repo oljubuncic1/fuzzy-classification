@@ -14,7 +14,7 @@ import permutation_ga as pga
 logger = logging.getLogger()
 
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.INFO)
 formatter = logging.Formatter("\033[92m%(asctime)s %(levelname)s\033[0m\t%(message)s")
 ch.setFormatter(formatter)
 logger.handlers = []
@@ -78,7 +78,6 @@ def rule(example, db):
         rule[0].append( max_label )
         for j in range(len(db[i])):
             f = db[i][j]
-            # logger.debug("\t" + str( f('name') ) + " (" + data[i] + ") = " + str( f(data[i]) ) )
 
     return rule
 
@@ -146,6 +145,7 @@ def generate_rb(examples, db, ranges, label_cnt):
     add_classifications(rb_map)
 
     return rb_map
+
 
 def get_possible_labels(val, range, label_cnt):
     val = float(val)
@@ -237,7 +237,7 @@ def get_data_and_ranges(file_name, cols, class_col, row_cnt, delimiter_char):
 
     logger.info("Generating ranges...")
     ranges = find_ranges(data, range(len(cols)))
-
+   
     return data, ranges
 
 def get_accuracy(
@@ -248,6 +248,7 @@ def get_accuracy(
     label_cnt, 
     data_transformation = None
 ):
+
     logger.debug("Calculating accuracy...")
     logger.debug("Shuffling data...")
     random.shuffle(data)
@@ -273,12 +274,9 @@ def get_accuracy(
     with Pool(processes=4) as pool:
         classifications = pool.starmap(classify, [ (v[0], rb, list(ranges), label_cnt) for v in verification_data])
 
-    [ print(str(r)) for r in rb ]
-
     total = 0
     for i in range(len(verification_data)):
         verification = verification_data[i]
-        # print(classifications[i])
         if classifications[i] == str(verification[1]):
             total += 1
 
@@ -295,95 +293,104 @@ def get_accuracy(
     return accuracy
 
 if __name__ == "__main__":
-    cols = [0, 4, 5, 9, 10, 12, 13, 14 , 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29,
-        30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+    # cols = [0, 4, 5, 9, 10, 12, 13, 14 , 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29,
+        # 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+
+    cols = [10, 13, 20, 19, 0]
     
     file_name = "../data/kddcupfull.data"
     # file_name = "../data/poker-hand-testing.data"
     # cols = range(10)
     class_col = 41
-    row_cnt = 500000
-    data_items_cnt = 1000
+    row_cnt = 1500000
+    data_items_cnt = 500000
     delimiter_char = ','
     validation_data_perc = 0.1
     label_cnt = 3
-    objective_function_data_item_cnt = 500
+    objective_function_data_item_cnt = 1000
 
     data_and_ranges = get_data_and_ranges(file_name, cols, class_col, row_cnt, delimiter_char)
+    data = data_and_ranges[0]
     ranges = data_and_ranges[1]
 
-    print(ranges)
+    pga.inject_logger(logger)
 
-    # pga.inject_logger(logger)
+    values = list( range(len(data_and_ranges[0][0][0])) )
+    print(values)
 
-    # values = list( range(len(data_and_ranges[0][0][0])) )
-    # print(values)
+    for v in values:
+        if ranges[v][1] - ranges[v][0] == 0:
+            values.remove(v)
 
-    # for v in values:
-    #     if ranges[v][1] - ranges[v][0] == 0:
-    #         values.remove(v)
+    print(values)
 
-    # print(values)
+    pga_instance = pga.PermuatationGA(values)
 
-    # pga_instance = pga.PermuatationGA(values)
-
-    # logger.info("Feature selection in progress...")
-    # objective_function_cache = {}
-    # def objective_function(permutation):
-    #     my_data_and_ranges = list(
-    #         data_and_ranges[0:objective_function_data_item_cnt]
-    #     )
+    logger.info("Feature selection in progress...")
+    objective_function_cache = {}
+    def objective_function(permutation):
+        my_data_and_ranges = list(
+            data_and_ranges[0:objective_function_data_item_cnt]
+        )
             
-    #     my_data_and_ranges = (
-    #         my_data_and_ranges[0],
-    #         [my_data_and_ranges[1][i] for i in permutation]
-    #     )
+        my_data_and_ranges = (
+            my_data_and_ranges[0],
+            [my_data_and_ranges[1][i] for i in permutation]
+        )
 
-    #     if str(sorted(permutation)) in objective_function_cache:
-    #         return objective_function_cache[str(sorted(permutation))]
+        if str(sorted(permutation)) in objective_function_cache:
+            return objective_function_cache[str(sorted(permutation))]
 
-    #     def data_transformation(d):
-    #         d = [ [ d[0][i] for i in permutation ], d[1] ]
+        def data_transformation(d):
+            d = [ [ d[0][i] for i in permutation ], d[1] ]
 
-    #         return d
+            if d[1] == 'normal.':
+                d[1] = '0'
+            else:
+                d[1] = '1'
 
-    #     accuracy = get_accuracy(
-    #         my_data_and_ranges[0],
-    #         my_data_and_ranges[1], 
-    #         objective_function_data_item_cnt,
-    #         0.1,
-    #         3, 
-    #         data_transformation
-    #     )
+            return d
 
-    #     objective_function_cache[ str(sorted(permutation)) ] = accuracy
+        accuracy = get_accuracy(
+            my_data_and_ranges[0],
+            my_data_and_ranges[1], 
+            objective_function_data_item_cnt,
+            0.1,
+            3, 
+            data_transformation
+        )
 
-    #     print("Accuracy% ", accuracy)
+        objective_function_cache[ str(sorted(permutation)) ] = accuracy
 
-    #     return accuracy
+        print("Accuracy% ", accuracy)
 
-    # pga_instance.run(objective_function, init_pop_size=15, sample_size=20, generation_cnt=10)
-    # best_cols = pga_instance.get_best()
+        return accuracy
 
-    # best_cols = range( len(cols) )
+    pga_instance.run(objective_function, init_pop_size=5, sample_size=5, generation_cnt=5)
+    best_cols = pga_instance.get_best()
 
-    # logging.info("Recommended features " + str(best_cols))
+    logging.info("Recommended features " + str(best_cols))
 
-    # def best_transformation(d):
-    #     d = [[d[0][i] for i in best_cols], d[1]]
+    def best_transformation(d):
+        d = [[d[0][i] for i in best_cols], d[1]]
 
-    #     return d
+        if d[1] == 'normal.':
+            d[1] = '0'
+        else:
+            d[1] = '1'
 
-    # data_and_ranges = ( data_and_ranges[0],  [data_and_ranges[1][i] for i in best_cols] )
+        return d
 
-    # logging.info("Classifying dataset " + str(file_name) +  " with " + str(data_items_cnt) + " items...")
-    # acc = get_accuracy(
-    #     data_and_ranges[0],
-    #     data_and_ranges[1],
-    #     data_items_cnt, 
-    #     validation_data_perc, 
-    #     label_cnt,
-    #     best_transformation
-    # )
+    data_and_ranges = ( data_and_ranges[0],  [data_and_ranges[1][i] for i in best_cols] )
+
+    logging.info("Classifying dataset " + str(file_name) +  " with " + str(data_items_cnt) + " items...")
+    acc = get_accuracy(
+        data,
+        ranges,
+        data_items_cnt, 
+        validation_data_perc, 
+        label_cnt,
+        best_transformation
+    )
     
-    # logging.info("Accuracy% " + str(acc))
+    logging.info("Accuracy% " + str(acc))
