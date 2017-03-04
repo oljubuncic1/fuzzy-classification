@@ -5,13 +5,14 @@ import random
 
 
 class DataProperties:
-    def __init__(self, file_name, attribute_cols, class_col, row_cnt, filter_fun = None, delimiter_char = ','):
+    def __init__(self, file_name, attribute_cols, class_col, row_cnt, data_n, filter_fun = None, delimiter_char = ','):
         self.file_name = file_name
         self.attribute_cols = attribute_cols
         self.class_col = class_col
         self.row_cnt = row_cnt
         self.delimiter_char = delimiter_char
         self.filter_fun = filter_fun
+        self.data_n = data_n
 
 class DataLoader:
     def __init__(self, data_properties):
@@ -69,6 +70,8 @@ class DataLoader:
         if(shuffle):
             self.logger.info("Shuffling data...")
             random.shuffle(self.data)
+
+        self.data = self.data[:self.data_properties.data_n]
     
     def get_data(self):
         return self.data

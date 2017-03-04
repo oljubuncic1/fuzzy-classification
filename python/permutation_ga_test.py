@@ -7,7 +7,7 @@ class GA_Test(Test):
     
     def test_not_run_exception(self):
         try:
-            pga_instance = pga.PermuatationGA()
+            pga_instance = pga.FeatureSelectionGA()
             pga_instance.get_best()
         except Exception as ex:
             self.should_eq(
@@ -17,7 +17,7 @@ class GA_Test(Test):
             )
 
     def test_init_pop(self):
-        pga_instance = pga.PermuatationGA()
+        pga_instance = pga.FeatureSelectionGA()
         values = range(10)
         init_pop_size = 2
         sample_size = 5
@@ -50,7 +50,7 @@ class GA_Test(Test):
             )
 
     def test_crossover(self):
-        pga_instance = pga.PermuatationGA()
+        pga_instance = pga.FeatureSelectionGA()
         values = range(10)
         init_pop_size = 5
         sample_size = 2

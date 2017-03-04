@@ -2,7 +2,7 @@ import logging
 import data_loader as dl
 import fast_fuzzy_classifier as ffc
 import chi_fuzzy_classifier as cfc
-import permutation_ga as pga
+import feature_selection_ga as fsga
 
 
 
@@ -21,10 +21,11 @@ def poker_data_properties():
     cols = range(10)
     class_col = 10
 
-    row_cnt = 1000
+    row_n = 1000000
+    data_n = 100000
     filter_fun = lambda x: x[1] in ['1', '2']
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, filter_fun)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_n, data_n, filter_fun)
 
     return data_properties
 
@@ -34,8 +35,9 @@ def kddcup_data_properties():
         30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
     class_col = 41
     row_cnt = 1000
+    data_n = 1000
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n)
 
     return data_properties
 
@@ -45,14 +47,15 @@ def covtype_data_properties():
     class_col = 54
 
     row_cnt = 1000
+    data_n = 1000
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n)
 
     return data_properties
 
 def main():
     verification_data_perc = 0.1
-    objective_function_data_perc = 0.01
+    objective_function_data_perc = 0.5
 
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
@@ -65,14 +68,18 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    def pga_objective_function(features):
+    def fs_objective_function(features):
+        if len(features) == 0:
+            return 0
+        
         fs_n = int( objective_function_data_perc * len(data) )
         fs_data = data[0:fs_n]
 
         fs_data = [ [ [d[0][i] for i in features], d[1] ] for d in fs_data ]
         fs_ranges = [ ranges[i] for i in features ]
-        
+
         fs_verification_n = int( verification_data_perc * len(fs_data) )
+        print(fs_verification_n)
         fs_training_data = fs_data[:-fs_verification_n]
         fs_verification_data = fs_data[-fs_verification_n:]
 
@@ -83,12 +90,14 @@ def main():
             clf = cfc.ChiFuzzyClassifier(fs_training_data, fs_ranges)
         
         clf.fit()
-        acc = clf.evaluate(fs_verification_data)
+        acc = clf.evaluate(fs_verification_data) 
+        print("Accuracy " + str(features) + " = " + str(acc) )
+        acc /= ( len(features)  ** 0.5 )
 
         return acc
 
-    pga_instance = pga.PermuatationGA(range(len(ranges)))
-    pga_instance.run(pga_objective_function)
+    pga_instance = fsga.FeatureSelectionGA(len(ranges), fs_objective_function)
+    pga_instance.run()
     print(pga_instance.get_best())
 
 if __name__ == "__main__":
