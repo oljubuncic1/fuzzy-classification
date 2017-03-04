@@ -1,6 +1,7 @@
 import logging
 import data_loader as dl
 import fast_fuzzy_classifier as ffc
+import chi_fuzzy_classifier as cfc
 import permutation_ga as pga
 
 
@@ -52,3 +53,7 @@ if __name__ == "__main__":
     ffc_instance = ffc.FastFuzzyClassifier(data, ranges)
     ffc_instance.fit()
     print( ffc_instance.evaluate(data[0:50]) )
+
+    cfc_instance = cfc.ChiFuzzyClassifier(data, ranges)
+    cfc_instance.fit()
+    print(cfc_instance.evaluate(data[0:50]))
