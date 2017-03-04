@@ -1,14 +1,15 @@
 from classifier import Classifier
 from dummy_logger import DummyLogger
 from operator import mul
-from functools import partial, reduce
+from functools import reduce
 import random
 from multiprocessing import Pool
+import math_functions as mf
 
 
 
 class FastFuzzyClassifier(Classifier):
-    def __init__(self, data, ranges, label_cnt = 3, thread_n = 4):
+    def __init__(self, data, ranges, label_cnt = 3, thread_n = 1):
         self.data = data
         self.ranges = ranges
         self.label_cnt = label_cnt
@@ -18,28 +19,6 @@ class FastFuzzyClassifier(Classifier):
     def set_logger(self, logger):
         self.logger = logger
 
-    def triangle(self, center, width, name, x):
-        r = width / 2
-        k = 1 / r
-        
-        left = center - r
-        right = center + r
-
-        if x == 'name':
-            return name
-        else:
-            x = float(x)
-
-            if left <= x <= center:
-                return k * (x - left) + 0
-            elif center <= x <= right:
-                return -k * (x - center) + 1
-            else:
-                return 0
-
-    def triangular(self, center, width, name='x'):
-        return partial(self.triangle, center, width, name)
-
     def __labels(self, rng):
         L = rng[1] - rng[0]
         w = 2 * L / (self.label_cnt - 1)
@@ -48,7 +27,7 @@ class FastFuzzyClassifier(Classifier):
             w = 1 # hacky, because division by zero
 
         return (
-            [self.triangular( rng[0] + i * w / 2.0, w, str(i) ) for i in range(self.label_cnt)]
+            [mf.triangular( rng[0] + i * w / 2.0, w, str(i) ) for i in range(self.label_cnt)]
         )
 
     def __generate_db(self):

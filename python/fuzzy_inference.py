@@ -8,7 +8,7 @@ import permutation_ga as pga
 logger = logging.getLogger()
 
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter("\033[92m%(asctime)s %(levelname)s\033[0m\t%(message)s")
 ch.setFormatter(formatter)
 logger.handlers = []
@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
-    data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
 
     data = data_loader_instance.get_data()
