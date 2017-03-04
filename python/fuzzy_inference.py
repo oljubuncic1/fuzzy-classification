@@ -51,6 +51,9 @@ def covtype_data_properties():
     return data_properties
 
 def main():
+    verification_data_perc = 0.1
+    objective_function_data_perc = 0.01
+
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.load(shuffle=True)
@@ -58,18 +61,35 @@ def main():
     data = data_loader_instance.get_data()
     ranges = data_loader_instance.get_ranges()
     
-    verification_data_perc = 0.1
     verification_data_n = int(verification_data_perc * len(data))
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    ffc_instance = ffc.FastFuzzyClassifier(training_data, ranges)
-    ffc_instance.fit()
-    ffc_acc = ffc_instance.evaluate(verification_data)
+    def pga_objective_function(features):
+        fs_n = int( objective_function_data_perc * len(data) )
+        fs_data = data[0:fs_n]
 
-    cfc_instance = cfc.ChiFuzzyClassifier(data, ranges)
-    cfc_instance.fit()
-    cfc_acc = cfc_instance.evaluate(verification_data)
+        fs_data = [ [ [d[0][i] for i in features], d[1] ] for d in fs_data ]
+        fs_ranges = [ ranges[i] for i in features ]
+        
+        fs_verification_n = int( verification_data_perc * len(fs_data) )
+        fs_training_data = fs_data[:-fs_verification_n]
+        fs_verification_data = fs_data[-fs_verification_n:]
+
+        clf = None
+        if len(features) <= 10:
+            clf = ffc.FastFuzzyClassifier(fs_training_data, fs_ranges)
+        elif len(features) > 10:
+            clf = cfc.ChiFuzzyClassifier(fs_training_data, fs_ranges)
+        
+        clf.fit()
+        acc = clf.evaluate(fs_verification_data)
+
+        return acc
+
+    pga_instance = pga.PermuatationGA(range(len(ranges)))
+    pga_instance.run(pga_objective_function)
+    print(pga_instance.get_best())
 
 if __name__ == "__main__":
     set_logger()
