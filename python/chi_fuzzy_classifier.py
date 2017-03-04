@@ -1,8 +1,6 @@
 from operator import mul
 from functools import reduce
-import random
 from collections import defaultdict
-from functools import partial
 import math
 import ann
 from itertools import product
@@ -24,7 +22,7 @@ class ChiFuzzyClassifier(Classifier):
     def set_logger(logger):
         self.logger = logger
 
-    def labels(self, rng):
+    def __labels(self, rng):
         L = rng[1] - rng[0]
         w = L / (self.label_cnt - 2)
 
@@ -35,10 +33,10 @@ class ChiFuzzyClassifier(Classifier):
             [mf.triangular( rng[0] + i * w / 2.0, w, str(i) ) for i in range(self.label_cnt)]
         )
 
-    def generate_db(self):
-        self.db = [self.labels(r) for r in self.ranges]
+    def __generate_db(self):
+        self.db = [self.__labels(r) for r in self.ranges]
 
-    def matching_degree(self, example, x):
+    def __matching_degree(self, example, x):
         l = [  x[0][i](float(example[i])) for i in range(len(example)) ]
         return min(l)
         
@@ -54,16 +52,16 @@ class ChiFuzzyClassifier(Classifier):
             max_label = max(self.db[i], key=lambda x: x(data[i]))
             rule[0].append( max_label )
 
-        rule[2] = self.matching_degree(data, rule)
+        rule[2] = self.__matching_degree(data, rule)
         
         return rule
 
-    def weight(self, rule):
+    def __weight(self, rule):
         examples_in_class = [x for x in self.data if x[1] == rule[1]]
         examples_out_of_class = [x for x in self.data if x[1] != rule[1]]
 
-        in_class_md = sum(self.matching_degree(e[0], rule) for e in examples_in_class)
-        out_of_class_md = sum(self.matching_degree(e[0], rule) for e in examples_out_of_class)
+        in_class_md = sum(self.__matching_degree(e[0], rule) for e in examples_in_class)
+        out_of_class_md = sum(self.__matching_degree(e[0], rule) for e in examples_out_of_class)
 
         if in_class_md == 0 and out_of_class_md == 0:
             return 0
@@ -72,15 +70,15 @@ class ChiFuzzyClassifier(Classifier):
 
         return weight
 
-    def update_weights(self):
+    def __update_weights(self):
         for i in range( len(self.rb) ):
-            self.rb[i][2] = self.weight(self.rb[i])
+            self.rb[i][2] = self.__weight(self.rb[i])
 
     def update_weight(self, r):
-        r[2] = self.weight(r)
+        r[2] = self.__weight(r)
         return r
 
-    def rule_desc(self, rule):
+    def __rule_desc(self, rule):
         rule_desc_str = ""
 
         for f in rule[0]:
@@ -89,10 +87,10 @@ class ChiFuzzyClassifier(Classifier):
 
         return rule_desc_str
 
-    def remove_duplicates(self):
+    def __remove_duplicates(self):
         rule_map = defaultdict(list)
         for r in self.rb:
-            rule_map[self.rule_desc(r)].append(r)
+            rule_map[self.__rule_desc(r)].append(r)
 
         best_rules = []
         
@@ -101,7 +99,7 @@ class ChiFuzzyClassifier(Classifier):
 
         self.rb = best_rules
 
-    def generate_rb(self):
+    def __generate_rb(self):
         self.rb = None
         with Pool(processes=self.thread_n) as pool:
             self.logger.debug("Creating rules...")
@@ -111,14 +109,14 @@ class ChiFuzzyClassifier(Classifier):
             self.rb = pool.map(self.update_weight, [ r for r in self.rb ] )
 
         self.logger.debug("Removing duplicates...")
-        self.remove_duplicates()
+        self.__remove_duplicates()
 
     def fit(self):
-        self.generate_db()
-        self.generate_rb()
+        self.__generate_db()
+        self.__generate_rb()
 
     def predict(self, example):
-        max_rule = max(self.rb, key=lambda x: self.matching_degree(example, x) * x[2])
+        max_rule = max(self.rb, key=lambda x: self.__matching_degree(example, x) * x[2])
         
         return max_rule[1]
 
