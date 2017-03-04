@@ -1,11 +1,7 @@
 import random
+from dummy_logger import DummyLogger
 
 
-
-logger = None
-def inject_logger(next_logger):
-    global logger
-    logger = next_logger
 
 class PermuatationGA():
     
@@ -15,6 +11,10 @@ class PermuatationGA():
         self.default_init_pop_size = 10
         self.values = values
         self.mutation_probability = 0.05
+        self.logger = DummyLogger()
+    
+    def set_logger(self, logger):
+        self.logger = copy(logger)
 
     def init_pop(self, pop_size, sample_size):
         if pop_size <= 0 or sample_size <= 0:
@@ -44,7 +44,7 @@ class PermuatationGA():
         
         return selection
 
-    def crossover_single(self, first_parent, second_parent, objective_function, mplets_cnt=5):
+    def crossover_single(self, first_parent, second_parent, objective_function, mplets_cnt=3):
         children = []
 
         for i in range(mplets_cnt):
@@ -101,15 +101,13 @@ class PermuatationGA():
         pop = self.init_pop(init_pop_size, sample_size)
 
         for i in range(generation_cnt):
-            logger.info("GA generation " + str(i))
+            self.logger.info("GA generation " + str(i))
 
-            logger.debug("Crossing over...")
+            self.logger.debug("Crossing over...")
             pop = self.crossover(pop, crossover_percent, objective_function)
 
             pop = sorted(pop, key=lambda x: objective_function(x), reverse=True)
             
-            print("Best accuracy " + str( objective_function(pop[0]) ) + " in " + str(pop[0]) )
-
             pop = self.mutate(pop[1:])
             pop = pop[:init_pop_size]
             
