@@ -1,5 +1,6 @@
 import copy
 from dummy_logger import DummyLogger
+import random
 
 
 
@@ -21,7 +22,7 @@ class DataLoader:
         self.logger = DummyLogger()
 
     def set_logger(self, logger):
-        self.logger = copy.copy(logger)
+        self.logger = logger
 
     def example_from_line(self, line):
         parts = line.split(self.data_properties.delimiter_char)
@@ -43,7 +44,11 @@ class DataLoader:
                 for x in lines
             ]
 
-            self.data = [ d for d in data if self.data_properties.filter_fun(d) ]
+            if self.data_properties.filter_fun != None:
+                self.data = [ d for d in data if self.data_properties.filter_fun(d) ]
+            else:
+                self.data = data
+        
         self.logger.info("Data loaded")
 
     def load_ranges(self):
@@ -57,9 +62,13 @@ class DataLoader:
 
         self.ranges = ranges
 
-    def load(self):
+    def load(self, shuffle):
         self.load_csv_data()
         self.load_ranges()
+
+        if(shuffle):
+            self.logger.info("Shuffling data...")
+            random.shuffle(self.data)
     
     def get_data(self):
         return self.data
