@@ -21,12 +21,7 @@ def poker_data_properties():
     cols = range(10)
     class_col = 10
 
-    row_cnt = 100
-    data_items_cnt = 500000
-    delimiter_char = ','
-    validation_data_perc = 0.1
-    label_cnt = 3
-    objective_function_data_item_cnt = 10000
+    row_cnt = 1000
     filter_fun = lambda x: x[1] in ['1', '2']
 
     data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, filter_fun)
