@@ -8,6 +8,7 @@ from multiprocessing import Pool
 import math_functions as mf
 from classifier import Classifier
 from dummy_logger import DummyLogger
+import logging
 
 
 

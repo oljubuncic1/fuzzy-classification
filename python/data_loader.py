@@ -1,6 +1,7 @@
 import copy
 from dummy_logger import DummyLogger
 import random
+import logging
 
 
 
@@ -23,6 +24,7 @@ class DataLoader:
         self.logger = DummyLogger()
 
     def set_logger(self, logger):
+        logging.info("Setting logger...")
         self.logger = logger
 
     def example_from_line(self, line):

@@ -55,10 +55,11 @@ def covtype_data_properties():
 
 def main():
     verification_data_perc = 0.1
-    objective_function_data_perc = 0.5
+    objective_function_data_perc = 0.1
 
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
+    data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
 
     data = data_loader_instance.get_data()
@@ -79,7 +80,6 @@ def main():
         fs_ranges = [ ranges[i] for i in features ]
 
         fs_verification_n = int( verification_data_perc * len(fs_data) )
-        print(fs_verification_n)
         fs_training_data = fs_data[:-fs_verification_n]
         fs_verification_data = fs_data[-fs_verification_n:]
 
@@ -89,16 +89,28 @@ def main():
         elif len(features) > 10:
             clf = cfc.ChiFuzzyClassifier(fs_training_data, fs_ranges)
         
+        clf.set_logger(logger)
         clf.fit()
         acc = clf.evaluate(fs_verification_data) 
-        print("Accuracy " + str(features) + " = " + str(acc) )
-        acc /= ( len(features)  ** 0.5 )
+        acc = acc / ( len(features)  ** 0.5 )
 
         return acc
 
     pga_instance = fsga.FeatureSelectionGA(len(ranges), fs_objective_function)
+    pga_instance.set_logger(logger)
     pga_instance.run()
-    print(pga_instance.get_best())
+    best_features = pga_instance.get_best()
+
+    training_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in data ]
+    verification_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in data ]
+    ranges = [ ranges[i] for i in best_features ]
+
+    clf = ffc.FastFuzzyClassifier(training_data, ranges)
+    clf.set_logger(logger)
+    clf.fit()
+    acc = clf.evaluate(verification_data)
+
+    print("Accuracy% " + str(acc))
 
 if __name__ == "__main__":
     set_logger()

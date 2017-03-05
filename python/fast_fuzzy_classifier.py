@@ -5,11 +5,12 @@ from functools import reduce
 import random
 from multiprocessing import Pool
 import math_functions as mf
+import logging
 
 
 
 class FastFuzzyClassifier(Classifier):
-    def __init__(self, data, ranges, label_cnt = 3, thread_n = 1):
+    def __init__(self, data, ranges, label_cnt = 3, thread_n = 4):
         self.data = data
         self.ranges = ranges
         self.label_cnt = label_cnt
