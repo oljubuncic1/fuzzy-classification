@@ -23,7 +23,8 @@ class FastFuzzyClassifier(Classifier):
     def __getstate__(self):
         """ This is called before pickling. """
         state = self.__dict__.copy()
-        del state['logger']
+        if 'logger' in state:
+            del state['logger']
         return state
 
     def __setstate__(self, state):
@@ -86,6 +87,9 @@ class FastFuzzyClassifier(Classifier):
             second -= 1
 
         return str(first), str(second)
+
+    def get_rb(self):
+        return self.rb
 
     def __generate_possible_rules(self, example, lvl = 0, curr = ""):
         # example is just list of atttributes here
@@ -190,7 +194,8 @@ class FastFuzzyClassifier(Classifier):
         total = 0
         for i in range(len(verification_data)):
             verification = verification_data[i]
-            if classifications[i] == str(verification[1]):
+            classification = max(classifications[i])
+            if classifications[i][classification] != 0.0 and classification == str(verification[1]):
                 total += 1
 
         accuracy = total / len(verification_data)

@@ -66,15 +66,26 @@ def random_with_replacement(data, sample_n):
 
     return [list(s) for s in sample]
 
-training_data = None
-ranges = None
-
 def get_classifier(training_data, ranges):
-    logger.debug("Training classifier...")
-    clf = ffc.FastFuzzyClassifier(random_with_replacement( training_data, int(0.6 * len(training_data)) ), ranges)
+    data_sample = random_with_replacement( training_data, 500 )
+    clf = ffc.FastFuzzyClassifier(data_sample, ranges)
     clf.fit()
 
     return clf
+
+def get_accuracy(t, classifiers):
+    avg = { "1": 0, "2" : 0 }
+    for clf in classifiers:
+        prediction = clf.predict(t[0])
+        # logger.debug("\t" + str(prediction))
+        avg["1"] += prediction["1"]
+        avg["2"] += prediction["2"]
+
+    winner = max(avg)
+    if avg[winner] != 0.0 and winner == t[1]:
+        return 1
+    else:
+        return 0
 
 def main():
     verification_data_perc = 0.1
@@ -91,30 +102,24 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    # best_features = range(10)
+    for classifier_n in [ int(2 ** i) for i in [6] ]:
+        logger.debug("Using " + str(classifier_n) + " classifiers")
+        classifiers = []
+        with Pool(processes=4) as pool:
+            classifiers = pool.starmap( get_classifier, [ (data, ranges) for i in range(classifier_n) ] )
 
-    # training_data = [  [ d[0][i] for i in best_features ], d[1] ] for d in training_data ]
-    # verification_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in verification_data ]
-    # ranges = [ ranges[i] for i in best_features ]
+        logger.debug("\tClassifying...")
 
-    classifier_n = 8#int( len(data) ** 0.5 )
-    classifiers = []
-    with Pool(processes=4) as pool:
-        classifiers = pool.starmap( get_classifier, [ (data, ranges) for i in range(classifier_n) ] )
+        with Pool(processes=4) as pool:
+            acc_list = pool.starmap( get_accuracy, [ (t, classifiers) for t in verification_data ] )
 
-    for t in training_data:
-        logger.debug(str(t))
-        avg = { "1": 0, "2" : 0 }
-        for clf in classifiers:
-            prediction = clf.predict(t[0])
-            logger.debug("\t" + str(prediction))
-            avg["1"] += prediction["1"]
-            avg["2"] += prediction["2"]
-        
-        logger.debug("Average: " + str(avg))
-        logger.debug("Winner: " + max(avg))
-        input("Press enter to continue... ")
+        acc = len([a for a in acc_list if a == 1]) / len(verification_data)
+        logger.debug( "\tAccuracy% " + str(acc) )
 
+    logger.debug("Classifying with full data...")
+    clf = ffc.FastFuzzyClassifier(training_data, ranges)
+    clf.fit()
+    logger.debug(clf.evaluate(verification_data))
 
 if __name__ == "__main__":
     set_logger()
