@@ -4,6 +4,8 @@ import fast_fuzzy_classifier as ffc
 import chi_fuzzy_classifier as cfc
 import feature_selection_ga as fsga
 
+import random
+from multiprocessing import Pool
 
 
 logger = logging.getLogger()
@@ -21,8 +23,8 @@ def poker_data_properties():
     cols = range(10)
     class_col = 10
 
-    row_n = 1000000
-    data_n = 1000000
+    row_n = int( 10 ** 6 )
+    data_n = int( 10 ** 4 )
     def trans_f(x):
         if x[1] != '1':
             x[1] = '2'
@@ -56,9 +58,26 @@ def covtype_data_properties():
 
     return data_properties
 
+def random_with_replacement(data, sample_n):
+    sample = set()
+    for i in range(sample_n):
+        ind = int(random.random() * len(data))
+        sample.add( data[ind] )
+
+    return [list(s) for s in sample]
+
+training_data = None
+ranges = None
+
+def get_classifier(training_data, ranges):
+    logger.debug("Training classifier...")
+    clf = ffc.FastFuzzyClassifier(random_with_replacement( training_data, int(0.6 * len(training_data)) ), ranges)
+    clf.fit()
+
+    return clf
+
 def main():
     verification_data_perc = 0.1
-    objective_function_data_perc = 0.005
 
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
@@ -72,46 +91,30 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    def fs_objective_function(features):
-        if len(features) == 0:
-            return 0
+    # best_features = range(10)
+
+    # training_data = [  [ d[0][i] for i in best_features ], d[1] ] for d in training_data ]
+    # verification_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in verification_data ]
+    # ranges = [ ranges[i] for i in best_features ]
+
+    classifier_n = 8#int( len(data) ** 0.5 )
+    classifiers = []
+    with Pool(processes=4) as pool:
+        classifiers = pool.starmap( get_classifier, [ (data, ranges) for i in range(classifier_n) ] )
+
+    for t in training_data:
+        logger.debug(str(t))
+        avg = { "1": 0, "2" : 0 }
+        for clf in classifiers:
+            prediction = clf.predict(t[0])
+            logger.debug("\t" + str(prediction))
+            avg["1"] += prediction["1"]
+            avg["2"] += prediction["2"]
         
-        fs_n = int( objective_function_data_perc * len(data) )
-        fs_data = data[0:fs_n]
+        logger.debug("Average: " + str(avg))
+        logger.debug("Winner: " + max(avg))
+        input("Press enter to continue... ")
 
-        fs_data = [ [ [d[0][i] for i in features], d[1] ] for d in fs_data ]
-        fs_ranges = [ ranges[i] for i in features ]
-
-        fs_verification_n = int( verification_data_perc * len(fs_data) )
-        fs_training_data = fs_data[:-fs_verification_n]
-        fs_verification_data = fs_data[-fs_verification_n:]
-
-        clf = None
-        if len(features) <= 10:
-            clf = ffc.FastFuzzyClassifier(fs_training_data, fs_ranges)
-        elif len(features) > 10:
-            clf = cfc.ChiFuzzyClassifier(fs_training_data, fs_ranges)
-        
-        clf.fit()
-        acc = clf.evaluate(fs_verification_data) 
-
-        return acc
-
-    pga_instance = fsga.FeatureSelectionGA(len(ranges), fs_objective_function, init_pop_n=8, generation_n=30)
-    pga_instance.set_logger(logger)
-    pga_instance.run()
-    best_features = pga_instance.get_best()
-
-    training_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in data ]
-    verification_data = [ [ [ d[0][i] for i in best_features ], d[1] ] for d in data ]
-    ranges = [ ranges[i] for i in best_features ]
-
-    clf = ffc.FastFuzzyClassifier(training_data, ranges)
-    clf.set_logger(logger)
-    clf.fit()
-    acc = clf.evaluate(verification_data)
-
-    print("Accuracy% " + str(acc))
 
 if __name__ == "__main__":
     set_logger()

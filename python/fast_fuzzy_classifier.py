@@ -10,12 +10,15 @@ import logging
 
 
 class FastFuzzyClassifier(Classifier):
-    def __init__(self, data, ranges, label_cnt = 3, thread_n = 4):
+    def __init__(self, data, ranges, label_cnt=3, thread_n=4, positive_class='1', negative_class='2'):
         self.data = data
         self.ranges = ranges
         self.label_cnt = label_cnt
         self.logger = DummyLogger()
         self.thread_n = thread_n
+
+        self.positive_class = positive_class
+        self.negative_class = negative_class
     
     def __getstate__(self):
         """ This is called before pickling. """
@@ -114,18 +117,18 @@ class FastFuzzyClassifier(Classifier):
         total_sum = 0
         for e in examples:
             curr_md = self.__matching_degree(e[0], rule)
-            if e[1] == '1':
+            if e[1] == self.positive_class:
                 positive_sum += curr_md
-            elif e[1] == '0':
+            elif e[1] == self.negative_class:
                 negative_sum += curr_md
             total_sum += curr_md
 
         coefficient = abs(positive_sum - negative_sum) / total_sum
 
         if positive_sum > negative_sum:
-            classification = '1'
+            classification = self.positive_class
         else:
-            classification = '0'
+            classification = self.negative_class
 
         return [coefficient, classification]
 
@@ -169,18 +172,13 @@ class FastFuzzyClassifier(Classifier):
         # example is just list of atttributes here
         possible_rules = self.__generate_possible_rules(example)
         
-        max_degree = 0
-        max_classification = None
+        classification = { self.positive_class : 0.0, self.negative_class : 0.0 }
         for r in possible_rules:
-            if r not in self.rb:
-                continue
-            curr_md = self.__matching_degree(example, self.rb[r][0]) * self.rb[r][2]
-            if curr_md > max_degree:
-                max_degree = curr_md
-                float_values = [ float(v) for v in example ]
-                max_classification = self.rb[r][3]
+            if r in self.rb:
+                curr_md = self.__matching_degree(example, self.rb[r][0]) * self.rb[r][2]
+                classification[ self.rb[r][3] ] += curr_md
 
-        return max_classification
+        return classification
 
     def evaluate(self, verification_data):
         self.logger.info("Calculating accuracy...")

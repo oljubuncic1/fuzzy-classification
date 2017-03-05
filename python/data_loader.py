@@ -57,6 +57,8 @@ class DataLoader:
             if self.data_properties.filter_fun != None:
                 self.data = [ d for d in self.data if self.data_properties.filter_fun(d) ]
         
+        self.data = [ ( tuple(d[0]), d[1] ) for d in self.data ]
+
         self.logger.info("Data loaded")
 
     def load_ranges(self):
@@ -71,6 +73,8 @@ class DataLoader:
         self.ranges = ranges
 
     def load(self, shuffle):
+        if not shuffle:
+            self.data_properties.row_cnt = self.data_properties.data_n
         self.load_csv_data()
         self.load_ranges()
 
