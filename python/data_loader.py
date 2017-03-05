@@ -6,13 +6,14 @@ import logging
 
 
 class DataProperties:
-    def __init__(self, file_name, attribute_cols, class_col, row_cnt, data_n, filter_fun = None, delimiter_char = ','):
+    def __init__(self, file_name, attribute_cols, class_col, row_cnt, data_n, filter_fun = None, transformation_fun = None, delimiter_char = ','):
         self.file_name = file_name
         self.attribute_cols = attribute_cols
         self.class_col = class_col
         self.row_cnt = row_cnt
         self.delimiter_char = delimiter_char
         self.filter_fun = filter_fun
+        self.transformation_fun = transformation_fun
         self.data_n = data_n
 
 class DataLoader:
@@ -47,10 +48,14 @@ class DataLoader:
                 for x in lines
             ]
 
+            self.data = data
+
+            if self.data_properties.transformation_fun != None:
+                f = self.data_properties.transformation_fun
+                self.data = [ f(d) for d in self.data ]
+
             if self.data_properties.filter_fun != None:
-                self.data = [ d for d in data if self.data_properties.filter_fun(d) ]
-            else:
-                self.data = data
+                self.data = [ d for d in self.data if self.data_properties.filter_fun(d) ]
         
         self.logger.info("Data loaded")
 

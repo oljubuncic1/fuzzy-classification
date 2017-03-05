@@ -24,7 +24,7 @@ class FeatureSelectionGA():
     def __generate_random_individual(self):
         individual = []
         for i in range(self.feature_n):
-            if random.random() < 0.5:
+            if random.random() < 0.7:
                 individual.append(1)
             else:
                 individual.append(0)
@@ -56,7 +56,14 @@ class FeatureSelectionGA():
         return selection
 
     def crossover_single(self, first_parent, second_parent):
-        child = [ first_parent[i] ^ second_parent[i] for i in range(len(first_parent)) ]
+        child = []
+    
+        for i in range( len(first_parent) ):
+            if random.random() < 0.5:
+                child.append(first_parent[i])
+            else:
+                child.append(second_parent[i])
+
         return child
 
     def crossover(self):
@@ -68,9 +75,11 @@ class FeatureSelectionGA():
             self.pop.append(child)
 
     def mutate_single(self, p):
-        for i in range(len(p)):
-            if random.random() < self.mutation_probability:
-                p[i] = 1 - p[i]
+        if random.random() < self.mutation_probability:
+            i = int( random.random() * len(p) )
+            if i == len(p):
+                i = len(p) - 1
+            p[i] = 1 - p[i]
 
         return p
 
@@ -100,6 +109,17 @@ class FeatureSelectionGA():
             
             self.mutate()
             self.pop = self.pop[:self.init_pop_n]
+
+            self.logger.debug(self.pop)
+
+            curr_best = self.pop[0]
+            curr_best_acc = self.objective_function(curr_best)
+            self.logger.debug("Best" + str(curr_best) + " acc " + str(curr_best_acc))
+
+            if i > 10:
+                ans = input("Would you like to continue GA? (y/n) ")
+                if ans == "n":
+                    break
 
         self.best = self.pop[0]
         self.is_run = True

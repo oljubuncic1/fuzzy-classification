@@ -16,6 +16,17 @@ class FastFuzzyClassifier(Classifier):
         self.label_cnt = label_cnt
         self.logger = DummyLogger()
         self.thread_n = thread_n
+    
+    def __getstate__(self):
+        """ This is called before pickling. """
+        state = self.__dict__.copy()
+        del state['logger']
+        return state
+
+    def __setstate__(self, state):
+        """ This is called while unpickling. """
+        self.__dict__.update(state)
+
 
     def set_logger(self, logger):
         self.logger = logger

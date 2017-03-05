@@ -22,10 +22,13 @@ def poker_data_properties():
     class_col = 10
 
     row_n = 1000000
-    data_n = 100000
-    filter_fun = lambda x: x[1] in ['1', '2']
+    data_n = 1000000
+    def trans_f(x):
+        if x[1] != '1':
+            x[1] = '2'
+        return x
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_n, data_n, filter_fun)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_n, data_n, transformation_fun=trans_f)
 
     return data_properties
 
@@ -55,7 +58,7 @@ def covtype_data_properties():
 
 def main():
     verification_data_perc = 0.1
-    objective_function_data_perc = 0.1
+    objective_function_data_perc = 0.005
 
     data_properties = poker_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
@@ -89,14 +92,12 @@ def main():
         elif len(features) > 10:
             clf = cfc.ChiFuzzyClassifier(fs_training_data, fs_ranges)
         
-        clf.set_logger(logger)
         clf.fit()
         acc = clf.evaluate(fs_verification_data) 
-        acc = acc / ( len(features)  ** 0.5 )
 
         return acc
 
-    pga_instance = fsga.FeatureSelectionGA(len(ranges), fs_objective_function)
+    pga_instance = fsga.FeatureSelectionGA(len(ranges), fs_objective_function, init_pop_n=8, generation_n=30)
     pga_instance.set_logger(logger)
     pga_instance.run()
     best_features = pga_instance.get_best()
