@@ -60,11 +60,11 @@ def covtype_data_properties():
 
     return data_properties
 
-def random_features(feature_n, sample_n):
+def random_features(total_feature_n, sample_feature_n):
     rand_features = []
     
-    features = list( range(feature_n) )
-    for i in range(sample_n):
+    features = list( range(total_feature_n) )
+    for i in range(sample_feature_n):
         rand_i = int( random.random() * len(features) )
         rand_features.append( features[rand_i] )
 
@@ -79,9 +79,11 @@ def extract_features(data, ranges, features):
 
     return extracted_data, extracted_ranges
 
-def random_classifier_and_features(training_data, ranges, feature_n):
-    features = random_features(len(training_data[0][0]), feature_n)
-    data_sample, ranges_sample = extract_features(training_data, ranges, features)
+def random_classifier_and_features(training_data, ranges, sample_feature_n):
+    total_feature_n = len(training_data[0][0])
+    features = random_features(total_feature_n, sample_feature_n)
+    data_subset = training_data
+    data_sample, ranges_sample = extract_features(data_subset, ranges, features)
     clf = ffc.FastFuzzyClassifier(data_sample, ranges_sample)
     clf.fit()
 
@@ -95,7 +97,6 @@ def get_accuracy(t, classifiers):
         avg["2"] += prediction["2"]
 
     winner = max(avg)
-    print(avg[winner])
     if avg[winner] != 0.0 and winner == t[1]:
         return 1
     else:
@@ -116,10 +117,10 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    for classifier_n in [ int(2 ** i) for i in [0, 1, 2] ]:
+    for classifier_n in [ int(2 ** i) for i in [2,3] ]:
         logger.debug("Using " + str(classifier_n) + " classifiers")
         classifiers = []
-        feature_n = int( 10 )
+        feature_n = int( 15 )
         with Pool(processes=4) as pool:
             parameters =  [ (training_data, ranges, feature_n) for i in range(classifier_n) ]
             classifiers = pool.starmap( random_classifier_and_features, parameters)
