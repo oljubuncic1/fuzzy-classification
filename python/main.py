@@ -3,6 +3,7 @@ import fuzzy_classification.util.data_loader as dl
 import fuzzy_classification.classifiers.fast_fuzzy_classifier as ffc
 import fuzzy_classification.classifiers.chi_fuzzy_classifier as cfc
 import fuzzy_classification.feature_selection.feature_selection_ga as fsga
+from fuzzy_classification.classifiers.RandomFuzzyForest import RandomFuzzyForest
 
 import random
 from multiprocessing import Pool
@@ -24,8 +25,8 @@ def poker_data_properties():
     cols = range(10)
     class_col = 10
 
-    row_n = int( 10 ** 6 )
-    data_n = int( 10 ** 6 )
+    row_n = int( 10 ** 3 )
+    data_n = int( 10 ** 3 )
     def trans_f(x):
         if x[1] != '1':
             x[1] = '2'
@@ -59,8 +60,8 @@ def covtype_data_properties():
     cols = range(54)
     class_col = 54
 
-    row_cnt = 580 * 10 ** 3
-    data_n = 10 ** 4
+    row_cnt = 1 * 10 ** 2
+    data_n = 10 ** 2
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
 
@@ -124,7 +125,7 @@ def get_accuracy(t, classifiers):
 def main():
     verification_data_perc = 0.1
 
-    data_properties = poker_data_properties()
+    data_properties = covtype_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
@@ -135,6 +136,12 @@ def main():
     verification_data_n = int(verification_data_perc * len(data))
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
+
+    x = [list(t[0]) for t in training_data]
+    y = [t[1] for t in training_data]
+
+    rff = RandomFuzzyForest()
+    rff.fit(x, y)
 
     # x = [list(t[0]) for t in training_data]
     # y = [t[1] for t in training_data]
@@ -149,29 +156,29 @@ def main():
 
     # return
 
-    for classifier_n in [ int(2 ** i) for i in [1, 2, 3, 4] ]:
-        logger.debug("Using " + str(classifier_n) + " classifiers")
-        classifiers = []
-        feature_n = int(5)
-        with Pool(processes=4) as pool:
-            parameters =  [ (training_data, ranges, feature_n) for i in range(classifier_n) ]
-            classifiers = pool.starmap( random_classifier_and_features, parameters)
+    # for classifier_n in [ int(2 ** i) for i in [1, 2, 3, 4] ]:
+    #     logger.debug("Using " + str(classifier_n) + " classifiers")
+    #     classifiers = []
+    #     feature_n = int(5)
+    #     with Pool(processes=4) as pool:
+    #         parameters =  [ (training_data, ranges, feature_n) for i in range(classifier_n) ]
+    #         classifiers = pool.starmap( random_classifier_and_features, parameters)
 
-        logger.debug("\tClassifying...")
+    #     logger.debug("\tClassifying...")
 
-        with Pool(processes=4) as pool:
-            acc_list = pool.starmap( get_accuracy, [ (c, classifiers) for c in verification_data ] )
+    #     with Pool(processes=4) as pool:
+    #         acc_list = pool.starmap( get_accuracy, [ (c, classifiers) for c in verification_data ] )
 
-        acc = len([a for a in acc_list if a == 1]) / len(verification_data)
-        logger.debug( "\tAccuracy " + str(acc) )
+    #     acc = len([a for a in acc_list if a == 1]) / len(verification_data)
+    #     logger.debug( "\tAccuracy " + str(acc) )
 
-    logger.debug("Class distribution")
-    for c in set( [ x[1] for x in verification_data ] ):
-        in_class_n = len( [x for x in verification_data if x[1] == c] )
-        logger.debug(
-            "\tData items with class " + c + " -> " + str( in_class_n ) + \
-            "\t percentage " + str( in_class_n / len(verification_data) )
-        )
+    # logger.debug("Class distribution")
+    # for c in set( [ x[1] for x in verification_data ] ):
+    #     in_class_n = len( [x for x in verification_data if x[1] == c] )
+    #     logger.debug(
+    #         "\tData items with class " + c + " -> " + str( in_class_n ) + \
+    #         "\t percentage " + str( in_class_n / len(verification_data) )
+    #     )
 
     # logger.debug("Classifying with full data...")
     # clf = ffc.FastFuzzyClassifier(training_data, ranges)

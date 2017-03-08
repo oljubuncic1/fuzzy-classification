@@ -1,4 +1,5 @@
 from functools import partial
+from math import log
 
 
 
@@ -23,3 +24,23 @@ def triangle(center, width, name, x):
 
 def triangular(center, width, name='x'):
     return partial(triangle, center, width, name)
+
+def entropy(y):
+    if len(set(y)) == 1:
+        return 0
+    
+    classes = {}
+
+    for d in y:
+        if d in classes:
+            classes[d] += 1
+        else:
+            classes[d] = 0
+    
+    ent = 0
+    for c in classes:
+        p = classes[c] / len(y)
+        if p != 0:
+            ent = ent - p * log(p, 2)
+    
+    return ent

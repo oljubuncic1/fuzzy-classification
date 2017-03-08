@@ -30,7 +30,6 @@ class FastFuzzyClassifier():
         """ This is called while unpickling. """
         self.__dict__.update(state)
 
-
     def set_logger(self, logger):
         self.logger = logger
 
