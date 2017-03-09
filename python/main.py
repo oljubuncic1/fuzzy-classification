@@ -7,8 +7,6 @@ from fuzzy_classification.classifiers.RandomFuzzyForest import RandomFuzzyForest
 
 import random
 from multiprocessing import Pool
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
 
 logger = logging.getLogger()
 
@@ -56,16 +54,19 @@ def kddcup_data_properties():
     return data_properties
 
 def covtype_data_properties():
-    file_name = "../data/covtype.data"
+    file_name = "/home/faruk/workspace/thesis/data/covtype.data"
     cols = range(54)
     class_col = 54
 
     row_cnt = 1 * 10 ** 2
-    data_n = 10 ** 2
+    data_n = 1 * 10 ** 2
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
+    def trans_f(x):
+        x[0] = [ float(d) for d in x[0] ]
+        return x
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n, filter_fun=filter_f)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n, filter_fun=filter_f, transformation_fun=trans_f)
 
     return data_properties
 
@@ -142,6 +143,8 @@ def main():
 
     rff = RandomFuzzyForest()
     rff.fit(x, y)
+
+    print(str(rff))
 
     # x = [list(t[0]) for t in training_data]
     # y = [t[1] for t in training_data]

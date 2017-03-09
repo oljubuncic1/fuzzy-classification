@@ -1,6 +1,7 @@
 from ..util import math_functions as mf
 from math import log
 import random
+import numpy as np
 
 
 
@@ -19,13 +20,11 @@ class Node:
 
 class RandomFuzzyForest:
 
-    def __init__(
-        self,
-        n_cores=1,
-        max_features=None,
-        positive_class="1",
-        negative_class="2"
-    ):
+    def __init__(self,
+                n_cores=1,
+                max_features=None,
+                positive_class="1",
+                negative_class="2"):
         if max_features is None:
             self.max_features = "sqrt"
         else:
@@ -45,11 +44,13 @@ class RandomFuzzyForest:
 
     def set_data(self, x, y):
         if y is None:
-            self.y = [d[1] for d in x]
-            self.x = [d[0] for d in x]
+            self.y = np.array( [d[1] for d in x] )
+            self.x = np.array( [d[0] for d in x] )
         else:
-            self.x = x
-            self.y = y
+            self.x = np.array(x)
+            self.y = np.array(y)
+
+        self.y = self.y.astype(float)
 
     def predict(self, x):
         return
@@ -57,8 +58,8 @@ class RandomFuzzyForest:
     def score(self, x, y):
         return
 
-    def generate_tree(self, x, y, features_left=None):
-        if not self.is_terminal(y):
+    def generate_tree(self, x, y, features_left=None, lvl = 0):
+        if not self.is_terminal(y, features_left):
             if features_left is None:
                 features_left = [i for i in range(len(x[0]))]
 
@@ -73,21 +74,33 @@ class RandomFuzzyForest:
 
             left_x, left_y, right_x, right_y = self.partitions(x, y, node)
 
-            node.left = self.generate_tree(left_x, left_y, features)
-            node.left = self.generate_tree(right_x, right_y, features)
+            if len(left_y) == 0:
+                node.classification = self.classification(right_y)
+            elif len(right_y) == 0:
+                node.classification = self.classification(left_y)
+            else:
+                node.left = self.generate_tree(left_x, left_y, features, lvl + 1)
+                node.left = self.generate_tree(right_x, right_y, features, lvl + 1)
 
             return node
         else:
             node = Node()
-            node.classificatin = classification(y)
+            node.classification = self.classification(y)
 
             return node
 
-    def is_terminal(self, y):
+    def is_terminal(self, y, features_left):
         entropy = mf.entropy(y)
-        threshold = 0.8 * log(len(y), 2)
+        if entropy != 0:
+            threshold = 0.8 * log(len(y), 2)
+            is_terminal_entropy = entropy >= threshold
+        else:
+            is_terminal_entropy = True
 
-        return entropy >= threshold
+        is_terminal_features = (features_left is not None and 
+            len(features_left) == 0)
+
+        return is_terminal_entropy or is_terminal_features 
 
     def classification(self, y):
         classes = {}
@@ -101,14 +114,15 @@ class RandomFuzzyForest:
         return max(classes)
 
     def partitions(self, x, y, node):
-        left_inds = [i for i in range(len(x)) if d[i][node.feature] < node.cut]
-        right_inds = [i for i in range(len(x)) if d[i][node.feature] >= node.cut]
+        print("Partitioning...")
+        left_inds = [i for i in range(len(x)) if x[i][node.feature] < node.cut]
+        right_inds = [i for i in range(len(x)) if x[i][node.feature] >= node.cut]
 
         left_x = [x[i] for i in left_inds]
         left_y = [y[i] for i in left_inds]
 
-        right_x = [x[i] for i in left_inds]
-        right_y = [y[i] for i in left_inds]
+        right_x = [x[i] for i in right_inds]
+        right_y = [y[i] for i in right_inds]
 
         return left_x, left_y, right_x, right_y
 
@@ -118,27 +132,31 @@ class RandomFuzzyForest:
             rand_ind = int(random.random() * len(features_left))
             features.add(features_left[rand_ind])
 
+        print(len(features))
+
         return list(features)
 
     def best_feature_and_cut(self, x, y, features):
-        feature_cuts = {}
+        max_gain_and_cut = (0, None)
+        max_feature = None
         for f in features:
-            feature_cuts[f] = self.max_gain_and_cut(f, x, y)
+            print("Feature ", f)
+            curr_gain_and_cut = self.max_gain_and_cut(f, x, y)
+            if curr_gain_and_cut[0] > max_gain_and_cut[0]:
+                max_gain_and_cut = curr_gain_and_cut
+                max_feature = f
 
-        max_feature = max(feature_cuts, key=lambda x: feature_cuts[x][0])
-        max_cut = feature_cuts[max_feature][1]
-
-        return max_feature, max_cut
+        return max_feature, max_gain_and_cut[1]
 
     def max_gain_and_cut(self, f, x, y):
-        def entropy_gain(f, x, y, cut):
-            ind = 0
-            while ind < len(x) and cut != x[ind][f]:
-                ind = ind + 1
+        x = x[:, f]
 
-            return mf.entropy([y[i] for i in range(len(y)) if i <= ind]) + \
-                mf.entropy([y[i] for i in range(len(y)) if i > ind])
+        arr = np.transpose( np.array([x, y]) )
+        inds = arr[:, 0].argsort()
+        arr = arr[inds]
+        
+        _max_gain_and_cut = (0, None)
+        left_n, right_n = 0
 
-        max_cut = max(x, key=lambda d: entropy_gain(f, x, y, d[f]))
+        for i in range(len(arr)):
 
-        return entropy_gain(f, x, y, max_cut), max_cut
