@@ -2,6 +2,7 @@ from ..util import math_functions as mf
 from math import log
 import random
 import numpy as np
+import copy
 
 
 
@@ -41,6 +42,7 @@ class RandomFuzzyForest:
     def set_feature_bag_n(self, x):
         if self.max_features == "sqrt":
             self.feature_bag_n = int(len(x[0]) ** 0.5)
+            # self.feature_bag_n = len(x[0])
 
     def set_data(self, x, y):
         if y is None:
@@ -53,10 +55,25 @@ class RandomFuzzyForest:
         self.y = self.y.astype(float)
 
     def predict(self, x):
-        return
+        return self.get_classification(x, self.tree)
 
     def score(self, x, y):
-        return
+        correct_cnt = 0
+        for i in range(len(x)):
+            if self.predict(x[i]) == y[i]:
+                correct_cnt += 1
+        
+        return correct_cnt / len(x)
+
+    def get_classification(self, x, node):
+        if node.classification is not None:
+            return str(node.classification)
+        else:
+            val = x[node.feature]
+            if val < node.cut:
+                return self.get_classification(x, node.left)
+            else:
+                return self.get_classification(x, node.right)
 
     def generate_tree(self, x, y, features_left=None, lvl = 0):
         if not self.is_terminal(y, features_left):
@@ -66,13 +83,17 @@ class RandomFuzzyForest:
             node = Node()
 
             features = self.random_features(features_left)
-            node.feature, node.cut = self.best_feature_and_cut(x, y, features)
+            result = self.best_feature_and_cut(x, y, features)
+            node.feature = result[0]
+            node.cut = result[1][1]
+            left_x = result[1][2]
+            left_y = result[1][3]
+            right_x = result[1][4]
+            right_y = result[1][5]
             features.remove(node.feature)
 
             node.left_f = None
             node.right_f = None
-
-            left_x, left_y, right_x, right_y = self.partitions(x, y, node)
 
             if len(left_y) == 0:
                 node.classification = self.classification(right_y)
@@ -80,7 +101,7 @@ class RandomFuzzyForest:
                 node.classification = self.classification(left_y)
             else:
                 node.left = self.generate_tree(left_x, left_y, features, lvl + 1)
-                node.left = self.generate_tree(right_x, right_y, features, lvl + 1)
+                node.right = self.generate_tree(right_x, right_y, features, lvl + 1)
 
             return node
         else:
@@ -91,9 +112,9 @@ class RandomFuzzyForest:
 
     def is_terminal(self, y, features_left):
         entropy = mf.entropy(y)
+        threshold = log(y.shape[0], 2)
         if entropy != 0:
-            threshold = 0.8 * log(len(y), 2)
-            is_terminal_entropy = entropy >= threshold
+            is_terminal_entropy = (entropy >= threshold)
         else:
             is_terminal_entropy = True
 
@@ -103,36 +124,17 @@ class RandomFuzzyForest:
         return is_terminal_entropy or is_terminal_features 
 
     def classification(self, y):
-        classes = {}
-
-        for d in y:
-            if d in classes:
-                classes[d] += 1
-            else:
-                classes[d] = 0
-
-        return max(classes)
-
-    def partitions(self, x, y, node):
-        print("Partitioning...")
-        left_inds = [i for i in range(len(x)) if x[i][node.feature] < node.cut]
-        right_inds = [i for i in range(len(x)) if x[i][node.feature] >= node.cut]
-
-        left_x = [x[i] for i in left_inds]
-        left_y = [y[i] for i in left_inds]
-
-        right_x = [x[i] for i in right_inds]
-        right_y = [y[i] for i in right_inds]
-
-        return left_x, left_y, right_x, right_y
-
+        positive_cnt = len( np.where(y == 1) )
+        if positive_cnt > len(y):
+            return "1"
+        else:
+            return "2"
+        
     def random_features(self, features_left):
         features = set()
         for i in range(self.feature_bag_n):
             rand_ind = int(random.random() * len(features_left))
             features.add(features_left[rand_ind])
-
-        print(len(features))
 
         return list(features)
 
@@ -140,23 +142,48 @@ class RandomFuzzyForest:
         max_gain_and_cut = (0, None)
         max_feature = None
         for f in features:
-            print("Feature ", f)
             curr_gain_and_cut = self.max_gain_and_cut(f, x, y)
             if curr_gain_and_cut[0] > max_gain_and_cut[0]:
                 max_gain_and_cut = curr_gain_and_cut
                 max_feature = f
 
-        return max_feature, max_gain_and_cut[1]
+        return max_feature, max_gain_and_cut
 
     def max_gain_and_cut(self, f, x, y):
-        x = x[:, f]
+        my_x = np.array(x)
+        my_x = my_x[:, f]
 
-        arr = np.transpose( np.array([x, y]) )
+        arr = np.transpose( np.array([my_x, y]) )
         inds = arr[:, 0].argsort()
         arr = arr[inds]
+
+        total_positive_n = np.where(arr[:, 1] == 1)[0].shape[0]
+        total_negative_n = np.where(arr[:, 1] == 2)[0].shape[0]
+
+        def entropy_gain(positive_n, negative_n):
+            left_classes = [positive_n, negative_n]
+            right_classes = [total_positive_n - positive_n, 
+                total_negative_n - negative_n]
+            return mf.entropy_by_nums(left_classes, arr.shape[0]) + \
+                mf.entropy_by_nums(right_classes, arr.shape[0])
         
-        _max_gain_and_cut = (0, None)
-        left_n, right_n = 0
+        _max_gain_and_cut = (0, None, -1)
+        positive_n, negative_n = 0, 0
 
         for i in range(len(arr)):
+            if arr[i][1] == 1:
+                positive_n += 1
+            else:
+                negative_n += 1
+            
+            curr_gain = entropy_gain(positive_n, negative_n)
+            if curr_gain > _max_gain_and_cut[0]:
+                _max_gain_and_cut = curr_gain, arr[i][0], arr[i][0]
 
+
+        return ( _max_gain_and_cut[0],
+            _max_gain_and_cut[1], 
+            x[ np.argwhere(arr[:, 0] <= _max_gain_and_cut[2]).flatten().tolist() ], 
+            y[ np.argwhere(arr[:, 0] <= _max_gain_and_cut[2]).flatten().tolist() ],
+            x[ np.argwhere(arr[:, 0] > _max_gain_and_cut[2]).flatten().tolist() ],
+            y[ np.argwhere(arr[:, 0] > _max_gain_and_cut[2]).flatten().tolist() ] )

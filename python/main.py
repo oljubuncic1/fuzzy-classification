@@ -58,8 +58,8 @@ def covtype_data_properties():
     cols = range(54)
     class_col = 54
 
-    row_cnt = 1 * 10 ** 2
-    data_n = 1 * 10 ** 2
+    row_cnt =  int( 1* 10 ** 3 )
+    data_n = int( 10 ** 3  )
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
     def trans_f(x):
@@ -123,6 +123,10 @@ def get_accuracy(t, classifiers):
     else:
         return 0
 
+
+def classify(clf, x):
+    return clf.predict(x)
+
 def main():
     verification_data_perc = 0.1
 
@@ -130,6 +134,8 @@ def main():
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
+
+    print("Data loaded")
 
     data = data_loader_instance.get_data()
     ranges = data_loader_instance.get_ranges()
@@ -141,10 +147,31 @@ def main():
     x = [list(t[0]) for t in training_data]
     y = [t[1] for t in training_data]
 
-    rff = RandomFuzzyForest()
-    rff.fit(x, y)
+    rff_n = 5
+    rffs= []
+    for i in range(rff_n):
+        rffs.append(RandomFuzzyForest())
+        rffs[-1].fit(x, y)
 
-    print(str(rff))
+    print("Over...")
+
+    correct_cnt = 1
+    for v in verification_data:
+        
+        with Pool(processes=4) as pool:
+            classification = pool.starmap(classify, [(r, v[0]) for r in rffs])
+
+        positive_cnt = len([c for c in classification if c == "1"])
+
+        if positive_cnt > int(rff_n / 2):
+            prediction = "1"
+        else:
+            prediction = "2"
+
+        if prediction  == v[1]:
+            correct_cnt += 1
+
+    print( correct_cnt / len(verification_data) )
 
     # x = [list(t[0]) for t in training_data]
     # y = [t[1] for t in training_data]
