@@ -3,7 +3,8 @@ import fuzzy_classification.util.data_loader as dl
 import fuzzy_classification.classifiers.fast_fuzzy_classifier as ffc
 import fuzzy_classification.classifiers.chi_fuzzy_classifier as cfc
 import fuzzy_classification.feature_selection.feature_selection_ga as fsga
-from fuzzy_classification.classifiers.RandomFuzzyForest import RandomFuzzyForest
+
+from sklearn.ensemble import RandomForestClassifier
 
 import random
 from multiprocessing import Pool
@@ -144,34 +145,6 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    x = [list(t[0]) for t in training_data]
-    y = [t[1] for t in training_data]
-
-    rff_n = 5
-    rffs= []
-    for i in range(rff_n):
-        rffs.append(RandomFuzzyForest())
-        rffs[-1].fit(x, y)
-
-    print("Over...")
-
-    correct_cnt = 1
-    for v in verification_data:
-        
-        with Pool(processes=4) as pool:
-            classification = pool.starmap(classify, [(r, v[0]) for r in rffs])
-
-        positive_cnt = len([c for c in classification if c == "1"])
-
-        if positive_cnt > int(rff_n / 2):
-            prediction = "1"
-        else:
-            prediction = "2"
-
-        if prediction  == v[1]:
-            correct_cnt += 1
-
-    print( correct_cnt / len(verification_data) )
 
     # x = [list(t[0]) for t in training_data]
     # y = [t[1] for t in training_data]
