@@ -74,3 +74,41 @@ class testEntropyTree(unittest.TestCase):
                 self.assertTrue(False)
         
         self.assertEqual(proba_f(1), proba_f(2))
+
+    def test_sorted_entropy_gain(self):
+        self.tree.class_n = 4
+        y = np.array([ 1, 1, 1, 2, 2, 2 ])
+
+        self.assertAlmostEqual(self.tree._sorted_entropy_gain(y, 2), 0)
+
+        self.tree.class_n = 2
+        y = np.array([ 1, 2, 1, 1, 2, 2 ])
+
+        self.assertAlmostEqual(self.tree._sorted_entropy_gain(y, 1), -2)
+
+    def test_best_split(self):
+        self.tree.class_n = 4
+        data = np.array([ [1, 2, 3, 1],
+                        [2, 3, 4, 1],
+                        [3, 4, 5, 2],
+                        [4, 5, 6, 2] ])
+
+        best_split = self.tree._best_split(data, 0)
+        self.assertEqual(best_split.left_data.shape[0], 2)
+        self.assertEqual(best_split.value, 0)
+        self.assertEqual(best_split.right_data.shape[0], 2)
+
+        x = np.array([2, 3, 4])
+        self.assertTrue(best_split.left_branch_criteria(x))
+
+        x = np.array([2.01, 3, 4])
+        self.assertFalse(best_split.left_branch_criteria(x))
+        self.assertTrue(best_split.right_branch_criteria(x))
+
+    def test_fit(self):
+        self.class_n = 2
+        data = np.array([ [1, 2, 3, 1],
+                        [2, 3, 4, 1],
+                        [3, 4, 5, 2],
+                        [4, 5, 6, 2] ])
+        self.tree.fit(data)

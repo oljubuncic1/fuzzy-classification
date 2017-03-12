@@ -1,15 +1,18 @@
 from .Tree import Tree, Node, Split
 import numpy as np
 from math import log
+from multiprocessing import Pool
 
 
 class EntropyTree(Tree):
 
     def __init__(self,
+                n_jobs=1,
                 class_n=2,
                 entropy_threshold=0.2):
         self.entropy_threshold = entropy_threshold
         self.class_n = class_n
+        super(EntropyTree, self).__init__(n_jobs)
 
     def _generate_proba_f(self, x, y):
         self._assert_1d_array(y)
@@ -35,10 +38,11 @@ class EntropyTree(Tree):
             self.entropy_threshold * self._max_entropy(data)
 
     def _generate_split(self, data, features):
-        best_feature, best_gain = None, 0
+        best_feature, best_gain = None, -float("inf")
         for f in features:
             best_split = self._best_split(data, f)
-            if best_split.value > best_gain:
+            gain = best_split.value
+            if gain > best_gain:
                 best_feature = f
                 best_gain = gain
 
@@ -47,7 +51,42 @@ class EntropyTree(Tree):
         return best_split
 
     def _best_split(self, data, feature):
-        raise NotImplementedError()
+        self._assert_numpy(data)
+        
+        reduced_data = data[:, (feature, -1)]
+        sorted_inds = reduced_data[:, 0].argsort()
+        reduced_data = reduced_data[sorted_inds]
+
+        with Pool(processes=self.n_jobs) as pool:
+            params = [ (data[:, -1], i) 
+                        for i in range(reduced_data.shape[0] - 1)]
+                    
+            gains = pool.starmap(self._sorted_entropy_gain,
+                                params)
+        gains = [ (i, gains[i]) for i in range(len(gains)) ]
+        cut_ind = max(gains, key=lambda x: x[1])[0]
+        
+        best_split = Split()
+        best_split.value = gains[cut_ind][1]
+        best_split.left_data = data[:cut_ind + 1,:]
+        best_split.right_data = data[cut_ind + 1:,:]
+        best_split.left_branch_criteria = \
+            lambda x: x[feature] <= reduced_data[cut_ind, 0]
+        best_split.right_branch_criteria = \
+            lambda x: x[feature] > reduced_data[cut_ind, 0]
+
+        return best_split
+        
+    def _sorted_entropy_gain(self, data, ind):
+        self._assert_1d_array(data)
+
+        left_data = data[:ind + 1]
+        right_data = data[ind + 1:]
+        
+        left_entropy = self._entropy(left_data)
+        right_entropy = self._entropy(right_data)
+
+        return -( left_entropy + right_entropy )
 
     def _entropy(self, data):
         self._assert_1d_array(data)

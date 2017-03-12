@@ -8,12 +8,12 @@ class Classifier(metaclass=ABCMeta):
     def __init__(self,
                 n_jobs=1):
         self.n_jobs = n_jobs
-
+    
     @abstractmethod
     def fit(self, x, y):
-        self.x, self.y = self._try_parse_input(x, y)
+        self._try_parse_input(x, y)
         self.is_fit = True
-    
+
     @abstractmethod
     def predict_proba(self, x):
         self._assert_numpy(x)
@@ -43,14 +43,19 @@ class Classifier(metaclass=ABCMeta):
     def _try_parse_input(self, x, y):
         if y is None:
             self._assert_numpy(x)
+            self.data = x
+        else:
+            self._assert_numpy(x)
+            self._assert_numpy(y)
             
-            y = x[:-1]
-            x = x[:range(x.shape[1] - 1)]
-        
+            self.data = self._combine(x, y)
+
+    def _combine(self, x, y):
         self._assert_numpy(x)
         self._assert_numpy(y)
-        
-        return x, y
+
+        return np.concatenate( (x, np.array([y]).T), 
+                                axis=1 )
 
     def _assert_numpy(self, data):
         if not isinstance(data, np.ndarray):

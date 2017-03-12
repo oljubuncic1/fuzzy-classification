@@ -4,7 +4,7 @@ import numpy as np
 
 class Node:
     __slots__ = ['is_terminal',
-                'proba',
+                'proba_f',
                 'split',
                 'left',
                 'right']
@@ -24,13 +24,12 @@ class Tree(Classifier, metaclass=ABCMeta):
 
     def __init__(self,
                 n_jobs=1):
-        super(Classifier, self).__init__(n_jobs)
+        super(Tree, self).__init__(n_jobs)
 
-    def fit(self, x, y):
-        super(Classifier, self).fit(x, y)
-        data = self._combine(x, y)
-        self.tree = self._generate_tree(data, 
-                                        range(_feature_n(data)))
+    def fit(self, x, y=None):
+        super(Tree, self).fit(x, y)
+        features = list( range(self._feature_n(self.data)) )
+        self.tree = self._generate_tree(self.data, features)
 
     def predict_proba(self, x):
         leaf_node = self._forward_pass(self.tree, x)
@@ -49,28 +48,25 @@ class Tree(Classifier, metaclass=ABCMeta):
     def _generate_split(self, data, features):
         pass
 
-    def _combine(self, x, y):
-        self._assert_numpy(x)
-        self._assert_numpy(y)
-
     def _generate_tree(self, data, features):
         self._assert_numpy(data)
 
         node = Node()
         
-        if not self.is_terminal_node(data):
+        if not self._is_terminal_node(data[:, -1]):
             node.split = self._generate_split(data, features)
             node.is_terminal = False
 
             node.left = self._generate_tree(
-                node.split.left_data)
+                node.split.left_data, features)
             node.right = self._generate_tree(
-                node.split.right_data)
+                node.split.right_data, features)
 
             node.split.free_data()
         else:
             node.is_terminal = True
-            node.proba = self._generate_proba(x, y)
+            node.proba_f = self._generate_proba_f(data[:,:-1], 
+                                                data[:,-1])
 
         return node
 
