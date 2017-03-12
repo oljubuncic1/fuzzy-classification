@@ -13,7 +13,8 @@ class Split:
     __slots__ = ['left_data',
                 'right_data',
                 'left_branch_criteria',
-                'right_branch_criteria']
+                'right_branch_criteria',
+                'value']
 
     def free_data(self):
         left_data = None
@@ -28,7 +29,8 @@ class Tree(Classifier, metaclass=ABCMeta):
     def fit(self, x, y):
         super(Classifier, self).fit(x, y)
         data = self._combine(x, y)
-        self.tree = self._generate_tree(data, _feature_n(data))
+        self.tree = self._generate_tree(data, 
+                                        range(_feature_n(data)))
 
     def predict_proba(self, x):
         leaf_node = self._forward_pass(self.tree, x)
