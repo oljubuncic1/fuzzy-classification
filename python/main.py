@@ -1,13 +1,10 @@
 import logging
 import fuzzy_classification.util.data_loader as dl
-import fuzzy_classification.classifiers.fast_fuzzy_classifier as ffc
-import fuzzy_classification.classifiers.chi_fuzzy_classifier as cfc
-import fuzzy_classification.feature_selection.feature_selection_ga as fsga
 
-from sklearn.ensemble import RandomForestClassifier
+from fuzzy_classification.classifiers.EntropyTree \
+    import EntropyTree
 
-import random
-from multiprocessing import Pool
+import numpy as np
 
 logger = logging.getLogger()
 
@@ -60,73 +57,21 @@ def covtype_data_properties():
     class_col = 54
 
     row_cnt =  int( 1* 10 ** 3 )
-    data_n = int( 10 ** 3  )
+    data_n = int( 10 ** 4 )
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
     def trans_f(x):
-        x[0] = [ float(d) for d in x[0] ]
+        x[0] = [ int(d) for d in x[0] ]
         return x
 
     data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n, filter_fun=filter_f, transformation_fun=trans_f)
 
     return data_properties
 
-def random_features(total_feature_n, sample_feature_n):
-    rand_features = []
-    
-    features = list( range(total_feature_n) )
-    for i in range(sample_feature_n):
-        rand_i = int( random.random() * len(features) )
-        rand_features.append( features[rand_i] )
-
-    return rand_features
-
-def specific_features(d, features):
-    return tuple( [ d[i] for i in features ] )
-
-def extract_features(data, ranges, features):
-    extracted_data = [ ( specific_features(d[0], features), d[1] ) for d in data ]
-    extracted_ranges = [ ranges[i] for i in features ]
-
-    return extracted_data, extracted_ranges
-
-def random_with_replacement(data, sample_n):
-    sample = set()
-    for i in range(sample_n):
-        ind = int(random.random() * len(data))
-        sample.add( data[ind] )
-
-    return [list(s) for s in sample]
-
-def random_classifier_and_features(training_data, ranges, sample_feature_n):
-    total_feature_n = len(training_data[0][0])
-    features = random_features(total_feature_n, sample_feature_n)
-
-    data_sample_n = int( 1.0 * len(training_data) )
-    data_sample = random_with_replacement(training_data, data_sample_n)
-    
-    data_sample, ranges_sample = extract_features(data_sample, ranges, features)
-    clf = ffc.FastFuzzyClassifier(data_sample, ranges_sample, label_cnt=2)
-    clf.fit()
-
-    return clf, features
-
-def get_accuracy(t, classifiers):
-    avg = { "1": 0, "2" : 0 }
-    for clf in classifiers:
-        prediction = clf[0].predict( specific_features(t[0], clf[1]) )
-        avg["1"] += prediction["1"]
-        avg["2"] += prediction["2"]
-
-    winner = max(avg)
-    if avg[winner] != 0.0 and winner == t[1]:
-        return 1
-    else:
-        return 0
-
-
-def classify(clf, x):
-    return clf.predict(x)
+def as_numpy(data):
+    x = np.array( [ d[0] for d in data ] )
+    y = np.array( [ float(d[1]) for d in data ] )
+    return x, y
 
 def main():
     verification_data_perc = 0.1
@@ -136,8 +81,6 @@ def main():
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
 
-    print("Data loaded")
-
     data = data_loader_instance.get_data()
     ranges = data_loader_instance.get_ranges()
     
@@ -145,49 +88,12 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-
-    # x = [list(t[0]) for t in training_data]
-    # y = [t[1] for t in training_data]
-    # # clf = RandomForestClassifier(n_estimators=20, n_jobs=-1, verbose=1)
-    # clf = KNeighborsClassifier(n_jobs=-1, n_neighbors=30)
-    # clf.fit(x, y)
-
-    # v_x = [list(t[0]) for t in verification_data]
-    # v_y = [t[1] for t in verification_data]
-    # score = clf.score(v_x, v_y)
-    # logger.debug( score )
-
-    # return
-
-    # for classifier_n in [ int(2 ** i) for i in [1, 2, 3, 4] ]:
-    #     logger.debug("Using " + str(classifier_n) + " classifiers")
-    #     classifiers = []
-    #     feature_n = int(5)
-    #     with Pool(processes=4) as pool:
-    #         parameters =  [ (training_data, ranges, feature_n) for i in range(classifier_n) ]
-    #         classifiers = pool.starmap( random_classifier_and_features, parameters)
-
-    #     logger.debug("\tClassifying...")
-
-    #     with Pool(processes=4) as pool:
-    #         acc_list = pool.starmap( get_accuracy, [ (c, classifiers) for c in verification_data ] )
-
-    #     acc = len([a for a in acc_list if a == 1]) / len(verification_data)
-    #     logger.debug( "\tAccuracy " + str(acc) )
-
-    # logger.debug("Class distribution")
-    # for c in set( [ x[1] for x in verification_data ] ):
-    #     in_class_n = len( [x for x in verification_data if x[1] == c] )
-    #     logger.debug(
-    #         "\tData items with class " + c + " -> " + str( in_class_n ) + \
-    #         "\t percentage " + str( in_class_n / len(verification_data) )
-    #     )
-
-    # logger.debug("Classifying with full data...")
-    # clf = ffc.FastFuzzyClassifier(training_data, ranges)
-    # clf.set_logger(logger)
-    # clf.fit()
-    # logger.debug(clf.evaluate(verification_data))
+    tree = EntropyTree(n_jobs=4, class_n=2)
+    x, y = as_numpy(training_data)
+    print("Fitting")
+    tree.fit(x, y)
+    x, y = as_numpy(verification_data)
+    print( tree.score(x, y) )
 
 if __name__ == "__main__":
     set_logger()

@@ -13,6 +13,7 @@ class Classifier(metaclass=ABCMeta):
     def fit(self, x, y):
         self._try_parse_input(x, y)
         self.is_fit = True
+        self.feature_n = self.data.shape[1] - 1
 
     @abstractmethod
     def predict_proba(self, x):
@@ -26,19 +27,17 @@ class Classifier(metaclass=ABCMeta):
         return max(proba)
 
     def score(self, x, y):
-        x, y = self._try_parse_input(x, y)
+        self._try_parse_input(x, y)
 
-        if x.shape[0] != y.shape[1] or y.shape[0] > 1:
-            raise ValueError("Incompatible shapes")
+        x = self.data[:,:-1]
+        y = self.data[:, -1].astype(int)
 
         predictions = np.apply_along_axis(self.predict, 1, x)
 
         total_elements = y.shape[0]
-        total_correct = np.where(
-            np.equal(predictions, np.transpose(y))) \
-            .shape[1]
-
-        return total_correct / total_elements
+        total_correct = \
+            np.count_nonzero(np.equal(predictions, np.transpose(y)))
+        return total_correct / x.shape[0]
 
     def _try_parse_input(self, x, y):
         if y is None:

@@ -31,13 +31,20 @@ class EntropyTree(Tree):
 
         return proba
 
-    def _is_terminal_node(self, data):
+    def _is_terminal_node(self, data, features):
+        if len(features) == 0:
+            return True
+        
         self._assert_1d_array(data)
+        if len(data) < 10:
+            return True
+        
         entropy = self._entropy(data)
         return entropy <= \
             self.entropy_threshold * self._max_entropy(data)
 
     def _generate_split(self, data, features):
+        print(features)
         best_feature, best_gain = None, -float("inf")
         for f in features:
             best_split = self._best_split(data, f)
@@ -46,7 +53,7 @@ class EntropyTree(Tree):
                 best_feature = f
                 best_gain = gain
 
-        features.remove(best_feature)
+        best_split.feature = best_feature
 
         return best_split
 
@@ -56,18 +63,27 @@ class EntropyTree(Tree):
         reduced_data = data[:, (feature, -1)]
         sorted_inds = reduced_data[:, 0].argsort()
         reduced_data = reduced_data[sorted_inds]
+        cut_ind, max_entropy_gain = None, -float("inf")
+        left_histogram = np.zeros(self.class_n)
+        right_histogram = np.histogram(reduced_data[:, 1], 
+                                        bins=self.class_n,
+                                        range=(1, self.class_n))[0]
 
-        with Pool(processes=self.n_jobs) as pool:
-            params = [ (data[:, -1], i) 
-                        for i in range(reduced_data.shape[0] - 1)]
-                    
-            gains = pool.starmap(self._sorted_entropy_gain,
-                                params)
-        gains = [ (i, gains[i]) for i in range(len(gains)) ]
-        cut_ind = max(gains, key=lambda x: x[1])[0]
-        
+        for i in range(reduced_data.shape[0] - 1):
+            if i > 1:
+                histogram_ind = int(reduced_data[i][1]) - 1
+                left_histogram[histogram_ind] += 1
+                right_histogram[histogram_ind] -= 1
+                entropy_gain = \
+                    self._histogram_entropy_gain(left_histogram, 
+                                                right_histogram)
+                
+                if entropy_gain > max_entropy_gain:
+                    max_entropy_gain = entropy_gain
+                    cut_ind = i
+
         best_split = Split()
-        best_split.value = gains[cut_ind][1]
+        best_split.value = max_entropy_gain
         best_split.left_data = data[:cut_ind + 1,:]
         best_split.right_data = data[cut_ind + 1:,:]
         best_split.left_branch_criteria = \
@@ -77,26 +93,31 @@ class EntropyTree(Tree):
 
         return best_split
         
-    def _sorted_entropy_gain(self, data, ind):
-        self._assert_1d_array(data)
+    def _histogram_entropy_gain(self, h1, h2):
+        entropy1 = self._histogram_entropy(h1)
+        entropy2 = self._histogram_entropy(h2)
 
-        left_data = data[:ind + 1]
-        right_data = data[ind + 1:]
-        
-        left_entropy = self._entropy(left_data)
-        right_entropy = self._entropy(right_data)
+        total_n = h1.shape[0] + h2.shape[0]
 
-        return -( left_entropy + right_entropy )
+        return -(h1.shape[0] / total_n * entropy1 + \
+                h2.shape[0] / total_n * entropy2)
 
     def _entropy(self, data):
         self._assert_1d_array(data)
 
         histogram = np.histogram(data, bins=self.class_n)[0]
+        entropy = self._histogram_entropy(histogram)
+
+        return entropy
+
+    def _histogram_entropy(self, histogram):
         p = histogram[np.where(histogram != 0)]
-        p = 1 / data.shape[0] * p
+        if p.shape[0] == 1:
+            return -float("inf")
+        p = 1 / histogram.sum() * p
 
         entropy = (-p * np.log2(p)).sum(axis=0)
-
+        
         return entropy
 
     def _max_entropy(self, data):
