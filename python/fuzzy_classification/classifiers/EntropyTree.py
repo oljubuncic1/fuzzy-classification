@@ -44,7 +44,6 @@ class EntropyTree(Tree):
             self.entropy_threshold * self._max_entropy(data)
 
     def _generate_split(self, data, features):
-        print(features)
         best_feature, best_gain = None, -float("inf")
         for f in features:
             best_split = self._best_split(data, f)

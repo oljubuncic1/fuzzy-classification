@@ -56,8 +56,8 @@ def covtype_data_properties():
     cols = range(54)
     class_col = 54
 
-    row_cnt =  int( 1* 10 ** 3 )
-    data_n = int( 10 ** 4 )
+    row_cnt =  int( 580 * 10 ** 3 )
+    data_n = int( 10 ** 3 )
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
     def trans_f(x):
@@ -88,12 +88,20 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    tree = EntropyTree(n_jobs=4, class_n=2)
-    x, y = as_numpy(training_data)
-    print("Fitting")
-    tree.fit(x, y)
-    x, y = as_numpy(verification_data)
-    print( tree.score(x, y) )
+    trees = []
+    tree_n = 10
+    
+    for i in range(tree_n):
+        tree = EntropyTree(n_jobs=4, class_n=2)
+        training_sample = random.choice(training_data, 
+                                        0.6 * len(training_data), 
+                                        replace=True)
+        x, y = as_numpy(training_sample)
+        tree.fit(x, y)
+        x, y = as_numpy(verification_data)
+
+    for v in verification_data:
+        
 
 if __name__ == "__main__":
     set_logger()

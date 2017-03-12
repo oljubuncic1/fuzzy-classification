@@ -63,7 +63,6 @@ class Tree(Classifier, metaclass=ABCMeta):
                 subset_n = int( sqrt(self.feature_n) )
                 feature_subset = np.random.choice(features, 
                                                     subset_n)
-                print("subset", feature_subset)
             else:
                 feature_subset = features
             node.split = self._generate_split(data, feature_subset)
