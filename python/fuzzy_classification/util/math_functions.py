@@ -23,8 +23,8 @@ def triangle(center, width, name, x):
         else:
             return 0
 
-def triangular(center, width, name='x'):
-    return partial(triangle, center, width, name)
+def triangular(center, full_width, name='x'):
+    return partial(triangle, center, full_width, name)
 
 def entropy(y):
     if len(set(y)) == 1:

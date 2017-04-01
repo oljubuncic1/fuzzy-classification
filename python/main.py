@@ -4,7 +4,11 @@ import fuzzy_classification.util.data_loader as dl
 from fuzzy_classification.classifiers.EntropyTree \
     import EntropyTree
 
+from fuzzy_classification.classifiers.RandomFuzzyTree \
+    import RandomFuzzyTree
+
 import numpy as np
+import random 
 
 logger = logging.getLogger()
 
@@ -56,7 +60,7 @@ def covtype_data_properties():
     cols = range(54)
     class_col = 54
 
-    row_cnt =  int( 580 * 10 ** 3 )
+    row_cnt =  int( 1 * 10 ** 3 )
     data_n = int( 10 ** 3 )
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
@@ -70,8 +74,12 @@ def covtype_data_properties():
 
 def as_numpy(data):
     x = np.array( [ d[0] for d in data ] )
-    y = np.array( [ float(d[1]) for d in data ] )
-    return x, y
+    y = np.array( [ int(d[1]) for d in data ] )
+
+    data = np.concatenate( (x, np.array([y]).T), 
+                                axis=1 )
+
+    return data
 
 def main():
     verification_data_perc = 0.1
@@ -88,20 +96,10 @@ def main():
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
-    trees = []
-    tree_n = 10
-    
-    for i in range(tree_n):
-        tree = EntropyTree(n_jobs=4, class_n=2)
-        training_sample = random.choice(training_data, 
-                                        0.6 * len(training_data), 
-                                        replace=True)
-        x, y = as_numpy(training_sample)
-        tree.fit(x, y)
-        x, y = as_numpy(verification_data)
+    np_training_data = as_numpy(training_data)
+    rft = RandomFuzzyTree()
+    rft.fit(np_training_data, ranges)
 
-    for v in verification_data:
-        
 
 if __name__ == "__main__":
     set_logger()

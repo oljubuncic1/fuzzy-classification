@@ -2,6 +2,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from .Classifier import Classifier
 import numpy as np
 from math import sqrt
+from multiprocessing import Pool
 
 
 class Node:
@@ -69,12 +70,17 @@ class Tree(Classifier, metaclass=ABCMeta):
             features.remove(node.split.feature)
             node.is_terminal = False
 
-            node.left = self._generate_tree(node.split.left_data, 
-                                            features,
-                                            lvl + 1)
-            node.right = self._generate_tree(node.split.right_data, 
-                                            features,
-                                            lvl + 1)
+            with Pool(processes=self.n_jobs) as pool:
+                node.left, node.right = \
+                    pool.starmap(self._generate_tree, 
+                                [(node.split.left_data, features, lvl + 1), (node.split.right_data, features, lvl + 1)])
+
+            # node.left = self._generate_tree(node.split.left_data, 
+            #                                 features,
+            #                                 lvl + 1)
+            # node.right = self._generate_tree(node.split.right_data, 
+            #                                 features,
+            #                                 lvl + 1)
             
             node.split.free_data()
         else:
