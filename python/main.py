@@ -102,6 +102,63 @@ def haberman_data_properties():
     return data_properties
 
 
+def mamographic_data_properties():
+    file_name = \
+        "/home/faruk/workspace/thesis/data/mamographic.dat"
+    cols = range(5)
+    class_col = 5
+
+    row_cnt = int(961)
+    data_n = int(961)
+
+    def filter_f(x):
+        return not "?" in x[0] and not x[1] == "?"
+
+    def trans_f(x):
+        if filter_f(x):
+            x[0] = [float(d) for d in x[0]]
+            x[1] = str(int(x[1]) + 1)
+        return x
+
+    data_properties = dl.DataProperties(file_name,
+                                        cols,
+                                        class_col,
+                                        row_cnt,
+                                        data_n,
+                                        transformation_fun=trans_f,
+                                        filter_fun=filter_f)
+
+    return data_properties
+
+def iris_data_properties():
+    file_name = \
+        "/home/faruk/workspace/thesis/data/iris.dat"
+    cols = range(4)
+    class_col = 4
+
+    row_cnt = int(150)
+    data_n = int(150)
+
+    def trans_f(x):
+        x[0] = [float(d) for d in x[0]]
+        if x[1] == "Iris-setosa":
+            x[1] = "1"
+        elif x[1] == "Iris-versicolor":
+            x[1] = "2"
+        else:
+            x[1] = "3"
+        return x
+
+    data_properties = dl.DataProperties(file_name,
+                                        cols,
+                                        class_col,
+                                        row_cnt,
+                                        data_n,
+                                        transformation_fun=trans_f)
+
+    return data_properties
+
+
 def as_numpy(data):
     x = np.array([d[0] for d in data])
     y = np.array([int(d[1]) for d in data])
@@ -115,13 +172,13 @@ def as_numpy(data):
 def main():
     verification_data_perc = 0.1
 
-    data_properties = haberman_data_properties()
+    data_properties = mamographic_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
 
     data = data_loader_instance.get_data()
-    print(len(data))
+    print("Data size:", len(data))
     ranges = data_loader_instance.get_ranges()
 
     verification_data_n = int(verification_data_perc * len(data))
@@ -131,9 +188,9 @@ def main():
     np_training_data = as_numpy(training_data)
     np_verification_data = as_numpy(verification_data)
 
-    ff = FuzzyEnsemble(classifier_n=50)
-    ff.fit(np_training_data, ranges)
-    print(ff.score(np_verification_data))
+    ff = FuzzyEnsemble(classifier_n=10)
+    ff.fit(np_training_data, ranges, classes=[1, 2])
+    print("Score: ", ff.score(np_verification_data))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import numpy as np
-from math import log, sqrt
+from math import log, sqrt, ceil
 
 import pyximport
 
@@ -22,7 +22,10 @@ class FuzzyNode:
 
 
 class FuzzyPartitioning:
-    __slots__ = ['partitions', 'gain']
+    def __init__(self):
+        self.partitions = []
+        self.gain = None
+    # __slots__ = ['partitions', 'gain']
 
 
 class FuzzyPartition:
@@ -41,12 +44,16 @@ class RandomFuzzyTree:
     def __init__(self,
                  n_jobs=1,
                  p="sqrt",
-                 terminal_n_threshold=10):
+                 terminal_n_threshold=10,
+                 categorical_features=[],
+                 a_cut = 0.5):
 
         self.n_jobs = n_jobs
         self.p = p
         self.is_fit = False
         self.terminal_n_threshold = terminal_n_threshold
+        self.categorical_features = categorical_features
+        self.a_cut = a_cut
 
     def fit(self, data, ranges, copy_data=False, classes=(1, 2)):
         self.classes = classes
@@ -58,9 +65,9 @@ class RandomFuzzyTree:
         self.n_feature = self.count_features(data)
 
         if self.p == "sqrt":
-            self.p = int(sqrt(self.n_feature))
+            self.p = ceil(sqrt(self.n_feature))
         elif self.p == "log":
-            self.p = int(log(self.n_feature, 2))
+            self.p = ceil(log(self.n_feature, 2))
         elif self.p == "all":
             self.p = self.n_feature
 
@@ -90,20 +97,17 @@ class RandomFuzzyTree:
     def build_tree(self, data, memberships, lvl=0):
         node = FuzzyNode()
 
-        if self.is_terminal(data, memberships):
-            node.is_terminal = True
-            node.classification = self.classification(data, memberships)
+        regular_features = []
+        for i in range(len(self.ranges)):
+            curr_range = self.ranges[i]
+            inds = np.logical_and( data[:, i] != curr_range[0], data[:, i] != curr_range[1]).nonzero()[0]
+            if curr_range[0] != curr_range[1] and inds.shape[0] != 0:
+                regular_features.append(i)
 
-            return node
-        else:
-            regular_features = []
-            for i in range(len(self.ranges)):
-                curr_range = self.ranges[i]
-                if curr_range[0] != curr_range[1]:
-                    regular_features.append(i)
-
+        is_terminal = False
+        if len(regular_features) != 0:
             features = np.random.choice(regular_features,
-                                        self.p,
+                                        min(self.p, len(regular_features)),
                                         replace=False)
 
             feature_partitionings = {}
@@ -113,15 +117,38 @@ class RandomFuzzyTree:
 
             node.feature = max(feature_partitionings,
                                key=lambda x: feature_partitionings[x].gain)
-            node.partitioning = feature_partitionings[feature]
+            node.partitioning = feature_partitionings[node.feature]
+            node.partitioning.gain = self._fuzzy_entropy(data, memberships) + node.partitioning.gain
+        else:
+            is_terminal = True
 
+        if is_terminal or self.is_terminal(node, data, memberships):
+            node.is_terminal = True
+            node.classification = self.classification(data, memberships)
+        else:
             for p in node.partitioning.partitions:
                 p.node = self.build_tree(p.properties.data, p.properties.memberships, lvl + 1)
 
-            return node
+        return node
 
-    def is_terminal(self, data, memberships):
-        return np.sum(memberships) < 10
+    def is_terminal(self, node, data, memberships):
+        if data.shape[0] == 0:
+            return True
+
+        data_classes = data[:, -1]
+        all_same = True
+        for i in range(1, data_classes.shape[0]):
+            if data_classes[i] != data_classes[0]:
+                all_same = False
+                break
+
+        if all_same:
+            return True
+
+        if abs(node.partitioning.gain) <= 0.001:
+            return True
+        else:
+            return False
 
     def forward_pass(self,
                      result_memberships,
@@ -131,7 +158,7 @@ class RandomFuzzyTree:
 
         if node.is_terminal:
             for c in self.classes:
-                result_memberships[c] += node.classification[c]
+                result_memberships[c] += node.classification[c] * membership
         else:
             for partition in node.partitioning.partitions:
                 next_membership = membership * partition.f(x[node.feature])
@@ -155,28 +182,58 @@ class RandomFuzzyTree:
         return classification_val
 
     def best_partitioning(self, feature, data, memberships):
-        points = np.unique(data[:, feature])
-        L, U = self.ranges[feature]
+        if feature in self.categorical_features:
+            max_partitioning = FuzzyPartitioning()
 
-        point_partitionings = {}
-        regular_point_occured = False
-        for p in points:
-            if p != L and p != U:
-                regular_point_occured = True
-                point_partitionings[p] = \
-                    self.partitioning(data, feature, p, memberships)
+            max_category = int(self.ranges[feature][1])
+            min_category = int(self.ranges[feature][0])
 
-        if not regular_point_occured:
-            midpoint = L + (U - L) / 2
-            max_partitioning = self.partitioning(data,
-                                                 feature,
-                                                 midpoint,
-                                                 memberships)
+            for category in range(min_category, max_category + 1):
+                partition = FuzzyPartition()
+                partition.properties = FuzzySetProperties()
+
+                def f(x):
+                    if int(x) == category:
+                        return 1
+                    else:
+                        return 0
+
+                partition.f = f
+
+                inds = (data[:, feature] == category).nonzero()[0]
+                partition.properties.data = data[inds, :]
+                max_partitioning.partitions.append(partition)
+
+            self.set_properties(max_partitioning.partitions,
+                                data,
+                                feature,
+                                memberships)
+
+            max_partitioning.gain = \
+                self.gain(max_partitioning.partitions, memberships)
         else:
-            max_partitioning_key = max(point_partitionings,
-                                       key=lambda x: point_partitionings[x].gain)
+            points = np.unique(data[:, feature])
+            L, U = self.ranges[feature]
 
-            max_partitioning = point_partitionings[max_partitioning_key]
+            point_partitionings = {}
+            regular_point_occured = False
+            for p in points:
+                if p != L and p != U:
+                    regular_point_occured = True
+                    point_partitionings[p] = \
+                        self.partitioning(data, feature, p, memberships)
+
+            if not regular_point_occured:
+                midpoint = L + (U - L) / 2
+                max_partitioning = self.partitioning(data,
+                                                     feature,
+                                                     midpoint,
+                                                     memberships)
+            else:
+                max_partitioning_key = max(point_partitionings,
+                                           key=lambda x: point_partitionings[x].gain)
+
+                max_partitioning = point_partitionings[max_partitioning_key]
 
         return max_partitioning
 
@@ -216,7 +273,10 @@ class RandomFuzzyTree:
 
     def set_properties(self, partitions, data, feature, memberships):
         for partition in partitions:
-            prop = self._fuzzy_set_properties(data, feature, partition, memberships)
+            prop = self._fuzzy_set_properties(data,
+                                              feature,
+                                              partition,
+                                              memberships)
             partition.properties = prop
 
     def gain(self, partitions, memberships):
@@ -250,7 +310,7 @@ class RandomFuzzyTree:
         properties.cardinality = cardinality
         properties.entropy = entropy
 
-        non_zero_inds = np.nonzero(set_memberships)[0]
+        non_zero_inds = (set_memberships >= self.a_cut).nonzero()[0]
         set_data = data[non_zero_inds, :]
         set_memberships = set_memberships[non_zero_inds]
 

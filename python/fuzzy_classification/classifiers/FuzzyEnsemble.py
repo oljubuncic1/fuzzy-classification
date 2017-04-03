@@ -7,15 +7,22 @@ from collections import defaultdict
 class FuzzyEnsemble:
     def __init__(self,
                  classifier_n=10,
+                 categorical_features=[],
                  classifier=RandomFuzzyTree):
-        self.classifiers = \
-            [classifier() for i in range(classifier_n)]
+        self.classifiers = []
+        for i in range(classifier_n):
+            self.classifiers.append(classifier(categorical_features=categorical_features))
 
-    def fit(self, data, ranges):
+    def fit(self, data, ranges, classes=(1, 2)):
+        i = 0
         for c in self.classifiers:
-            inds = np.random.choice(range(data.shape[0]), size=int(0.6 * data.shape[0]), replace=True)
+            print(i)
+            i += 1
+            inds = np.random.choice(range(data.shape[0]),
+                                    size=int(0.6 * data.shape[0]),
+                                    replace=True)
             classifier_data = data[inds,:]
-            c.fit(classifier_data, ranges)
+            c.fit(classifier_data, ranges, classes=classes)
 
     def score(self, data):
         correct = 0
