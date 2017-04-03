@@ -1,16 +1,15 @@
 import logging
 import fuzzy_classification.util.data_loader as dl
-
-from fuzzy_classification.classifiers.EntropyTree \
-    import EntropyTree
+from fuzzy_classification.classifiers.FuzzyEnsemble import FuzzyEnsemble
 
 from fuzzy_classification.classifiers.RandomFuzzyTree \
     import RandomFuzzyTree
 
 import numpy as np
-import random 
+import random
 
 logger = logging.getLogger()
+
 
 def set_logger():
     ch = logging.StreamHandler()
@@ -20,13 +19,15 @@ def set_logger():
     logger.handlers = []
     logger.addHandler(ch)
 
+
 def poker_data_properties():
     file_name = "../data/poker-hand-testing.data"
     cols = range(10)
     class_col = 10
 
-    row_n = int( 10 ** 3 )
-    data_n = int( 10 ** 3 )
+    row_n = int(10 ** 3)
+    data_n = int(10 ** 3)
+
     def trans_f(x):
         if x[1] != '1':
             x[1] = '2'
@@ -36,10 +37,11 @@ def poker_data_properties():
 
     return data_properties
 
+
 def kddcup_data_properties():
     file_name = "../data/kddcupfull.data"
-    cols = [0, 4, 5, 9, 10, 12, 13, 14 , 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29,
-        30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+    cols = [0, 4, 5, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 29,
+            30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
     class_col = 41
     row_cnt = 1 * 10 ** 6
     data_n = 10 ** 4
@@ -55,50 +57,83 @@ def kddcup_data_properties():
 
     return data_properties
 
+
 def covtype_data_properties():
     file_name = "/home/faruk/workspace/thesis/data/covtype.data"
     cols = range(54)
     class_col = 54
 
-    row_cnt =  int( 1 * 10 ** 3 )
-    data_n = int( 10 ** 3 )
+    row_cnt = int(15 * 10 ** 3)
+    data_n = int(15 * 10 ** 3)
+
     def filter_f(x):
         return x[1] == "1" or x[1] == "2"
+
     def trans_f(x):
-        x[0] = [ int(d) for d in x[0] ]
+        x[0] = [int(d) for d in x[0]]
         return x
 
-    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n, filter_fun=filter_f, transformation_fun=trans_f)
+    data_properties = dl.DataProperties(file_name, cols, class_col, row_cnt, data_n, filter_fun=filter_f,
+                                        transformation_fun=trans_f)
 
     return data_properties
 
-def as_numpy(data):
-    x = np.array( [ d[0] for d in data ] )
-    y = np.array( [ int(d[1]) for d in data ] )
 
-    data = np.concatenate( (x, np.array([y]).T), 
-                                axis=1 )
+def haberman_data_properties():
+    file_name = \
+        "/home/faruk/workspace/thesis/data/haberman.dat"
+    cols = range(3)
+    class_col = 3
+
+    row_cnt = int(306)
+    data_n = int(306)
+
+    def trans_f(x):
+        x[0] = [int(d) for d in x[0]]
+        return x
+
+    data_properties = dl.DataProperties(file_name,
+                                        cols,
+                                        class_col,
+                                        row_cnt,
+                                        data_n,
+                                        transformation_fun=trans_f)
+
+    return data_properties
+
+
+def as_numpy(data):
+    x = np.array([d[0] for d in data])
+    y = np.array([int(d[1]) for d in data])
+
+    data = np.concatenate((x, np.array([y]).T),
+                          axis=1)
 
     return data
+
 
 def main():
     verification_data_perc = 0.1
 
-    data_properties = covtype_data_properties()
+    data_properties = haberman_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
 
     data = data_loader_instance.get_data()
+    print(len(data))
     ranges = data_loader_instance.get_ranges()
-    
+
     verification_data_n = int(verification_data_perc * len(data))
     training_data = data[:-verification_data_n]
     verification_data = data[-verification_data_n:]
 
     np_training_data = as_numpy(training_data)
-    rft = RandomFuzzyTree()
-    rft.fit(np_training_data, ranges)
+    np_verification_data = as_numpy(verification_data)
+
+    ff = FuzzyEnsemble(classifier_n=50)
+    ff.fit(np_training_data, ranges)
+    print(ff.score(np_verification_data))
 
 
 if __name__ == "__main__":
