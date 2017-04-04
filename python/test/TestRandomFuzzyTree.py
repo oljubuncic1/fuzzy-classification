@@ -3,6 +3,9 @@ import numpy as np
 
 from math import log
 
+from pyximport import pyximport
+pyximport.install()
+
 from fuzzy_classification.util import math_functions
 from fuzzy_classification.util.math_functions import triangular
 
@@ -252,3 +255,4 @@ class TestRandomFuzzyTree(unittest.TestCase):
         data = np.concatenate((x, np.array([y]).T), axis=1)
 
         return data
+
