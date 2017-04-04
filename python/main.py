@@ -130,6 +130,7 @@ def mamographic_data_properties():
 
     return data_properties
 
+
 def iris_data_properties():
     file_name = \
         "/home/faruk/workspace/thesis/data/iris.dat"
@@ -159,6 +160,66 @@ def iris_data_properties():
     return data_properties
 
 
+def contraceptive_data_properties():
+    file_name = \
+        "/home/faruk/workspace/thesis/data/contraceptive.dat"
+    cols = range(9)
+    class_col = 9
+
+    row_cnt = int(1473)
+    data_n = int(1473)
+
+    def trans_f(x):
+        x[0] = [float(d) for d in x[0]]
+        return x
+
+    data_properties = dl.DataProperties(file_name,
+                                        cols,
+                                        class_col,
+                                        row_cnt,
+                                        data_n,
+                                        transformation_fun=trans_f)
+
+    return data_properties
+
+
+def segmentation_data_properties():
+    file_name = \
+        "/home/faruk/workspace/thesis/data/segmentation.dat"
+    cols = range(1, 20)
+    class_col = 0
+
+    row_cnt = int(2100)
+    data_n = int(2100)
+
+    def trans_f(x):
+        x[0] = [float(d) for d in x[0]]
+        if x[1] == "BRICKFACE":
+            x[1] = "1"
+        elif x[1] == "SKY":
+            x[1] = "2"
+        elif x[1] == "FOLIAGE":
+            x[1] = "3"
+        elif x[1] == "CEMENT":
+            x[1] = "4"
+        elif x[1] == "WINDOW":
+            x[1] = "5"
+        elif x[1] == "PATH":
+            x[1] = "6"
+        elif x[1] == "GRASS":
+            x[1] = "7"
+        return x
+
+    data_properties = dl.DataProperties(file_name,
+                                        cols,
+                                        class_col,
+                                        row_cnt,
+                                        data_n,
+                                        transformation_fun=trans_f)
+
+    return data_properties
+
+
 def as_numpy(data):
     x = np.array([d[0] for d in data])
     y = np.array([int(d[1]) for d in data])
@@ -172,7 +233,7 @@ def as_numpy(data):
 def main():
     verification_data_perc = 0.1
 
-    data_properties = mamographic_data_properties()
+    data_properties = segmentation_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
@@ -189,7 +250,7 @@ def main():
     np_verification_data = as_numpy(verification_data)
 
     ff = FuzzyEnsemble(classifier_n=10)
-    ff.fit(np_training_data, ranges, classes=[1, 2])
+    ff.fit(np_training_data, ranges, classes=[1, 2, 3])
     print("Score: ", ff.score(np_verification_data))
 
 

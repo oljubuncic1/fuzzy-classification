@@ -95,34 +95,15 @@ class RandomFuzzyTree:
         return correct / data.shape[0]
 
     def build_tree(self, data, memberships, lvl=0):
-        node = FuzzyNode()
+        print("\t\t", "Building tree lvl ", lvl)
+        regular_features = self.get_regular_features(data)
 
-        regular_features = []
-        for i in range(len(self.ranges)):
-            curr_range = self.ranges[i]
-            inds = np.logical_and( data[:, i] != curr_range[0], data[:, i] != curr_range[1]).nonzero()[0]
-            if curr_range[0] != curr_range[1] and inds.shape[0] != 0:
-                regular_features.append(i)
-
-        is_terminal = False
         if len(regular_features) != 0:
-            features = np.random.choice(regular_features,
-                                        min(self.p, len(regular_features)),
-                                        replace=False)
-
-            feature_partitionings = {}
-            for feature in features:
-                feature_partitionings[feature] = \
-                    self.best_partitioning(feature, data, memberships)
-
-            node.feature = max(feature_partitionings,
-                               key=lambda x: feature_partitionings[x].gain)
-            node.partitioning = feature_partitionings[node.feature]
-            node.partitioning.gain = self._fuzzy_entropy(data, memberships) + node.partitioning.gain
+            node = self.select_partitioning(data, memberships, regular_features)
         else:
-            is_terminal = True
+            node = self.generate_leaf(data, memberships)
 
-        if is_terminal or self.is_terminal(node, data, memberships):
+        if node.is_terminal or self.is_terminal(node, data, memberships):
             node.is_terminal = True
             node.classification = self.classification(data, memberships)
         else:
@@ -130,6 +111,36 @@ class RandomFuzzyTree:
                 p.node = self.build_tree(p.properties.data, p.properties.memberships, lvl + 1)
 
         return node
+
+    def generate_leaf(self, data, memberships):
+        node = FuzzyNode()
+        node.is_terminal = True
+        node.classification = self.classification(data, memberships)
+        return node
+
+    def select_partitioning(self, data, memberships, regular_features):
+        node = FuzzyNode()
+        features = np.random.choice(regular_features,
+                                    min(self.p, len(regular_features)),
+                                    replace=False)
+        feature_partitionings = {}
+        for feature in features:
+            feature_partitionings[feature] = \
+                self.best_partitioning(feature, data, memberships)
+        node.feature = max(feature_partitionings,
+                           key=lambda x: feature_partitionings[x].gain)
+        node.partitioning = feature_partitionings[node.feature]
+        node.partitioning.gain = self._fuzzy_entropy(data, memberships) + node.partitioning.gain
+        return node
+
+    def get_regular_features(self, data):
+        regular_features = []
+        for i in range(len(self.ranges)):
+            curr_range = self.ranges[i]
+            inds = np.logical_and(data[:, i] != curr_range[0], data[:, i] != curr_range[1]).nonzero()[0]
+            if curr_range[0] != curr_range[1] and inds.shape[0] != 0:
+                regular_features.append(i)
+        return regular_features
 
     def is_terminal(self, node, data, memberships):
         if data.shape[0] == 0:

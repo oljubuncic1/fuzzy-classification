@@ -2,6 +2,9 @@ from fuzzy_classification.classifiers.RandomFuzzyTree \
     import RandomFuzzyTree
 import numpy as np
 from collections import defaultdict
+import logging
+
+logger = logging.getLogger("FuzzyEnsemble")
 
 
 class FuzzyEnsemble:
@@ -14,12 +17,13 @@ class FuzzyEnsemble:
             self.classifiers.append(classifier(categorical_features=categorical_features))
 
     def fit(self, data, ranges, classes=(1, 2)):
-        i = 0
+        i = 1
         for c in self.classifiers:
-            print(i)
+            print("\tFitting classifier %d" % i)
             i += 1
+
             inds = np.random.choice(range(data.shape[0]),
-                                    size=int(0.6 * data.shape[0]),
+                                    size=int(0.8 * data.shape[0]),
                                     replace=True)
             classifier_data = data[inds,:]
             c.fit(classifier_data, ranges, classes=classes)
