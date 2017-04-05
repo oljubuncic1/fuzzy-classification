@@ -1,10 +1,15 @@
 import numpy as np
 from math import log, sqrt, ceil
+import random
+import string
 
 import pyximport
 
 pyximport.install()
 from ..util import math_functions
+
+import textwrap
+from textwrap import dedent
 
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
@@ -43,17 +48,22 @@ class FuzzySetProperties:
 class RandomFuzzyTree:
     def __init__(self,
                  n_jobs=1,
-                 p="sqrt",
+                 p="all",
                  terminal_n_threshold=10,
                  categorical_features=[],
-                 a_cut = 0.5):
+                 a_cut = 0.5,
+                 test_generation_file=None,
+                 test_indendation_level=1):
 
+        self.test_generation_file = test_generation_file
+        self.test_cases_generated = 0
         self.n_jobs = n_jobs
         self.p = p
         self.is_fit = False
         self.terminal_n_threshold = terminal_n_threshold
         self.categorical_features = categorical_features
         self.a_cut = a_cut
+        self.test_indentation_level = test_indendation_level
 
     def fit(self, data, ranges, copy_data=False, classes=(1, 2)):
         self.classes = classes
@@ -77,6 +87,9 @@ class RandomFuzzyTree:
         self.is_fit = True
 
     def predict(self, x):
+        if not self.is_fit:
+            raise AssertionError("Classifier not fit")
+
         memberships = self.predict_memberships(x)
         return max(memberships)
 
@@ -95,7 +108,7 @@ class RandomFuzzyTree:
         return correct / data.shape[0]
 
     def build_tree(self, data, memberships, lvl=0):
-        print("\t\t", "Building tree lvl ", lvl)
+        print("\t\t Bulting tree lvl %d" % (lvl + 1) )
         regular_features = self.get_regular_features(data)
 
         if len(regular_features) != 0:
@@ -143,13 +156,13 @@ class RandomFuzzyTree:
         return regular_features
 
     def is_terminal(self, node, data, memberships):
-        if data.shape[0] == 0:
+        if memberships.shape[0] == 0:
             return True
 
         data_classes = data[:, -1]
         all_same = True
         for i in range(1, data_classes.shape[0]):
-            if data_classes[i] != data_classes[0]:
+            if int(data_classes[i]) != int(data_classes[0]):
                 all_same = False
                 break
 
@@ -331,6 +344,11 @@ class RandomFuzzyTree:
         return properties
 
     def _fuzzy_entropy(self, data, memberships, cardinality=None):
+        if self.should_generate_tests(data):
+            self.generate_fuzzy_entropy_test(data,
+                                             memberships,
+                                             cardinality)
+
         if data.shape.__contains__(0):
             raise ValueError("Empty array")
 
@@ -347,6 +365,43 @@ class RandomFuzzyTree:
                     entropy -= proba * log(proba, 2)
 
         return entropy
+
+    def should_generate_tests(self, data):
+        return self.test_generation_file is not None and \
+               20 < data.shape[0] < 50 and \
+               self.test_cases_generated < 3
+
+    def generate_fuzzy_entropy_test(self, data, memberships, cardinality):
+        self.test_cases_generated += 1
+
+        test_cases_file = open(self.test_generation_file, "a")
+
+        print("\t\tGenerating tests")
+        data = data[:, (-2, -1)].tolist()
+        memberships = memberships.tolist()
+
+        indentation = ["    " for i in range(self.test_indentation_level)]
+        indentation = "".join(indentation)
+
+        print("", file=test_cases_file)
+        test_id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+        print("%sdef testFuzzyEntropy_generated_%s(self):" % (indentation, test_id), file=test_cases_file)
+        wrapper = textwrap.TextWrapper(initial_indent="%s    " % indentation, width=80,
+                                       subsequent_indent=' ' * 24)
+        data_str = "data = np.array(%s)" % (data)
+        print(wrapper.fill(data_str), file=test_cases_file)
+
+        memberships_str = "memberships= np.array(%s)" % (memberships)
+
+        print(wrapper.fill(memberships_str), file=test_cases_file)
+        print("%s    cardinality = %s" % (indentation, cardinality), file=test_cases_file)
+
+        result = "self.tree._fuzzy_entropy(data, memberships, cardinality)"
+        print("%s    self.assertAlmostEqual(%s, 0, 2)" % (indentation, result), file=test_cases_file)
+
+        print("", file=test_cases_file)
+        test_cases_file.close()
 
     def __str__(self):
         raise NotImplementedError()

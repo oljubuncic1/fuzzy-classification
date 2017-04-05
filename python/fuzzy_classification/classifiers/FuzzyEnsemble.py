@@ -11,10 +11,12 @@ class FuzzyEnsemble:
     def __init__(self,
                  classifier_n=10,
                  categorical_features=[],
-                 classifier=RandomFuzzyTree):
+                 classifier=RandomFuzzyTree,
+                 test_generation_file=None):
         self.classifiers = []
         for i in range(classifier_n):
-            self.classifiers.append(classifier(categorical_features=categorical_features))
+            self.classifiers.append(classifier(categorical_features=categorical_features,
+                                               test_generation_file=test_generation_file))
 
     def fit(self, data, ranges, classes=(1, 2)):
         i = 1
@@ -31,8 +33,8 @@ class FuzzyEnsemble:
     def score(self, data):
         correct = 0
         for x in data:
-            prediction = self.predict(x[:-1])
-            x_class = x[-1]
+            prediction = int(self.predict(x[:-1]))
+            x_class = int(x[-1])
 
             if prediction == x_class:
                 correct += 1

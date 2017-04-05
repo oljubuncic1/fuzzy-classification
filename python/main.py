@@ -190,7 +190,7 @@ def segmentation_data_properties():
     class_col = 0
 
     row_cnt = int(2100)
-    data_n = int(2100)
+    data_n = int(100)
 
     def trans_f(x):
         x[0] = [float(d) for d in x[0]]
@@ -208,6 +208,7 @@ def segmentation_data_properties():
             x[1] = "6"
         elif x[1] == "GRASS":
             x[1] = "7"
+
         return x
 
     data_properties = dl.DataProperties(file_name,
@@ -249,8 +250,9 @@ def main():
     np_training_data = as_numpy(training_data)
     np_verification_data = as_numpy(verification_data)
 
-    ff = FuzzyEnsemble(classifier_n=10)
-    ff.fit(np_training_data, ranges, classes=[1, 2, 3])
+    ff = FuzzyEnsemble(classifier_n=10,
+                       test_generation_file="/home/faruk/workspace/thesis/python/test/TestRandomFuzzyTree.py")
+    ff.fit(np_training_data, ranges, classes=[1, 2, 3, 4, 5, 6, 7])
     print("Score: ", ff.score(np_verification_data))
 
 
