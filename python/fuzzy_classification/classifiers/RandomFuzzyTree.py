@@ -8,7 +8,7 @@ import pyximport
 pyximport.install()
 
 from ..util import math_functions
-
+from math import log
 
 class RandomFuzzyTree:
     NODE_NAME_LENGTH = 5
@@ -75,7 +75,7 @@ class RandomFuzzyTree:
         data = node.data["data"]
         sorted_inds = data[:, feature].argsort()
         data = data[sorted_inds]
-        points = np.unique(data[1:-1, feature])
+        points = np.unique(data[:, feature])
 
         lower, upper = node.data["ranges"][feature]
 
@@ -83,7 +83,7 @@ class RandomFuzzyTree:
         children_per_point = {}
         for p in points:
             diff = p - last_point
-            if diff > (upper - lower) / 10 and diff > 10 and p - lower > 0.1 and upper - p > 0.1:
+            if diff > (upper - lower) / 10 and p - lower > 0.1 and upper - p > 0.1:
                 children_at_point = self.generate_children_at_point(node, feature, p)
                 if self.are_valid_children(children_at_point):
                     children_per_point[p] = \
@@ -124,36 +124,32 @@ class RandomFuzzyTree:
 
         children = []
 
-        child_ranges = copy.copy(ranges)
-        # child_ranges[feature][1] = p
+        child_ranges = copy.deepcopy(ranges)
+        child_ranges[feature][1] = p
+        assert p - lower != 0
         left_triangular = math_functions.triangular(lower, p - lower)
-
         def child_f(item):
             return left_triangular(item[feature])
-
         children.append(self.generate_child_node(node,
                                                  child_ranges,
                                                  child_f))
 
-        child_ranges = copy.copy(ranges)
+        child_ranges = copy.deepcopy(ranges)
         middle_triangular = math_functions.composite_triangular(p,
                                                                 p - lower,
                                                                 upper - p)
-
         def child_f(item):
             return middle_triangular(item[feature])
-
         children.append(self.generate_child_node(node,
                                                  child_ranges,
                                                  child_f))
 
-        child_ranges = copy.copy(ranges)
-        # child_ranges[feature][0] = p
+        child_ranges = copy.deepcopy(ranges)
+        child_ranges[feature][0] = p
+        assert upper - p != 0
         right_triangular = math_functions.triangular(upper, upper - p)
-
         def child_f(item):
             return right_triangular(item[feature])
-
         children.append(self.generate_child_node(node,
                                                  child_ranges,
                                                  child_f))
@@ -177,10 +173,39 @@ class RandomFuzzyTree:
                           "f": child_f})
 
     def gain(self, node, children):
-        return 1
+        gain_value = self.fuzzy_entropy(node)
+
+        for c in children:
+            gain_value -= (self.fuzzy_cardinality(c) / self.fuzzy_cardinality(node)) * self.fuzzy_entropy(c)
+
+        return gain_value
 
     def are_valid_children(self, children):
         non_zero_children = [c for c in children if c.data["data"].shape[0] != 0]
         non_zero_children_n = len(non_zero_children)
 
-        return non_zero_children_n < 2
+        return non_zero_children_n >= 2
+
+    def fuzzy_entropy(self, node):
+        data = node.data["data"]
+        if data.shape[0] == 0:
+            entropy = 0
+        else:
+            entropy = 0
+            cardinality = self.fuzzy_cardinality(node)
+            memberships = node.data["memberships"]
+
+            if cardinality != 0:
+                for c in self.classes:
+                    class_indices = (data[:, -1] == c).nonzero()[0]
+                    memberships_at_inds = memberships[class_indices]
+                    proba = np.sum(memberships_at_inds) / cardinality
+                    if proba != 0:
+                        entropy -= proba * log(proba, 2)
+
+        return entropy
+
+    def fuzzy_cardinality(self, node):
+        memberships = node.data["memberships"]
+
+        return np.sum(memberships)

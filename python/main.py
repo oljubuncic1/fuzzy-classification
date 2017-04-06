@@ -186,7 +186,8 @@ def contraceptive_data_properties():
 def segmentation_data_properties():
     file_name = \
         "/home/faruk/workspace/thesis/data/segmentation.dat"
-    cols = range(1, 20)
+    cols = list(range(1, 20))
+    cols.remove(3)
     class_col = 0
 
     row_cnt = int(2100)
