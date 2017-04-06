@@ -1,7 +1,7 @@
 import logging
 import fuzzy_classification.util.data_loader as dl
 from fuzzy_classification.classifiers.FuzzyEnsemble import FuzzyEnsemble
-
+from sklearn.ensemble import RandomForestClassifier
 from fuzzy_classification.classifiers.RandomFuzzyTree \
     import RandomFuzzyTree
 
@@ -190,7 +190,7 @@ def segmentation_data_properties():
     class_col = 0
 
     row_cnt = int(2100)
-    data_n = int(100)
+    data_n = int(2100)
 
     def trans_f(x):
         x[0] = [float(d) for d in x[0]]
@@ -237,7 +237,7 @@ def main():
     data_properties = segmentation_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
-    data_loader_instance.load(shuffle=True)
+    data_loader_instance.load(shuffle=False)
 
     data = data_loader_instance.get_data()
     print("Data size:", len(data))
@@ -250,10 +250,10 @@ def main():
     np_training_data = as_numpy(training_data)
     np_verification_data = as_numpy(verification_data)
 
-    ff = FuzzyEnsemble(classifier_n=10,
-                       test_generation_file="/home/faruk/workspace/thesis/python/test/TestRandomFuzzyTree.py")
+    ff = FuzzyEnsemble(classifier_n=10)
+    ranges = [list(r) for r in ranges]
     ff.fit(np_training_data, ranges, classes=[1, 2, 3, 4, 5, 6, 7])
-    print("Score: ", ff.score(np_verification_data))
+    # print("Score: ", ff.score(np_verification_data))
 
 
 if __name__ == "__main__":

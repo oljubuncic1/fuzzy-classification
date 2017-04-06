@@ -10,18 +10,15 @@ logger = logging.getLogger("FuzzyEnsemble")
 class FuzzyEnsemble:
     def __init__(self,
                  classifier_n=10,
-                 categorical_features=[],
-                 classifier=RandomFuzzyTree,
-                 test_generation_file=None):
+                 classifier=RandomFuzzyTree):
         self.classifiers = []
         for i in range(classifier_n):
-            self.classifiers.append(classifier(categorical_features=categorical_features,
-                                               test_generation_file=test_generation_file))
+            self.classifiers.append(classifier())
 
     def fit(self, data, ranges, classes=(1, 2)):
         i = 1
         for c in self.classifiers:
-            print("\tFitting classifier %d" % i)
+            print("Fitting classifier %d" % i)
             i += 1
 
             inds = np.random.choice(range(data.shape[0]),
