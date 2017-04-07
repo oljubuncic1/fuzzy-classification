@@ -1,9 +1,7 @@
 from treelib import Node, Tree
 import numpy as np
 
-import copyreg
-import types
-import dill
+from queue import Queue
 
 import copy
 
@@ -17,11 +15,12 @@ from math import log
 
 class RandomFuzzyTree:
     NO_GOOD_CANDIDATES = {}
-    MIN_GAIN_THRESHOLD = 0.05
+    MIN_GAIN_THRESHOLD = 0.000001
 
     def __init__(self,
                  feature_choice_n=5,
-                 max_depth=30):
+                 max_depth=30
+                 ):
         self.is_fit = False
         self.max_depth = max_depth
         self.feature_choice_n = feature_choice_n
@@ -32,8 +31,6 @@ class RandomFuzzyTree:
         self.feature_n = data.shape[1] - 1
 
         self.tree = Tree()
-
-        print("\tClasses: ", self.classes)
 
         root_node = self.generate_root_node(data, ranges)
         self.tree.add_node(root_node)
@@ -90,6 +87,22 @@ class RandomFuzzyTree:
         #     print("Building at level: ", lvl)
         # if lvl != 0:
         #     self.tree.show()
+
+        frontier = Queue()
+        frontier.put( (node, 0) )
+        while frontier.qsize() != 0:
+            node, lvl = frontier.get()
+            if lvl < self.max_depth and node.data["data"].shape[0] != 0:
+                children = self.generate_best_children(node)
+                if children != self.NO_GOOD_CANDIDATES:
+                    for c in children:
+                        self.tree.add_node(c, node.identifier)
+
+                    for c in children:
+                        frontier.put( (c, lvl + 1) )
+
+        return
+
         if lvl < self.max_depth and node.data["data"].shape[0] != 0:
             children = self.generate_best_children(node)
 
@@ -130,7 +143,7 @@ class RandomFuzzyTree:
         children_per_point = {}
         for p in points:
             diff = p - last_point
-            if diff > (upper - lower) / 10 and p - lower > 0.1 and upper - p > 0.1:
+            if diff > (upper - lower) / 50 and p - lower > 0.1 and upper - p > 0.1:
                 children_at_point = self.generate_children_at_point(node, feature, p)
                 if self.are_valid_children(children_at_point):
                     children_per_point[p] = \
@@ -256,13 +269,24 @@ class RandomFuzzyTree:
             cardinality = self.fuzzy_cardinality(node)
             memberships = node.data["memberships"]
 
+            memberships_per_class = {}
             if cardinality != 0:
-                for c in self.classes:
-                    class_indices = (data[:, -1] == c).nonzero()[0]
-                    memberships_at_inds = memberships[class_indices]
-                    proba = np.sum(memberships_at_inds) / cardinality
-                    if proba != 0:
-                        entropy -= proba * log(proba, 2)
+                for row in range(data.shape[0]):
+                    cls = int(data[row:-1][0])
+                    if cls in memberships_per_class:
+                        memberships_per_class[cls] += memberships[row]
+                    else:
+                        memberships_per_class[cls] = memberships[row]
+
+                for m in memberships_per_class:
+                    ratio = memberships_per_class[m] / cardinality
+                    entropy += ratio * log(ratio, 2)
+                # for c in self.classes:
+                #     class_indices = (data[:, -1] == c).nonzero()[0]
+                #     memberships_at_inds = memberships[class_indices]
+                #     proba = np.sum(memberships_at_inds) / cardinality
+                #     if proba != 0:
+                #         entropy -= proba * log(proba, 2)
 
         return entropy
 
@@ -280,6 +304,7 @@ class RandomFuzzyTree:
         # return self.generate_node_classification(parent)
         # else:
         classification_val = {}
+
         for c in self.classes:
             inds = (data[:, -1] == c).nonzero()[0]
             classification_val[c] = np.sum(memberships[inds])
