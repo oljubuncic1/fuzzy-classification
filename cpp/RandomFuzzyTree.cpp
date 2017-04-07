@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <tuple>
-#include <utility> // std::pair
+#include <utility>
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <atomic>
 #include <queue>
+#include <thread>
 
 #include <cstdio>
 #include <cstdlib>
@@ -27,7 +28,9 @@ using namespace std;
 
 #define item_t pair<vector<double>, string>
 #define data_t vector<item_t>
+
 #define ENTROPY_NOT_SET -1000
+#define THREAD_N 4
 
 struct Node {
     data_t data;
@@ -84,6 +87,7 @@ class RandomFuzzyTree {
                         item_t &x, 
                         double membership) {
             membership *= node.f(x);
+            
             if( node.is_leaf() ) {
                 for(auto kv : node.weights) {
                     memberships[kv.first] += kv.second * membership;
@@ -108,10 +112,9 @@ class RandomFuzzyTree {
                 int lvl = curr.second;
 
                 vector<Node> children = get_best_children(node);
-                if(children.size() != 0 and lvl < max_depth) {
+                if(children.size() != 0) { // and lvl < max_depth) {
                     for(int i = 0; i < children.size(); i++) {
                         Node *child = new Node(children[i]);
-                        // cout << "\t" << child->data.size() << endl;
                         frontier.push(make_pair(child, lvl + 1));
                         node->children.push_back(child);
                     }
@@ -160,10 +163,12 @@ class RandomFuzzyTree {
 
             map<double, vector<Node>> children_per_point;
             for(double point : points) {
-                vector<Node> children = 
-                    generate_children_at_point(node, feature, point);
-                if( are_regular_children(children) ) {
-                    children_per_point[point] = children;
+                if(!eq(point, lower) and !eq(point, upper)) {
+                    vector<Node> children = 
+                        generate_children_at_point(node, feature, point);
+                    if( are_regular_children(children) ) {
+                        children_per_point[point] = children;
+                    }
                 }
             }
 
@@ -218,7 +223,7 @@ class RandomFuzzyTree {
             Node left_child;
             left_child.f = triangular(lower, 2 * (point - lower), feature);
             left_child.ranges = node->ranges;
-            left_child.ranges[feature].second = point;
+            // left_child.ranges[feature].second = point;
             fill_node_properties(node, &left_child);
             children.push_back(left_child);
 
@@ -234,7 +239,7 @@ class RandomFuzzyTree {
             Node right_child;
             right_child.f = triangular(upper, 2 * (upper - point), feature);
             right_child.ranges = node->ranges;
-            right_child.ranges[feature].first = point;
+            // right_child.ranges[feature].first = point;
             fill_node_properties(node, &right_child);
             children.push_back(right_child);
 
@@ -252,9 +257,10 @@ class RandomFuzzyTree {
             vector<double> next_memberships;
 
             for(int i = 0; i < node->memberships.size(); i++) {
-                if(node->memberships[i] > a_cut) {
+                if(local_memberships[i] > a_cut) {
                     next_data.push_back(node->data[i]);
-                    next_memberships.push_back(node->memberships[i]);
+                    next_memberships.push_back(node->memberships[i] * 
+                                                node->f(node->data[i]));
                 }
             }
 
@@ -282,6 +288,7 @@ class RandomFuzzyTree {
 
                 return weights_values;
             } else {
+                return map<string, double>();
                 return weights(parent);
             } 
         }
@@ -358,24 +365,64 @@ class RandomFuzzyTree {
 
 class RandomFuzzyForest {
 private:
-    vector<RandomFuzzyTree> classifiers; 
+    vector<RandomFuzzyTree> classifiers;
+    int job_n;
+    data_t data;
+    vector<range_t> ranges;
 public:
-    RandomFuzzyForest(int classifier_n) {
+    RandomFuzzyForest(int classifier_n, int job_n=4) {
         classifiers = vector<RandomFuzzyTree>(classifier_n);
+        this->job_n = job_n;
     }
 
     void fit(data_t &data, vector<range_t> &ranges) {
-        int i = 1;
-        for(auto &classifier : classifiers) {
-            cout << "Fitting classifier " << i++ << endl;
-            data_t data_sample = random_sample(data);
-            classifier.fit(data_sample, ranges);
+        vector<thread> threads(classifiers.size());
+        
+        for(int i = 0; i < (double)classifiers.size() / job_n; i++) {
+            for(int j = 0; j < job_n; j++) {
+                int curr_ind = i * job_n + j;
+                if(curr_ind < classifiers.size()) {
+                    threads[j] = thread( [this, j, data, ranges] { 
+                        this->fit_classifier(&classifiers[j], 
+                                                data, 
+                                                ranges); 
+                    } );
+                }
+            }
+
+            for(int j = 0; j < job_n; j++) {
+                int curr_ind = i * job_n + j;
+                if(curr_ind < classifiers.size()) {
+                    threads[j].join();
+                }
+            }
         }
+
+
+        // for(int i = 0; i < job_n; i++) {
+        //     threads[i] = thread(fit_classifier, &classifiers[i]);
+        // }
+
+        // int i = 1;
+        // for(auto &classifier : classifiers) {
+        //     cout << "Fitting classifier " << i++ << endl;
+        //     // data_t data_sample = random_sample(data);
+        //     classifier.fit(data_sample, ranges);
+        // }
+    }
+
+    void fit_classifier(RandomFuzzyTree *classifier, 
+                        data_t data, 
+                        vector<range_t> ranges) {
+        cout << "Fitting" << endl;
+        data_t data_sample = random_sample(data);
+        classifier->fit(data_sample, ranges);
+        cout << "Finished fitting" << endl;
     }
 
     data_t random_sample(data_t &data) {
         data_t sample;
-        for(int i = 0; i < 0.5 * data.size(); i++) {
+        for(int i = 0; i < data.size(); i++) {
             int rand_ind = rand() % data.size();
             sample.push_back(data[rand_ind]);
         }
@@ -418,11 +465,10 @@ public:
 };
 
 int main() {
-    // srand(5);
     auto string_data = load_csv_data("../data/segmentation.dat",
                     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                     0,
-                    2100);
+                    200);
     auto ranges = find_ranges(string_data, 
                                 {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
 
@@ -449,7 +495,7 @@ int main() {
         }
     }
 
-    RandomFuzzyForest rff(20);
+    RandomFuzzyForest rff(8);
     rff.fit(training_data, ranges);
     cout << rff.score(verification_data) << endl;
 
