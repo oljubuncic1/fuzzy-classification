@@ -19,19 +19,23 @@ class FuzzyEnsemble:
         i = 1
         for c in self.classifiers:
             print("Fitting classifier %d" % i)
+            inds = np.random.choice(range(data.shape[0]),
+                                    size=int(0.6 * data.shape[0]),
+                                    replace=True)
+            classifier_data = data[inds, :]
+            c.fit(classifier_data, ranges, classes=classes)
+
             i += 1
 
-            inds = np.random.choice(range(data.shape[0]),
-                                    size=int(0.8 * data.shape[0]),
-                                    replace=True)
-            classifier_data = data[inds,:]
-            c.fit(classifier_data, ranges, classes=classes)
+
 
     def score(self, data):
         correct = 0
         for x in data:
             prediction = int(self.predict(x[:-1]))
             x_class = int(x[-1])
+
+            print("Prediction ", prediction, " should be ", x_class)
 
             if prediction == x_class:
                 correct += 1

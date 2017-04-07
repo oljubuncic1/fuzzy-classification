@@ -238,7 +238,7 @@ def main():
     data_properties = segmentation_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
-    data_loader_instance.load(shuffle=False)
+    data_loader_instance.load(shuffle=True)
 
     data = data_loader_instance.get_data()
     print("Data size:", len(data))
@@ -251,11 +251,28 @@ def main():
     np_training_data = as_numpy(training_data)
     np_verification_data = as_numpy(verification_data)
 
-    ff = FuzzyEnsemble(classifier_n=10)
-    ranges = [list(r) for r in ranges]
-    ff.fit(np_training_data, ranges, classes=[1, 2, 3, 4, 5, 6, 7])
-    # print("Score: ", ff.score(np_verification_data))
+    rf = RandomForestClassifier(n_jobs=4, max_features="log2", criterion="entropy", n_estimators=10, bootstrap=True)
+    rf.fit([t[0] for t in training_data], [t[1] for t in training_data])
+    score = rf.score([t[0] for t in verification_data], [t[1] for t in verification_data])
+    print("Crisp Forest score", score)
 
+    ff = FuzzyEnsemble(classifier_n=8)
+    ranges = [list(r) for r in ranges]
+    # for i in range(len(ranges)):
+        # diff = ranges[i][1] - ranges[i][0]
+        # ranges[i][0] = min(0, ranges[i][0])
+        # ranges[i][1] += diff / 10
+    ff.fit(np_training_data, ranges, classes=[1, 2, 3, 4, 5, 6, 7])
+    print("Score: ", ff.score(np_verification_data))
+
+    verification_data_perc = {}
+    for v in verification_data:
+        if v[1] in verification_data_perc:
+            verification_data_perc[v[1]] += 1
+        else:
+            verification_data_perc[v[1]] = 0
+
+    print(verification_data_perc)
 
 if __name__ == "__main__":
     set_logger()
