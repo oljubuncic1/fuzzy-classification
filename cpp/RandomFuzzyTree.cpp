@@ -29,9 +29,6 @@ using namespace std;
 #define item_t pair<vector<double>, string>
 #define data_t vector<item_t>
 
-#define ENTROPY_NOT_SET -1000
-#define THREAD_N 4
-
 struct Node {
     data_t data;
     vector<double> memberships;
@@ -172,7 +169,7 @@ class RandomFuzzyTree {
                 
                 double mid = (a + b) / 2;
 
-                double eps = (b - a) / 10;
+                double eps = 0.005; //(b - a) / 20;
 
                 double left_x = mid - eps; 
                 vector<Node> left_children = 
@@ -319,7 +316,7 @@ class RandomFuzzyTree {
 
                 return weights_values;
             } else {
-                return map<string, double>();
+                // return map<string, double>();
                 return weights(parent);
             } 
         }
@@ -505,7 +502,7 @@ int main() {
 
     data_t training_data;
     data_t verification_data;
-    int clasifier_n = 15;
+    int clasifier_n = 100;
     int job_n = 4;
 
     int fold_n = 10;
@@ -515,6 +512,9 @@ int main() {
 
     double total_score = 0;
     for(int i = 0; i < fold_n; i++) {
+        // if(i >= 1) {
+        //     break;
+        // }
         data_t training_data;
         data_t verification_data;
 
@@ -534,22 +534,7 @@ int main() {
         total_score += curr_score;
     }
 
-    cout << "Total avergae score: " << total_score / fold_n << endl; 
-
-    // for(int i = 0; i < data.size(); i++) {
-    //     if(i <= data.size() / 10) {
-    //         verification_data.push_back(data[i]);
-    //     } else {
-    //         training_data.push_back(data[i]);
-    //     }
-    // }
-
-    // int clasifier_n = 30;
-    // int job_n = 4;
-    // RandomFuzzyForest rff(clasifier_n, job_n);
-    // rff.fit(training_data, ranges);
-    // cout << "Score" << rff.score(verification_data) << endl;
-
+    cout << "Total average score: " << total_score / fold_n << endl; 
 
     return 0;
 }
