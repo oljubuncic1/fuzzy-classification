@@ -197,7 +197,6 @@ class RandomFuzzyTree {
         double gain(vector<Node> &nodes, Node *parent) {
             double gain = parent->entropy;
             for(auto &n : nodes) {
-                // cout << n.cardinality << " " << parent->cardinality << " " << n.entropy << endl;
                 gain -= (n.cardinality / parent->cardinality) * n.entropy; 
             }
 
@@ -223,7 +222,7 @@ class RandomFuzzyTree {
             Node left_child;
             left_child.f = triangular(lower, 2 * (point - lower), feature);
             left_child.ranges = node->ranges;
-            // left_child.ranges[feature].second = point;
+            left_child.ranges[feature].second = point;
             fill_node_properties(node, &left_child);
             children.push_back(left_child);
 
@@ -239,7 +238,7 @@ class RandomFuzzyTree {
             Node right_child;
             right_child.f = triangular(upper, 2 * (upper - point), feature);
             right_child.ranges = node->ranges;
-            // right_child.ranges[feature].first = point;
+            right_child.ranges[feature].first = point;
             fill_node_properties(node, &right_child);
             children.push_back(right_child);
 
@@ -378,12 +377,12 @@ public:
     void fit(data_t &data, vector<range_t> &ranges) {
         vector<thread> threads(classifiers.size());
         
-        for(int i = 0; i < (double)classifiers.size() / job_n; i++) {
+        for(int i = 0; i < ceil((double)classifiers.size() / job_n); i++) {
             for(int j = 0; j < job_n; j++) {
                 int curr_ind = i * job_n + j;
                 if(curr_ind < classifiers.size()) {
-                    threads[j] = thread( [this, j, data, ranges] { 
-                        this->fit_classifier(&classifiers[j], 
+                    threads[j] = thread( [this, data, ranges, curr_ind] { 
+                        this->fit_classifier(&classifiers[curr_ind], 
                                                 data, 
                                                 ranges); 
                     } );
@@ -397,18 +396,6 @@ public:
                 }
             }
         }
-
-
-        // for(int i = 0; i < job_n; i++) {
-        //     threads[i] = thread(fit_classifier, &classifiers[i]);
-        // }
-
-        // int i = 1;
-        // for(auto &classifier : classifiers) {
-        //     cout << "Fitting classifier " << i++ << endl;
-        //     // data_t data_sample = random_sample(data);
-        //     classifier.fit(data_sample, ranges);
-        // }
     }
 
     void fit_classifier(RandomFuzzyTree *classifier, 
@@ -453,7 +440,6 @@ public:
         int correct_n = 0;
         for(item_t &d : data) {
             string prediction = predict(d);
-            cout << prediction << " " << d.second << endl;
             if(prediction == d.second) {
                 correct_n++;
             }
@@ -468,7 +454,7 @@ int main() {
     auto string_data = load_csv_data("../data/segmentation.dat",
                     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                     0,
-                    200);
+                    2100);
     auto ranges = find_ranges(string_data, 
                                 {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
 
@@ -482,7 +468,10 @@ int main() {
         data.push_back(make_pair(item, classification));
     }
 
-    random_shuffle(data.begin(), data.end());
+    bool shuffle = true;
+    if(shuffle) {
+        random_shuffle(data.begin(), data.end());
+    }
 
     data_t training_data;
     data_t verification_data;
@@ -495,9 +484,11 @@ int main() {
         }
     }
 
-    RandomFuzzyForest rff(8);
+    int clasifier_n = 30;
+    int job_n = 4;
+    RandomFuzzyForest rff(clasifier_n, job_n);
     rff.fit(training_data, ranges);
-    cout << rff.score(verification_data) << endl;
+    cout << "Score" << rff.score(verification_data) << endl;
 
 
     return 0;
