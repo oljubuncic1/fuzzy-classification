@@ -401,10 +401,8 @@ public:
     void fit_classifier(RandomFuzzyTree *classifier, 
                         data_t data, 
                         vector<range_t> ranges) {
-        cout << "Fitting" << endl;
         data_t data_sample = random_sample(data);
         classifier->fit(data_sample, ranges);
-        cout << "Finished fitting" << endl;
     }
 
     data_t random_sample(data_t &data) {
@@ -475,20 +473,50 @@ int main() {
 
     data_t training_data;
     data_t verification_data;
-    
-    for(int i = 0; i < data.size(); i++) {
-        if(i <= data.size() / 10) {
-            verification_data.push_back(data[i]);
-        } else {
-            training_data.push_back(data[i]);
-        }
-    }
-
     int clasifier_n = 30;
     int job_n = 4;
+
+    int fold_n = 10;
+    int per_fold = data.size() / fold_n;
+    
     RandomFuzzyForest rff(clasifier_n, job_n);
-    rff.fit(training_data, ranges);
-    cout << "Score" << rff.score(verification_data) << endl;
+
+    double total_score = 0;
+    for(int i = 0; i < fold_n; i++) {
+        data_t training_data;
+        data_t verification_data;
+
+        cout << "Scoring fold " << i << endl;
+        for(int j = 0; j < data.size(); j++) {
+            if(j >= i * per_fold and j < (i + 1) * per_fold) {
+                verification_data.push_back(data[j]);
+            } else {
+                training_data.push_back(data[j]);
+            }
+        }
+
+        rff.fit(training_data, ranges);
+        double curr_score = rff.score(verification_data);
+        cout << "\tScore: " << curr_score << endl;
+
+        total_score += curr_score;
+    }
+
+    cout << "Total avergae score: " << total_score / fold_n << endl; 
+
+    // for(int i = 0; i < data.size(); i++) {
+    //     if(i <= data.size() / 10) {
+    //         verification_data.push_back(data[i]);
+    //     } else {
+    //         training_data.push_back(data[i]);
+    //     }
+    // }
+
+    // int clasifier_n = 30;
+    // int job_n = 4;
+    // RandomFuzzyForest rff(clasifier_n, job_n);
+    // rff.fit(training_data, ranges);
+    // cout << "Score" << rff.score(verification_data) << endl;
 
 
     return 0;
