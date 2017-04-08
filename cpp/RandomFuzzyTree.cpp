@@ -161,14 +161,46 @@ class RandomFuzzyTree {
             double lower = node->ranges[feature].first;
             double upper = node->ranges[feature].second;
 
+
+            double min_el = *min_element(points.begin(), points.end());
+            double max_el = *max_element(points.begin(), points.end());
+            pair<double, double> search_interval(min_el, max_el);
+            double interval_len_threshold = (max_el - min_el) / 16;
+            while(search_interval.second - search_interval.first > interval_len_threshold) {
+                double a = search_interval.first;
+                double b = search_interval.second;
+                
+                double mid = (a + b) / 2;
+
+                double eps = (b - a) / 10;
+
+                double left_x = mid - eps; 
+                vector<Node> left_children = 
+                    generate_children_at_point(node, feature, left_x);
+                double left_y = gain(left_children, node);
+
+                double right_x = mid + eps; 
+                vector<Node> right_children = 
+                    generate_children_at_point(node, feature, right_x);
+                double right_y = gain(right_children, node);
+                
+                if(left_y < right_y) {
+                    search_interval.first = mid;
+                } else {
+                    search_interval.second = mid;
+                }
+            } 
+
             map<double, vector<Node>> children_per_point;
+            double last_point = lower;
             for(double point : points) {
-                if(!eq(point, lower) and !eq(point, upper)) {
+                if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
                     vector<Node> children = 
                         generate_children_at_point(node, feature, point);
                     if( are_regular_children(children) ) {
                         children_per_point[point] = children;
                     }
+                    last_point = point;
                 }
             }
 
@@ -473,7 +505,7 @@ int main() {
 
     data_t training_data;
     data_t verification_data;
-    int clasifier_n = 30;
+    int clasifier_n = 15;
     int job_n = 4;
 
     int fold_n = 10;
