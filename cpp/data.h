@@ -25,7 +25,7 @@ using namespace std;
 #define range_t pair<double, double>
 
 double to_double(const string &str) {
-	return stod(str);
+    return stod(str);
 }
 
 template<typename Out>
@@ -45,73 +45,73 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 example_t example_from_line(
-	const string &line, 
-	const vector<int> &attribute_indices, 
-	const int &class_index
+        const string &line,
+        const vector<int> &attribute_indices,
+        const int &class_index
 ) {
-	auto parts = split(line, ',');
-	string classification = parts[ class_index ];
+    auto parts = split(line, ',');
+    string classification = parts[ class_index ];
 
-	vector<string> data;
-	for(auto i : attribute_indices) {
-		data.push_back(parts[i]);
-	}
+    vector<string> data;
+    for(auto i : attribute_indices) {
+        data.push_back(parts[i]);
+    }
 
-	example_t example = make_pair(data, classification);
-	return example;
+    example_t example = make_pair(data, classification);
+    return example;
 }
 
 vector<example_t> load_csv_data(
-	const string &file_name, 
-	const vector<int> &attribute_indices, 
-	const int &class_index, 
-	const int &line_cnt
+        const string &file_name,
+        const vector<int> &attribute_indices,
+        const int &class_index,
+        const int &line_cnt
 ) {
-	auto in = fopen(file_name.c_str(), "r");
+    auto in = fopen(file_name.c_str(), "r");
 
     vector<example_t> data;
 
-	char line[1000];
-	for(int i = 0; i < line_cnt; i++) {
-		fscanf(in, "%s", line);
-		example_t e = example_from_line(string(line), attribute_indices, class_index);
-		// if(e.second.compare("0") == 0 or e.second.compare("1") == 0) {
-			data.push_back(e);
-		// }
-	}
+    char line[1000];
+    for(int i = 0; i < line_cnt; i++) {
+        fscanf(in, "%s", line);
+        example_t e = example_from_line(string(line), attribute_indices, class_index);
+        // if(e.second.compare("0") == 0 or e.second.compare("1") == 0) {
+        data.push_back(e);
+        // }
+    }
 
-	fclose(in);
+    fclose(in);
 
     return data;
 }
 
 vector<range_t> find_ranges(
-	const vector<example_t> &examples, 
-	const vector<int> &indices
+        const vector<example_t> &examples,
+        const vector<int> &indices
 ) {
-	vector<range_t> ranges;
-	for(auto i : indices) {
-		ranges.push_back(
-			make_pair(
-				to_double(min_element(
-					examples.begin(), 
-					examples.end(), 
-					[i](example_t x, example_t y) {
-						return to_double(x.first[i]) < to_double(y.first[i]);
-					}
-				)->first[i]),
-				to_double(max_element(
-					examples.begin(), 
-					examples.end(), 
-					[i](example_t x, example_t y) {
-						return to_double(x.first[i]) < to_double(y.first[i]);
-					}
-				)->first[i])
-			)
-		);
-	}
+    vector<range_t> ranges;
+    for(auto i : indices) {
+        ranges.push_back(
+                make_pair(
+                        to_double(min_element(
+                                examples.begin(),
+                                examples.end(),
+                                [i](example_t x, example_t y) {
+                                    return to_double(x.first[i]) < to_double(y.first[i]);
+                                }
+                        )->first[i]),
+                        to_double(max_element(
+                                examples.begin(),
+                                examples.end(),
+                                [i](example_t x, example_t y) {
+                                    return to_double(x.first[i]) < to_double(y.first[i]);
+                                }
+                        )->first[i])
+                )
+        );
+    }
 
-	return ranges;
+    return ranges;
 }
 
 #endif

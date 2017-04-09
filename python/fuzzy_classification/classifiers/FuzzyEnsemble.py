@@ -1,3 +1,7 @@
+import pyximport
+
+pyximport.install()
+
 from fuzzy_classification.classifiers.RandomFuzzyTree \
     import RandomFuzzyTree
 import numpy as np

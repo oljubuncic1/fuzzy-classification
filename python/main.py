@@ -191,7 +191,7 @@ def segmentation_data_properties():
     class_col = 0
 
     row_cnt = int(2100)
-    data_n = int(2100)
+    data_n = int(1000)
 
     def trans_f(x):
         x[0] = [float(d) for d in x[0]]

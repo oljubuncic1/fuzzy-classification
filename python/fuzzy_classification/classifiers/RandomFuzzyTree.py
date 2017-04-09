@@ -19,8 +19,7 @@ class RandomFuzzyTree:
 
     def __init__(self,
                  feature_choice_n=5,
-                 max_depth=30
-                 ):
+                 max_depth=20):
         self.is_fit = False
         self.max_depth = max_depth
         self.feature_choice_n = feature_choice_n
@@ -272,7 +271,7 @@ class RandomFuzzyTree:
             memberships_per_class = {}
             if cardinality != 0:
                 for row in range(data.shape[0]):
-                    cls = int(data[row:-1][0])
+                    cls = int(data[row,-1])
                     if cls in memberships_per_class:
                         memberships_per_class[cls] += memberships[row]
                     else:
