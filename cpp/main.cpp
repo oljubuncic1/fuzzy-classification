@@ -52,28 +52,33 @@ private:
     int feature_n;
     double a_cut;
     double min_gain_threshold;
-    double w;
+    map<string, double> w;
 public:
     RandomFuzzyTree() {
-        w = 1;
+
     }
 
-    double& weight() {
+    map<string, double>& weights() {
         return w;
     }
 
     void fit(data_t &data,
              vector<range_t> &ranges,
-             int max_depth=100,
+             int max_depth=10000,
              int p=-1,
              double a_cut=0.5,
-             double min_gain_threshold=0.0000001) {
+             double min_gain_threshold=0.000001) {
         root = generate_root_node(data, ranges);
         this->max_depth = max_depth;
         this->a_cut = a_cut;
         this->feature_n = ranges.size();
         this->p = int( sqrt(feature_n) );
         this->min_gain_threshold = min_gain_threshold;
+
+        for(auto &d : data) {
+            w[d.second] = 1;
+        }
+
         build_tree();
     }
 
@@ -417,16 +422,35 @@ public:
     }
 
     void fit(data_t &data, vector<range_t> &ranges) {
+        double perc = 0.8;
+
+        data_t classifier_data;
+        data_t weight_data;
+
+        for(int i = 0; i < data.size(); i++) {
+            auto &d = data[i];
+            if(i < perc * data.size()) {
+                classifier_data.push_back(d);
+            } else {
+                weight_data.push_back(d);
+            }
+        }
+
+        fit_classifiers(classifier_data, ranges);
+        fit_weights(weight_data);
+    }
+
+    void fit_classifiers(data_t &data, const vector<range_t> &ranges) {
         vector<thread> threads(classifiers.size());
 
-        for(int i = 0; i < ceil((double)classifiers.size() / job_n); i++) {
+        for(int i = 0; i < ceil((double) classifiers.size() / job_n); i++) {
             for(int j = 0; j < job_n; j++) {
                 int curr_ind = i * job_n + j;
                 if(curr_ind < classifiers.size()) {
                     threads[j] = thread( [this, data, ranges, curr_ind] {
-                        this->fit_classifier(&classifiers[curr_ind],
-                                             data,
-                                             ranges);
+                        fit_classifier(&classifiers[curr_ind],
+                                       data,
+                                       ranges);
                     } );
                 }
             }
@@ -438,6 +462,40 @@ public:
                 }
             }
         }
+    }
+
+    void fit_weights(data_t &data) {
+        double alpha = 0.2;
+
+        for(auto &d : data) {
+            string y = d.second;
+
+            for(auto &classifier : classifiers) {
+                map<string, double> prediction = classifier.predict_memberships(d);
+
+                double total = 0;
+                auto &weights = classifier.weights();
+                for(auto &kv : prediction) {
+                    total += weights[kv.first] * kv.second;
+                }
+
+                for(auto kv : weights) {
+                    double t;
+                    if(kv.first.compare(y) == 0) {
+                        t = total;
+                    } else {
+                        t = 0;
+                    }
+
+                    double dy = weights[kv.first] * prediction[kv.first] - t;
+                    double delta_w = -alpha * dy * prediction[kv.first];
+
+                    weights[kv.first] += delta_w;
+                }
+            }
+        }
+
+        cout << "" << endl;
     }
 
     void fit_classifier(RandomFuzzyTree *classifier,
@@ -477,7 +535,7 @@ public:
                 string cls = kv.first;
                 double val = kv.second;
 
-                membs_per_class[cls] += val * classifier.weight();
+                membs_per_class[cls] += val * classifier.weights()[cls];
             }
         }
 
