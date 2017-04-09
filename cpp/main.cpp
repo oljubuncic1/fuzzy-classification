@@ -199,7 +199,6 @@ public:
         }
 
         map<double, vector<Node>> children_per_point;
-        double last_point = lower;
         for(double point : points) {
             if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
                 vector<Node> children =
@@ -207,7 +206,6 @@ public:
                 if( are_regular_children(children) ) {
                     children_per_point[point] = children;
                 }
-                last_point = point;
             }
         }
 
@@ -422,7 +420,7 @@ public:
     }
 
     void fit(data_t &data, vector<range_t> &ranges) {
-        double perc = 0.8;
+        double perc = 1.0;
 
         data_t classifier_data;
         data_t weight_data;
@@ -465,7 +463,7 @@ public:
     }
 
     void fit_weights(data_t &data) {
-        double alpha = 0.2;
+        double alpha = 0;
 
         for(auto &d : data) {
             string y = d.second;
@@ -494,8 +492,6 @@ public:
                 }
             }
         }
-
-        cout << "" << endl;
     }
 
     void fit_classifier(RandomFuzzyTree *classifier,
@@ -509,7 +505,7 @@ public:
         set<item_t> sample;
         for(int i = 0; i < data.size(); i++) {
             int rand_ind = rand();
-            int n = data.size();
+            int n = (int) data.size();
 
             while (rand_ind >= RAND_MAX - (RAND_MAX % n)) {
                 rand_ind = rand();
@@ -582,7 +578,7 @@ int main() {
         random_shuffle(data.begin(), data.end());
     }
 
-    int clasifier_n = 10;
+    int clasifier_n = 100;
     int job_n = 4;
 
     int fold_n = 10;
@@ -592,9 +588,6 @@ int main() {
 
     double total_score = 0;
     for(int i = 0; i < fold_n; i++) {
-        // if(i >= 1) {
-        //     break;
-        // }
         data_t training_data;
         data_t verification_data;
 
