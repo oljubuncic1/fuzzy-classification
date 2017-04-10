@@ -188,42 +188,71 @@ public:
         double min_el = *min_element(points.begin(), points.end());
         double max_el = *max_element(points.begin(), points.end());
         pair<double, double> search_interval(min_el, max_el);
-        double interval_len_threshold = (max_el - min_el) / 16;
-        while(search_interval.second - search_interval.first > interval_len_threshold) {
-            double a = search_interval.first;
-            double b = search_interval.second;
-
-            double mid = (a + b) / 2;
-
-            double eps = 0.005; //(b - a) / 20;
-
-            double left_x = mid - eps;
-            vector<Node> left_children =
-                    generate_children_at_point(node, feature, left_x);
-            double left_y = gain(left_children, node);
-
-            double right_x = mid + eps;
-            vector<Node> right_children =
-                    generate_children_at_point(node, feature, right_x);
-            double right_y = gain(right_children, node);
-
-            if(left_y < right_y) {
-                search_interval.first = mid;
-            } else {
-                search_interval.second = mid;
-            }
-        }
+//        double interval_len_threshold = (max_el - min_el) / 16;
+//        while(search_interval.second - search_interval.first > interval_len_threshold) {
+//            double a = search_interval.first;
+//            double b = search_interval.second;
+//
+//            double mid = (a + b) / 2;
+//
+//            double eps = 0.005; //(b - a) / 20;
+//
+//            double left_x = mid - eps;
+//            vector<Node> left_children =
+//                    generate_children_at_point(node, feature, left_x);
+//            double left_y = gain(left_children, node);
+//
+//            double right_x = mid + eps;
+//            vector<Node> right_children =
+//                    generate_children_at_point(node, feature, right_x);
+//            double right_y = gain(right_children, node);
+//
+//            if(left_y < right_y) {
+//                search_interval.first = mid;
+//            } else {
+//                search_interval.second = mid;
+//            }
+//        }
 
         map<double, vector<Node>> children_per_point;
-        for(double point : points) {
-            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+
+        double last_point = -10000;
+
+        std::random_device rd; // obtain a random number from hardware
+        std::mt19937 eng(rd()); // seed the generator
+        std::uniform_int_distribution<> distr(lower, upper); // define the range
+
+        int top;
+        int n = 100;
+        if(points.size() < n) {
+            top = (int) points.size();
+        } else {
+            top = n;
+        }
+
+        for(int i = 0; i < top; i++) {
+            double point = distr(eng);
+            if(point > search_interval.first and
+               point < search_interval.second and
+               !eq(point, lower) and
+               !eq(point, upper)) {
                 vector<Node> children =
                         generate_children_at_point(node, feature, point);
-                if( are_regular_children(children) ) {
-                    children_per_point[point] = children;
-                }
+//                if( are_regular_children(children) ) {
+                children_per_point[point] = children;
+//                }
             }
         }
+//
+//        for(double point : points) {
+//            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+//                vector<Node> children =
+//                        generate_children_at_point(node, feature, point);
+//                if( are_regular_children(children) ) {
+//                    children_per_point[point] = children;
+//                }
+//            }
+//        }
 
         if(children_per_point.size() == 0) {
             return vector<Node>();
@@ -513,6 +542,12 @@ public:
     void fit_classifier(RandomFuzzyTree *classifier,
                         data_t data,
                         vector<range_t> ranges) {
+        static atomic<int> curr_classifier;
+        atomic_fetch_add(&curr_classifier, 1);
+        stringstream ss;
+        ss << curr_classifier << endl;
+        cout << ss.str();
+
         data_t data_sample = random_sample(data);
         classifier->fit(data_sample, ranges);
     }
@@ -594,7 +629,7 @@ int main() {
         random_shuffle(data.begin(), data.end());
     }
 
-    int clasifier_n = 100;
+    int clasifier_n = 20;
     int job_n = 4;
 
     int fold_n = 10;
