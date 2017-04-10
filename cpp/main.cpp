@@ -159,7 +159,23 @@ public:
         }
     }
 
+    bool is_numerical_feature(int feature) {
+        return true;
+    }
+
+    vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
+        return vector<Node>();
+    }
+
     vector<Node> generate_feature_best_children(Node *node, int feature) {
+        if(is_numerical_feature(feature)) {
+            return generate_best_children_numerical_feature(node, feature);
+        } else {
+            return generate_best_children_categorical_feature(node, feature);
+        }
+    }
+
+    vector<Node> generate_best_children_numerical_feature(Node *node, int feature) {
         set<double> points;
         for(auto &d : node->data) {
             points.insert(d.first[feature]);
@@ -325,7 +341,7 @@ public:
             return weights_values;
         } else {
             return map<string, double>();
-            // return weights(parent);
+//             return weights(parent);
         }
     }
 
@@ -557,11 +573,11 @@ public:
 
 int main() {
     auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
-                                     {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+                                     {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                                      0,
-                                     2100);
+                                     2310);
     auto ranges = find_ranges(string_data,
-                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17});
+                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 
     data_t data;
     for(auto &x : string_data) {
