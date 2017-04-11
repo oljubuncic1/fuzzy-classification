@@ -66,6 +66,8 @@ public:
 
     void fit(data_t &data,
              vector<range_t> &ranges,
+             vector<int> categorical_features=vector<int>(),
+             vector<int> numerical_features=vector<int>(),
              int max_depth=10000,
              int p=-1,
              double a_cut=0.5,
@@ -77,7 +79,7 @@ public:
         this->p = int( sqrt(feature_n) );
         this->min_gain_threshold = min_gain_threshold;
 
-        generate_categorical_features(data);
+        generate_categorical_features(data, categorical_features, numerical_features);
 
         for(auto &d : data) {
             w[d.second] = 1;
@@ -87,26 +89,33 @@ public:
     }
 
     bool is_int(double value) {
-        return value - (int)value < 0.000001;
+        return fabs(value - (int)value) < 0.000001;
     }
 
-    void generate_categorical_features(data_t &data) {
+    void generate_categorical_features(data_t &data, vector<int> &categorical_features, vector<int> &numerical_features) {
         for(int i = 0; i < feature_n; i++) {
-            bool is_categorical = true;
-            set<int> unique_values;
-            for(auto &d : data) {
-                double value = d.first[i];
-                if(!is_int(value)) {
-                    is_categorical = false;
-                    break;
+            if(find(numerical_features.begin(), numerical_features.end(), i) != numerical_features.end()) {
+                if(find(categorical_features.begin(), numerical_features.end(), i) != categorical_features.end()) {
+                    this->all_categorical_features.insert(i);
+                    this->categorical_features_left.insert(i);
                 } else {
-                    unique_values.insert((int)value);
-                }
-            }
+                    bool is_categorical = true;
+                    set<int> unique_values;
+                    for(auto &d : data) {
+                        double value = d.first[i];
+                        if(!is_int(value)) {
+                            is_categorical = false;
+                            break;
+                        } else {
+                            unique_values.insert((int)value);
+                        }
+                    }
 
-            if(is_categorical and unique_values.size() < 5) {
-                this->all_categorical_features.insert(i);
-                this->categorical_features_left.insert(i);
+                    if(is_categorical and unique_values.size() < 5) {
+                        this->all_categorical_features.insert(i);
+                        this->categorical_features_left.insert(i);
+                    }
+                }
             }
         }
     }
@@ -225,6 +234,7 @@ public:
                 child.memberships = child_memberships;
                 child.cardinality = fuzzy_cardinality(&child);
                 child.entropy = fuzzy_entropy(&child);
+                child.weights = weights(&child, pNode);
                 child.f = [feature, v](pair<vector<double>, string> d) { return (int)d.first[feature] == (int)v; };
 
                 children.push_back(child);
@@ -295,36 +305,36 @@ public:
         std::uniform_int_distribution<> distr(lower, upper); // define the range
 
         int top;
-        int n = 100;
+        int n = 500;
         if(points.size() < n) {
             top = (int) points.size();
         } else {
             top = n;
         }
 
-        for(int i = 0; i < top; i++) {
-            double point = distr(eng);
-            if(point > search_interval.first and
-               point < search_interval.second and
-               !eq(point, lower) and
-               !eq(point, upper)) {
-                vector<Node> children =
-                        generate_children_at_point(node, feature, point);
-//                if( are_regular_children(children) ) {
-                children_per_point[point] = children;
-//                }
-            }
-        }
-//
-//        for(double point : points) {
-//            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+//        for(int i = 0; i < top; i++) {
+//            double point = distr(eng);
+//            if(point > search_interval.first and
+//               point < search_interval.second and
+//               !eq(point, lower) and
+//               !eq(point, upper)) {
 //                vector<Node> children =
 //                        generate_children_at_point(node, feature, point);
-//                if( are_regular_children(children) ) {
-//                    children_per_point[point] = children;
-//                }
+////                if( are_regular_children(children) ) {
+//                children_per_point[point] = children;
+////                }
 //            }
 //        }
+
+        for(double point : points) {
+            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+                vector<Node> children =
+                        generate_children_at_point(node, feature, point);
+                if( are_regular_children(children) ) {
+                    children_per_point[point] = children;
+                }
+            }
+        }
 
         if(children_per_point.size() == 0) {
             return vector<Node>();
@@ -528,15 +538,16 @@ class RandomFuzzyForest {
 private:
     vector<RandomFuzzyTree> classifiers;
     int job_n;
-    data_t data;
-    vector<range_t> ranges;
 public:
     RandomFuzzyForest(int classifier_n, int job_n=4) {
         classifiers = vector<RandomFuzzyTree>(classifier_n);
         this->job_n = job_n;
     }
 
-    void fit(data_t &data, vector<range_t> &ranges) {
+    void fit(data_t &data,
+             vector<range_t> &ranges,
+             vector<int> categorical_features = vector<int>(),
+             vector<int> numerical_features = vector<int>()) {
         double perc = 1.0;
 
         data_t classifier_data;
@@ -551,21 +562,26 @@ public:
             }
         }
 
-        fit_classifiers(classifier_data, ranges);
+        fit_classifiers(classifier_data, ranges, categorical_features, numerical_features);
         fit_weights(weight_data);
     }
 
-    void fit_classifiers(data_t &data, const vector<range_t> &ranges) {
+    void fit_classifiers(data_t &data,
+                         const vector<range_t> &ranges,
+                         vector<int> categorical_features = vector<int>(),
+                         vector<int> numerical_features = vector<int>()) {
         vector<thread> threads(classifiers.size());
 
         for(int i = 0; i < ceil((double) classifiers.size() / job_n); i++) {
             for(int j = 0; j < job_n; j++) {
                 int curr_ind = i * job_n + j;
                 if(curr_ind < classifiers.size()) {
-                    threads[j] = thread( [this, data, ranges, curr_ind] {
+                    threads[j] = thread( [this, data, ranges, curr_ind, categorical_features, numerical_features] {
                         fit_classifier(&classifiers[curr_ind],
                                        data,
-                                       ranges);
+                                       ranges,
+                                       categorical_features,
+                                       numerical_features);
                     } );
                 }
             }
@@ -613,15 +629,11 @@ public:
 
     void fit_classifier(RandomFuzzyTree *classifier,
                         data_t data,
-                        vector<range_t> ranges) {
-//        static atomic<int> curr_classifier;
-//        atomic_fetch_add(&curr_classifier, 1);
-//        stringstream ss;
-//        ss << curr_classifier << endl;
-//        cout << ss.str();
-
+                        vector<range_t> ranges,
+                        vector<int> categorical_features = vector<int>(),
+                        vector<int> numerical_features = vector<int>()) {
         data_t data_sample = random_sample(data);
-        classifier->fit(data_sample, ranges);
+        classifier->fit(data_sample, ranges, categorical_features, numerical_features);
     }
 
     data_t random_sample(data_t &data) {
@@ -686,10 +698,11 @@ int main() {
 //    auto ranges = find_ranges(string_data,
 //                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 
-    auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/hayes-roth.data",
+    auto string_data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/tae.dat",
                                      {0, 1, 2, 3, 4},
                                      5,
-                                     160);
+                                     151);
+    cout << "Data loaded" << endl;
     auto ranges = find_ranges(string_data,
                               {0, 1, 2, 3, 4});
 
@@ -709,7 +722,7 @@ int main() {
     }
 
     int clasifier_n = 100;
-    int job_n = 4;
+    int job_n = 1;
 
     int fold_n = 10;
     int per_fold = (int) (data.size() / fold_n);
@@ -730,7 +743,7 @@ int main() {
             }
         }
 
-        rff.fit(training_data, ranges);
+        rff.fit(training_data, ranges, {1, 4, 3, 5}, {4});
         double curr_score = rff.score(verification_data);
         cout << "\tScore: " << curr_score << endl;
 
