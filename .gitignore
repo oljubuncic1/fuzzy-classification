@@ -3,6 +3,8 @@
 
 # data
 data/
+.dat
+.data
 
 # idea files
 .idea/
