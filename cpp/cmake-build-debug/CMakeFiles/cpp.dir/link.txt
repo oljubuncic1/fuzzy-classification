@@ -1,1 +1,1 @@
-/usr/bin/c++     -pthread -O3 -g   CMakeFiles/cpp.dir/main.cpp.o  -o cpp 
+/usr/bin/c++     -pthread -g   CMakeFiles/cpp.dir/main.cpp.o  -o cpp 

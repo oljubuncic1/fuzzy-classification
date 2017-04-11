@@ -53,6 +53,8 @@ private:
     double a_cut;
     double min_gain_threshold;
     map<string, double> w;
+    set<int> all_categorical_features;
+    set<int> categorical_features_left;
 public:
     RandomFuzzyTree() {
 
@@ -75,11 +77,38 @@ public:
         this->p = int( sqrt(feature_n) );
         this->min_gain_threshold = min_gain_threshold;
 
+        generate_categorical_features(data);
+
         for(auto &d : data) {
             w[d.second] = 1;
         }
 
         build_tree();
+    }
+
+    bool is_int(double value) {
+        return value - (int)value < 0.000001;
+    }
+
+    void generate_categorical_features(data_t &data) {
+        for(int i = 0; i < feature_n; i++) {
+            bool is_categorical = true;
+            set<int> unique_values;
+            for(auto &d : data) {
+                double value = d.first[i];
+                if(!is_int(value)) {
+                    is_categorical = false;
+                    break;
+                } else {
+                    unique_values.insert((int)value);
+                }
+            }
+
+            if(is_categorical and unique_values.size() < 5) {
+                this->all_categorical_features.insert(i);
+                this->categorical_features_left.insert(i);
+            }
+        }
     }
 
     map<string, double> predict_memberships(item_t &x) {
@@ -119,11 +148,14 @@ public:
             int lvl = curr.second;
 
             vector<Node> children = get_best_children(node);
-            if(children.size() != 0) { // and lvl < max_depth) {
+            if(children.size() != 0) {
                 for(int i = 0; i < children.size(); i++) {
                     Node *child = new Node(children[i]);
-                    frontier.push(make_pair(child, lvl + 1));
                     node->children.push_back(child);
+
+                    if(!(feature_n - all_categorical_features.size() == 0 and categorical_features_left.size() == 0)) {
+                        frontier.push(make_pair(child, lvl + 1));
+                    }
                 }
             }
 
@@ -160,18 +192,58 @@ public:
     }
 
     bool is_numerical_feature(int feature) {
-        return true;
+        return !is_categorical_feature(feature);
+    }
+
+    bool is_categorical_feature(int feature) {
+        return (all_categorical_features.find(feature) != all_categorical_features.end());
     }
 
     vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
-        return vector<Node>();
+
+        if(categorical_features_left.find(feature) != categorical_features_left.end()) {
+            set<int> values;
+            for(auto &d : pNode->data) {
+                values.insert((int &&) d.first[feature]);
+            }
+
+            vector<Node> children;
+            for(auto v : values) {
+
+                data_t child_data;
+                vector<double> child_memberships;
+                for(int i = 0; i < pNode->data.size(); i++) {
+                    auto d = pNode->data[i];
+                    if((int)d.first[feature] == (int)v) {
+                        child_data.push_back(d);
+                        child_memberships.push_back(pNode->memberships[i]);
+                    }
+                }
+                Node child;
+                child.data = child_data;
+                child.ranges = pNode->ranges;
+                child.memberships = child_memberships;
+                child.cardinality = fuzzy_cardinality(&child);
+                child.entropy = fuzzy_entropy(&child);
+                child.f = [feature, v](pair<vector<double>, string> d) { return (int)d.first[feature] == (int)v; };
+
+                children.push_back(child);
+            }
+
+            categorical_features_left.erase(categorical_features_left.find(feature));
+
+            return children;
+        } else {
+            return vector<Node>();
+        }
     }
 
     vector<Node> generate_feature_best_children(Node *node, int feature) {
         if(is_numerical_feature(feature)) {
             return generate_best_children_numerical_feature(node, feature);
-        } else {
-            return generate_best_children_categorical_feature(node, feature);
+        } else if(is_categorical_feature(feature)) {
+            vector<Node> children = generate_best_children_categorical_feature(node, feature);
+            return children;
         }
     }
 
@@ -542,11 +614,11 @@ public:
     void fit_classifier(RandomFuzzyTree *classifier,
                         data_t data,
                         vector<range_t> ranges) {
-        static atomic<int> curr_classifier;
-        atomic_fetch_add(&curr_classifier, 1);
-        stringstream ss;
-        ss << curr_classifier << endl;
-        cout << ss.str();
+//        static atomic<int> curr_classifier;
+//        atomic_fetch_add(&curr_classifier, 1);
+//        stringstream ss;
+//        ss << curr_classifier << endl;
+//        cout << ss.str();
 
         data_t data_sample = random_sample(data);
         classifier->fit(data_sample, ranges);
@@ -607,12 +679,19 @@ public:
 };
 
 int main() {
-    auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
-                                     {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
-                                     0,
-                                     2310);
+//    auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
+//                                     {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+//                                     0,
+//                                     2310);
+//    auto ranges = find_ranges(string_data,
+//                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+
+    auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/hayes-roth.data",
+                                     {0, 1, 2, 3, 4},
+                                     5,
+                                     160);
     auto ranges = find_ranges(string_data,
-                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+                              {0, 1, 2, 3, 4});
 
     data_t data;
     for(auto &x : string_data) {
@@ -629,7 +708,7 @@ int main() {
         random_shuffle(data.begin(), data.end());
     }
 
-    int clasifier_n = 20;
+    int clasifier_n = 100;
     int job_n = 4;
 
     int fold_n = 10;
