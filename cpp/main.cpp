@@ -47,7 +47,6 @@ struct Node {
 class RandomFuzzyTree {
 private:
     Node root;
-    int max_depth;
     int p;
     int feature_n;
     double a_cut;
@@ -68,12 +67,10 @@ public:
              vector<range_t> &ranges,
              vector<int> categorical_features=vector<int>(),
              vector<int> numerical_features=vector<int>(),
-             int max_depth=10000,
              int p=-1,
              double a_cut=0.5,
              double min_gain_threshold=0.000001) {
         root = generate_root_node(data, ranges);
-        this->max_depth = max_depth;
         this->a_cut = a_cut;
         this->feature_n = ranges.size();
         this->p = int( sqrt(feature_n) );
@@ -94,8 +91,8 @@ public:
 
     void generate_categorical_features(data_t &data, vector<int> &categorical_features, vector<int> &numerical_features) {
         for(int i = 0; i < feature_n; i++) {
-            if(find(numerical_features.begin(), numerical_features.end(), i) != numerical_features.end()) {
-                if(find(categorical_features.begin(), numerical_features.end(), i) != categorical_features.end()) {
+            if(find(numerical_features.begin(), numerical_features.end(), i) == numerical_features.end()) {
+                if(find(categorical_features.begin(), categorical_features.end(), i) != categorical_features.end()) {
                     this->all_categorical_features.insert(i);
                     this->categorical_features_left.insert(i);
                 } else {
@@ -270,31 +267,6 @@ public:
         double min_el = *min_element(points.begin(), points.end());
         double max_el = *max_element(points.begin(), points.end());
         pair<double, double> search_interval(min_el, max_el);
-//        double interval_len_threshold = (max_el - min_el) / 16;
-//        while(search_interval.second - search_interval.first > interval_len_threshold) {
-//            double a = search_interval.first;
-//            double b = search_interval.second;
-//
-//            double mid = (a + b) / 2;
-//
-//            double eps = 0.005; //(b - a) / 20;
-//
-//            double left_x = mid - eps;
-//            vector<Node> left_children =
-//                    generate_children_at_point(node, feature, left_x);
-//            double left_y = gain(left_children, node);
-//
-//            double right_x = mid + eps;
-//            vector<Node> right_children =
-//                    generate_children_at_point(node, feature, right_x);
-//            double right_y = gain(right_children, node);
-//
-//            if(left_y < right_y) {
-//                search_interval.first = mid;
-//            } else {
-//                search_interval.second = mid;
-//            }
-//        }
 
         map<double, vector<Node>> children_per_point;
 
@@ -452,7 +424,6 @@ public:
             return weights_values;
         } else {
             return map<string, double>();
-//             return weights(parent);
         }
     }
 
@@ -698,13 +669,13 @@ int main() {
 //    auto ranges = find_ranges(string_data,
 //                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
 
-    auto string_data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/tae.dat",
-                                     {0, 1, 2, 3, 4},
-                                     5,
-                                     151);
+    auto string_data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
+                                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+                                     14,
+                                     690);
     cout << "Data loaded" << endl;
     auto ranges = find_ranges(string_data,
-                              {0, 1, 2, 3, 4});
+                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13});
 
     data_t data;
     for(auto &x : string_data) {
@@ -721,7 +692,7 @@ int main() {
         random_shuffle(data.begin(), data.end());
     }
 
-    int clasifier_n = 100;
+    int clasifier_n = 20;
     int job_n = 1;
 
     int fold_n = 10;
@@ -743,7 +714,7 @@ int main() {
             }
         }
 
-        rff.fit(training_data, ranges, {1, 4, 3, 5}, {4});
+        rff.fit(training_data, ranges, {3, 4, 5});
         double curr_score = rff.score(verification_data);
         cout << "\tScore: " << curr_score << endl;
 

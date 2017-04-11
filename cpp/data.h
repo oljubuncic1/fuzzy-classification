@@ -49,7 +49,7 @@ example_t example_from_line(
         const vector<int> &attribute_indices,
         const int &class_index
 ) {
-    auto parts = split(line, ',');
+    auto parts = split(line, ' ');
     string classification = parts[ class_index ];
 
     vector<string> data;
@@ -73,7 +73,8 @@ vector<example_t> load_csv_data(
 
     char line[1000];
     for(int i = 0; i < line_cnt; i++) {
-        fscanf(in, "%s", line);
+//        fscanf(in, "%s\n", line);
+        fgets(line, 1000, in);
         example_t e = example_from_line(string(line), attribute_indices, class_index);
         // if(e.second.compare("0") == 0 or e.second.compare("1") == 0) {
         data.push_back(e);
