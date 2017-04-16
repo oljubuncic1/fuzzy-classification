@@ -662,20 +662,17 @@ public:
 };
 
 int main() {
-//    auto string_data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
-//                                     {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
-//                                     0,
-//                                     2310);
-//    auto ranges = find_ranges(string_data,
-//                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+    string dataset = "HAB";
 
-    auto string_data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
-                                     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
-                                     14,
-                                     690);
-    cout << "Data loaded" << endl;
-    auto ranges = find_ranges(string_data,
-                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13});
+    vector<example_t> string_data;
+    vector<int> categorical_features;
+    vector<int> numerical_features;
+
+    load_data(dataset,
+              string_data,
+              categorical_features,
+              numerical_features);
+    auto ranges = find_ranges(string_data);
 
     data_t data;
     for(auto &x : string_data) {

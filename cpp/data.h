@@ -20,8 +20,6 @@
 using namespace std;
 
 #define example_t pair<vector<string>, string>
-#define example_data_t vector<string>
-
 #define range_t pair<double, double>
 
 double to_double(const string &str) {
@@ -47,13 +45,14 @@ std::vector<std::string> split(const std::string &s, char delim) {
 example_t example_from_line(
         const string &line,
         const vector<int> &attribute_indices,
-        const int &class_index
+        const int &class_index,
+        const char &separation_char
 ) {
-    auto parts = split(line, ' ');
-    string classification = parts[ class_index ];
+    auto parts = split(line, separation_char);
+    string classification = parts[class_index];
 
     vector<string> data;
-    for(auto i : attribute_indices) {
+    for (auto i : attribute_indices) {
         data.push_back(parts[i]);
     }
 
@@ -61,24 +60,25 @@ example_t example_from_line(
     return example;
 }
 
-vector<example_t> load_csv_data(
+vector<example_t > load_csv_data(
         const string &file_name,
         const vector<int> &attribute_indices,
         const int &class_index,
-        const int &line_cnt
+        const int &line_cnt,
+        const char &separation_char = ','
 ) {
     auto in = fopen(file_name.c_str(), "r");
 
-    vector<example_t> data;
+    vector<example_t > data;
 
     char line[1000];
-    for(int i = 0; i < line_cnt; i++) {
-//        fscanf(in, "%s\n", line);
+    for (int i = 0; i < line_cnt; i++) {
         fgets(line, 1000, in);
-        example_t e = example_from_line(string(line), attribute_indices, class_index);
-        // if(e.second.compare("0") == 0 or e.second.compare("1") == 0) {
+        example_t e = example_from_line(string(line),
+                                        attribute_indices,
+                                        class_index,
+                                        separation_char);
         data.push_back(e);
-        // }
     }
 
     fclose(in);
@@ -86,12 +86,21 @@ vector<example_t> load_csv_data(
     return data;
 }
 
-vector<range_t> find_ranges(
-        const vector<example_t> &examples,
-        const vector<int> &indices
+vector<int> get_range(const int &n) {
+    vector<int> rng;
+    for (int i = 0; i < n; i++) {
+        rng.push_back(i);
+    }
+
+    return rng;
+}
+
+vector<range_t > find_ranges(
+        const vector<example_t > &examples
 ) {
-    vector<range_t> ranges;
-    for(auto i : indices) {
+    vector<int> indices = get_range((const int &) examples[0].first.size());
+    vector<range_t > ranges;
+    for (auto i : indices) {
         ranges.push_back(
                 make_pair(
                         to_double(min_element(
@@ -113,6 +122,32 @@ vector<range_t> find_ranges(
     }
 
     return ranges;
+}
+
+void load_data(const string &dataset,
+               vector<example_t > &data,
+               vector<int> &categorical_features,
+               vector<int> &numerical_features) {
+    if (dataset.compare("AUS") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+                             14,
+                             690,
+                             ' ');
+    } else if (dataset.compare("HAB") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
+                             {0, 1, 2},
+                             14,
+                             306,
+                             ' ');
+        categorical_features = {};
+        numerical_features = {0, 1, 2};
+    } else if (dataset.compare("SEG") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
+                             {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+                             0,
+                             2310);
+    }
 }
 
 #endif
