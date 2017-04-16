@@ -74,11 +74,13 @@ vector<example_t > load_csv_data(
     char line[1000];
     for (int i = 0; i < line_cnt; i++) {
         fgets(line, 1000, in);
-        example_t e = example_from_line(string(line),
-                                        attribute_indices,
-                                        class_index,
-                                        separation_char);
-        data.push_back(e);
+        if(string(line).find("?") == string::npos) {
+            example_t e = example_from_line(string(line),
+                                            attribute_indices,
+                                            class_index,
+                                            separation_char);
+            data.push_back(e);
+        }
     }
 
     fclose(in);
@@ -126,7 +128,8 @@ void find_ranges(
 void load_data(const string &dataset,
                vector<example_t > &data,
                vector<int> &categorical_features,
-               vector<int> &numerical_features) {
+               vector<int> &numerical_features,
+               double &accuracy) {
     if (dataset.compare("AUS") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
@@ -139,8 +142,9 @@ void load_data(const string &dataset,
                              14,
                              306,
                              ' ');
-        categorical_features = {};
-        numerical_features = {0, 1, 2};
+        numerical_features = {0, 1};
+        categorical_features = {2};
+        accuracy = 0.7072;
     } else if (dataset.compare("SEG") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
                              {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
@@ -153,6 +157,39 @@ void load_data(const string &dataset,
                              132);
         numerical_features = {1};
         categorical_features = {0, 2, 3};
+        accuracy = 0.8082;
+    } else if(dataset.compare("IRI") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/iris.dat",
+                             {0, 1, 2, 3},
+                             4,
+                             150);
+        numerical_features = {0, 1, 2, 3};
+        categorical_features = {};
+        accuracy = 0.9533;
+    } else if(dataset.compare("MAM") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/mamographic.dat",
+                             {0, 1, 2, 3, 4},
+                             5,
+                             961);
+        numerical_features = {1};
+        categorical_features = {0, 2, 3, 4};
+        accuracy = 0.8380;
+    } else if(dataset.compare("NEW") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/new_thyroid.dat",
+                             {1, 2, 3, 4, 5},
+                             0,
+                             215);
+        numerical_features = {0, 1, 2, 3, 4};
+        categorical_features = {};
+        accuracy = 0.9727;
+    } else if(dataset.compare("TAE") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/tae.dat",
+                             {0, 1, 2, 3, 4},
+                             5,
+                             151);
+        numerical_features = {4};
+        categorical_features = {0, 1, 2, 3};
+        accuracy = 0.9727;
     }
 }
 
