@@ -95,11 +95,12 @@ vector<int> get_range(const int &n) {
     return rng;
 }
 
-vector<range_t > find_ranges(
-        const vector<example_t > &examples
+void find_ranges(
+        const vector<example_t > &examples,
+        vector<range_t> &ranges
 ) {
+    ranges = {};
     vector<int> indices = get_range((const int &) examples[0].first.size());
-    vector<range_t > ranges;
     for (auto i : indices) {
         ranges.push_back(
                 make_pair(
@@ -120,8 +121,6 @@ vector<range_t > find_ranges(
                 )
         );
     }
-
-    return ranges;
 }
 
 void load_data(const string &dataset,

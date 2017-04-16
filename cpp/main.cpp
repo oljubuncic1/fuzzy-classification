@@ -76,7 +76,9 @@ public:
         this->p = int( sqrt(feature_n) );
         this->min_gain_threshold = min_gain_threshold;
 
-        generate_categorical_features(data, categorical_features, numerical_features);
+        if(categorical_features.size() == 0) {
+            generate_categorical_features(data, categorical_features, numerical_features);
+        }
 
         for(auto &d : data) {
             w[d.second] = 1;
@@ -276,37 +278,35 @@ public:
         std::mt19937 eng(rd()); // seed the generator
         std::uniform_int_distribution<> distr(lower, upper); // define the range
 
-        int top;
-        int n = 5;
-        if(points.size() < n) {
-            top = (int) points.size();
-        } else {
-            top = n;
-        }
-
-        for(int i = 0; i < top; i++) {
-            double point = distr(eng);
-            if(point > search_interval.first and
-               point < search_interval.second and
-               !eq(point, lower) and
-               !eq(point, upper)) {
-                vector<Node> children =
-                        generate_children_at_point(node, feature, point);
-//                if( are_regular_children(children) ) {
-                children_per_point[point] = children;
-//                }
-            }
-        }
-
-//        for(double point : points) {
-//            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+//        int top;
+//        int n = 500;
+//        if(points.size() < n) {
+//            top = (int) points.size();
+//        } else {
+//            top = n;
+//        }
+//
+//        for(int i = 0; i < top; i++) {
+//            double point = distr(eng);
+//            if(point > search_interval.first and
+//               point < search_interval.second and
+//               !eq(point, lower) and
+//               !eq(point, upper)) {
 //                vector<Node> children =
 //                        generate_children_at_point(node, feature, point);
-//                if( are_regular_children(children) ) {
-//                    children_per_point[point] = children;
-//                }
+//                children_per_point[point] = children;
 //            }
 //        }
+
+        for(double point : points) {
+            if(point > search_interval.first and point < search_interval.second) {//}} and !eq(point, lower) and !eq(point, upper)) {
+                vector<Node> children =
+                        generate_children_at_point(node, feature, point);
+                if( are_regular_children(children) ) {
+                    children_per_point[point] = children;
+                }
+            }
+        }
 
         if(children_per_point.size() == 0) {
             return vector<Node>();
@@ -651,7 +651,7 @@ public:
         int correct_n = 0;
         for(item_t &d : data) {
             string prediction = predict(d);
-            if(prediction == d.second) {
+            if(prediction.compare(d.second) == 0) {
                 correct_n++;
             }
         }
@@ -663,8 +663,10 @@ public:
 
 int main() {
     string dataset = "HAB";
+    bool shuffle = true;
 
     vector<example_t> string_data;
+    vector<range_t> ranges;
     vector<int> categorical_features;
     vector<int> numerical_features;
 
@@ -672,7 +674,7 @@ int main() {
               string_data,
               categorical_features,
               numerical_features);
-    auto ranges = find_ranges(string_data);
+    find_ranges(string_data, ranges);
 
     data_t data;
     for(auto &x : string_data) {
@@ -684,13 +686,12 @@ int main() {
         data.push_back(make_pair(item, classification));
     }
 
-    bool shuffle = true;
     if(shuffle) {
         random_shuffle(data.begin(), data.end());
     }
 
     int clasifier_n = 100;
-    int job_n = 1;
+    int job_n = 4;
 
     int fold_n = 10;
     int per_fold = (int) (data.size() / fold_n);
@@ -702,7 +703,7 @@ int main() {
         data_t training_data;
         data_t verification_data;
 
-        cout << "Scoring fold " << i << endl;
+        cout << "Scoring fold " << i << "\t";
         for(int j = 0; j < data.size(); j++) {
             if(j >= i * per_fold and j < (i + 1) * per_fold) {
                 verification_data.push_back(data[j]);
@@ -711,7 +712,10 @@ int main() {
             }
         }
 
-        rff.fit(training_data, ranges, {3, 4, 5});
+        rff.fit(training_data,
+                ranges,
+                categorical_features,
+                numerical_features);
         double curr_score = rff.score(verification_data);
         cout << "\tScore: " << curr_score << endl;
 
