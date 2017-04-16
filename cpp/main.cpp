@@ -78,6 +78,9 @@ public:
 
         if(categorical_features.size() == 0) {
             generate_categorical_features(data, categorical_features, numerical_features);
+        } else {
+            this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
+            this->categorical_features_left = set<int>(categorical_features.begin(), categorical_features.end());
         }
 
         for(auto &d : data) {
@@ -299,7 +302,7 @@ public:
 //        }
 
         for(double point : points) {
-            if(point > search_interval.first and point < search_interval.second) {//}} and !eq(point, lower) and !eq(point, upper)) {
+            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
                 vector<Node> children =
                         generate_children_at_point(node, feature, point);
                 if( are_regular_children(children) ) {
@@ -340,6 +343,10 @@ public:
     }
 
     bool are_regular_children(vector<Node> &children) {
+        if(children.size() == 0) {
+            return false;
+        }
+
         int non_zero_n = 0;
         for(auto &child : children) {
             if(child.data.size() != 0) {

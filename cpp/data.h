@@ -146,6 +146,13 @@ void load_data(const string &dataset,
                              {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                              0,
                              2310);
+    } else if(dataset.compare("HAY") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/hayes-roth.dat",
+                             {1, 2, 3, 4},
+                             5,
+                             132);
+        numerical_features = {1};
+        categorical_features = {0, 2, 3};
     }
 }
 
