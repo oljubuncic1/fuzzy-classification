@@ -11,7 +11,7 @@ pyximport.install()
 
 from ..util import math_functions
 from math import log
-
+import matplotlib.pyplot as plt
 
 class RandomFuzzyTree:
     NO_GOOD_CANDIDATES = {}
@@ -100,20 +100,32 @@ class RandomFuzzyTree:
                     for c in children:
                         frontier.put( (c, lvl + 1) )
 
-        return
-
-        if lvl < self.max_depth and node.data["data"].shape[0] != 0:
-            children = self.generate_best_children(node)
-
-            if children != self.NO_GOOD_CANDIDATES:
-                for c in children:
-                    self.tree.add_node(c, node.identifier)
-
-                for c in children:
-                    self.build_tree(c, lvl + 1)
+    def my_color(self, c):
+        if c == "1":
+            return "r"
+        elif c == "2":
+            return "g"
+        elif c == "3":
+            return "b"
+        else:
+            return "b"
 
     def generate_best_children(self, node):
         features = self.generate_random_features()
+
+        pts = []
+        for f1 in features:
+            for f2 in features:
+                if f1 != f2:
+                    for d in node.data["data"]:
+                        pts.append( (d[f1], d[f2], self.my_color(d[-1])) )
+
+                    plt.xlabel(str(f1))
+                    plt.ylabel(str(f2))
+                    for p in pts:
+                        plt.scatter(p[0], p[1], color=p[2])
+                    plt.show()
+                    pts = []
 
         best_children_per_feature = {}
         for feature in features:
@@ -138,6 +150,7 @@ class RandomFuzzyTree:
 
         lower, upper = node.data["ranges"][feature]
 
+        gain_data = []
         last_point = data[0, feature]
         children_per_point = {}
         for p in points:
@@ -148,6 +161,7 @@ class RandomFuzzyTree:
                     children_per_point[p] = \
                         children_at_point
                     last_point = p
+                    gain_data.append((p, self.gain(node, children_at_point)))
 
         if children_per_point == {}:
             best_feature_children = self.NO_GOOD_CANDIDATES

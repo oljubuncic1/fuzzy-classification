@@ -277,36 +277,36 @@ public:
         std::uniform_int_distribution<> distr(lower, upper); // define the range
 
         int top;
-        int n = 500;
+        int n = 5;
         if(points.size() < n) {
             top = (int) points.size();
         } else {
             top = n;
         }
 
-//        for(int i = 0; i < top; i++) {
-//            double point = distr(eng);
-//            if(point > search_interval.first and
-//               point < search_interval.second and
-//               !eq(point, lower) and
-//               !eq(point, upper)) {
-//                vector<Node> children =
-//                        generate_children_at_point(node, feature, point);
-////                if( are_regular_children(children) ) {
-//                children_per_point[point] = children;
-////                }
-//            }
-//        }
-
-        for(double point : points) {
-            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+        for(int i = 0; i < top; i++) {
+            double point = distr(eng);
+            if(point > search_interval.first and
+               point < search_interval.second and
+               !eq(point, lower) and
+               !eq(point, upper)) {
                 vector<Node> children =
                         generate_children_at_point(node, feature, point);
-                if( are_regular_children(children) ) {
-                    children_per_point[point] = children;
-                }
+//                if( are_regular_children(children) ) {
+                children_per_point[point] = children;
+//                }
             }
         }
+
+//        for(double point : points) {
+//            if(point > search_interval.first and point < search_interval.second and !eq(point, lower) and !eq(point, upper)) {
+//                vector<Node> children =
+//                        generate_children_at_point(node, feature, point);
+//                if( are_regular_children(children) ) {
+//                    children_per_point[point] = children;
+//                }
+//            }
+//        }
 
         if(children_per_point.size() == 0) {
             return vector<Node>();
@@ -692,7 +692,7 @@ int main() {
         random_shuffle(data.begin(), data.end());
     }
 
-    int clasifier_n = 20;
+    int clasifier_n = 100;
     int job_n = 1;
 
     int fold_n = 10;

@@ -235,7 +235,7 @@ def as_numpy(data):
 def main():
     verification_data_perc = 0.1
 
-    data_properties = segmentation_data_properties()
+    data_properties = covtype_data_properties()
     data_loader_instance = dl.DataLoader(data_properties)
     data_loader_instance.set_logger(logger)
     data_loader_instance.load(shuffle=True)
