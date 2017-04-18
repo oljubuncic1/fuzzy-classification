@@ -45,7 +45,6 @@ bool eq(double x, double y) {
     return fabs(x - y) <= 1e-7;
 }
 
-#define fdd function<double(const double)>
 #define SPECIAL_VALUE 225883.225883
 #define PRINT_VALUE 225884.225883
 #define PRINT_NAME 235884.225883

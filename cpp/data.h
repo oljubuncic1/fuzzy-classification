@@ -16,11 +16,10 @@
 #include <thread>
 #include <cstdio>
 #include <atomic>
+#include "definitions.h"
 
 using namespace std;
 
-#define example_t pair<vector<string>, string>
-#define range_t pair<double, double>
 
 double to_double(const string &str) {
     return stod(str);
@@ -190,6 +189,14 @@ void load_data(const string &dataset,
         numerical_features = {4};
         categorical_features = {0, 1, 2, 3};
         accuracy = 0.9727;
+    } else if(dataset.compare("BUP") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/bupa.dat",
+                             {0, 1, 2, 3, 4, 5},
+                             6,
+                             345);
+        numerical_features = {0, 1, 2, 3, 4, 5};
+        categorical_features = {};
+        accuracy = 0.7270;
     }
 }
 

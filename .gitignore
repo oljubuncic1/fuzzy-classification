@@ -6,6 +6,9 @@ data/
 .dat
 .data
 
+# build
+cpp/cmake-build-debug/
+
 # idea files
 .idea/
 
