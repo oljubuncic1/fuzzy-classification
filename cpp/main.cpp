@@ -11,11 +11,21 @@ int main() {
     bool shuffle = true;
     bool debug = false;
 
-    vector<string> datasets = {"HAB", "HAY", "IRI", "MAM", "NEW", "TAE", "BUP"};
+    vector<string> datasets = {"HAB",
+                               "HAY",
+                               "IRI",
+                               "MAM",
+                               "NEW",
+                               "TAE",
+                               "BUP",
+                               "APP",
+                               "PIM",
+                               "GLA",
+                               "SAH"};
 
-//    datasets = { "BUP" };
+    datasets = {"SAH"};
 
-    for(string &dataset : datasets) {
+    for (string &dataset : datasets) {
         vector<example_t > string_data;
         vector<range_t > ranges;
         vector<int> categorical_features;
@@ -55,7 +65,7 @@ int main() {
         for (int i = 0; i < fold_n; i++) {
             data_t training_data;
             data_t verification_data;
-            if(debug) {
+            if (debug) {
                 cout << "Scoring fold " << i << "\t";
             }
             for (int j = 0; j < data.size(); j++) {
@@ -71,14 +81,14 @@ int main() {
                     categorical_features,
                     numerical_features);
             double curr_score = rff.score(verification_data);
-            if(debug) {
+            if (debug) {
                 cout << "\tScore: " << curr_score << endl;
             }
 
             total_score += curr_score;
         }
 
-        if(debug) {
+        if (debug) {
             cout << endl << endl;
         }
         cout << setprecision(2) << fixed;

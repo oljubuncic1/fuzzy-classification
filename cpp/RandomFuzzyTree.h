@@ -134,7 +134,7 @@ public:
             int lvl = curr.second;
 
             vector<Node> children = get_best_children(node);
-            if (children.size() != 0) {
+            if (are_regular_children(children)) {
                 for (int i = 0; i < children.size(); i++) {
                     Node *child = new Node(children[i]);
                     node->children.push_back(child);
@@ -155,11 +155,21 @@ public:
 
     vector<Node> get_best_children(Node *node) {
         vector<int> features = generate_random_features();
+
         map<int, vector<Node>> feature_children;
         for (auto f : features) {
-            vector<Node> children = generate_feature_best_children(node, f);
+            double cut_point = -1;
+            vector<Node> children = generate_feature_best_children(node, f, cut_point);
             if (are_regular_children(children)) {
                 feature_children[f] = children;
+
+//                cout << "Feature " << f << endl;
+                python_plot(node, f, cut_point);
+                int i = 0;
+                for(auto &child : children) {
+//                    cout << "\tChildren " << i++ << endl;
+                    python_plot(&child, f, cut_point);
+                }
             }
         }
 
@@ -168,17 +178,42 @@ public:
         } else {
             vector<Node> best_children;
             double best_gain = -1000000;
+            int best_feature;
             for (auto &kv : feature_children) {
                 vector<Node> children = kv.second;
                 double curr_gain = gain(children, node);
                 if (curr_gain > best_gain) {
                     best_children = children;
                     best_gain = curr_gain;
+                    best_feature = kv.first;
                 }
+            }
+
+            const set<int>::iterator &feature_position = categorical_features_left.find(best_feature);
+            if(feature_position != categorical_features_left.end()) {
+                categorical_features_left.erase(feature_position);
             }
 
             return best_children;
         }
+    }
+
+    void python_plot(const Node *node, int f, double cut_point) const {
+        return;
+        string plot_arr_str ="python3 /home/faruk/workspace/thesis/cpp/plot.py \"[";
+        int i = 0;
+        for(auto &d : node->data) {
+            string classification;
+            if(d.second[d.second.size() - 1] == '\n') {
+                classification = d.second.substr(0, d.second.length() - 1);
+            } else {
+                classification = d.second;
+            }
+            plot_arr_str += "(" + to_string(d.first[f]) + "," +  to_string(node->memberships[i]) + "," + classification + "),";
+            i++;
+        }
+        plot_arr_str += "]\" " + to_string(cut_point);
+        system(plot_arr_str.c_str());
     }
 
     bool is_numerical_feature(int feature) {
@@ -215,12 +250,12 @@ public:
                 child.cardinality = fuzzy_cardinality(&child);
                 child.entropy = fuzzy_entropy(&child);
                 child.weights = weights(&child, pNode);
-                child.f = [feature, v](pair<vector<double>, string> d) { return (int) d.first[feature] == (int) v; };
+                child.f = [feature, v](pair<vector<double>, string> d) {
+                    return (int) d.first[feature] == (int) v;
+                };
 
                 children.push_back(child);
             }
-
-            categorical_features_left.erase(categorical_features_left.find(feature));
 
             return children;
         } else {
@@ -228,16 +263,16 @@ public:
         }
     }
 
-    vector<Node> generate_feature_best_children(Node *node, int feature) {
+    vector<Node> generate_feature_best_children(Node *node, int feature, double &cut_point) {
         if (is_numerical_feature(feature)) {
-            return generate_best_children_numerical_feature(node, feature);
+            return generate_best_children_numerical_feature(node, feature, cut_point);
         } else if (is_categorical_feature(feature)) {
             vector<Node> children = generate_best_children_categorical_feature(node, feature);
             return children;
         }
     }
 
-    vector<Node> generate_best_children_numerical_feature(Node *node, int feature) {
+    vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
         set<double> points;
         for (auto &d : node->data) {
             points.insert(d.first[feature]);
@@ -260,7 +295,7 @@ public:
         uniform_int_distribution<> distr(lower, upper); // define the range
 
 //        int top;
-//        int n = 500;
+//        int n = 100;
 //        if(points.size() < n) {
 //            top = (int) points.size();
 //        } else {
@@ -301,6 +336,7 @@ public:
                 if (curr_gain > best_gain) {
                     best_children = children;
                     best_gain = curr_gain;
+                    cut_point = kv.first;
                 }
             }
 
@@ -378,7 +414,7 @@ public:
         vector<double> next_memberships;
 
         for (int i = 0; i < node->memberships.size(); i++) {
-            if (local_memberships[i] > a_cut) {
+            if (node->memberships[i] > a_cut) {
                 next_data.push_back(node->data[i]);
                 next_memberships.push_back(node->memberships[i] *
                                            node->f(node->data[i]));

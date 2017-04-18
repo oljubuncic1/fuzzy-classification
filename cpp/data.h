@@ -197,6 +197,46 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5};
         categorical_features = {};
         accuracy = 0.7270;
+    } else if(dataset.compare("APP") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
+                             {0, 1, 2, 3, 4, 5, 6},
+                             7,
+                             106);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6};
+        categorical_features = {};
+        accuracy = 0.8773;
+    } else if(dataset.compare("APP") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
+                             {0, 1, 2, 3, 4, 5, 6},
+                             7,
+                             106);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6};
+        categorical_features = {};
+        accuracy = 0.8773;
+    } else if(dataset.compare("PIM") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/pima.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7},
+                             8,
+                             768);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7};
+        categorical_features = {};
+        accuracy = 0.7648;
+    } else if(dataset.compare("GLA") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/glass.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                             10,
+                             214);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        categorical_features = {};
+        accuracy = 0.7513;
+    } else if(dataset.compare("SAH") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/saheart.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                             10,
+                             462);
+        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
+        categorical_features = {4};
+        accuracy = 0.7513;
     }
 }
 
