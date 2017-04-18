@@ -84,7 +84,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/faruk/workspace/thesis/cpp/RandomFuzzyForest.h">
+			<Option target="cpp"/>
+		</Unit>
+		<Unit filename="/home/faruk/workspace/thesis/cpp/RandomFuzzyTree.h">
+			<Option target="cpp"/>
+		</Unit>
 		<Unit filename="/home/faruk/workspace/thesis/cpp/data.h">
+			<Option target="cpp"/>
+		</Unit>
+		<Unit filename="/home/faruk/workspace/thesis/cpp/definitions.h">
+			<Option target="cpp"/>
+		</Unit>
+		<Unit filename="/home/faruk/workspace/thesis/cpp/includes.h">
 			<Option target="cpp"/>
 		</Unit>
 		<Unit filename="/home/faruk/workspace/thesis/cpp/main.cpp">

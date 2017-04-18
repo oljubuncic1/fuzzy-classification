@@ -139,7 +139,7 @@ public:
                     Node *child = new Node(children[i]);
                     node->children.push_back(child);
 
-                    if (!(feature_n - all_categorical_features.size() == 0 and categorical_features_left.size() == 0)) {
+                    if (!(are_only_categorical() and no_categorical_left())) {
                         frontier.push(make_pair(child, lvl + 1));
                     }
                 }
@@ -148,6 +148,10 @@ public:
             frontier.pop();
         }
     }
+
+    bool no_categorical_left() const { return categorical_features_left.size() == 0; }
+
+    bool are_only_categorical() const { return feature_n - all_categorical_features.size() == 0; }
 
     vector<Node> get_best_children(Node *node) {
         vector<int> features = generate_random_features();

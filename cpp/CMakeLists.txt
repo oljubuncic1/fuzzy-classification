@@ -5,5 +5,5 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GTK_CFLAGS} -pthread -O3")
 
 
-set(SOURCE_FILES main.cpp math_functions.h data.h)
+set(SOURCE_FILES main.cpp math_functions.h data.h definitions.h RandomFuzzyForest.h RandomFuzzyTree.h includes.h)
 add_executable(cpp ${SOURCE_FILES})

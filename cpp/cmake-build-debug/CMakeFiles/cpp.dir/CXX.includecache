@@ -6,6 +6,22 @@
 
 #IncludeRegexTransform: 
 
+/home/faruk/workspace/thesis/cpp/RandomFuzzyForest.h
+includes.h
+/home/faruk/workspace/thesis/cpp/includes.h
+RandomFuzzyTree.h
+/home/faruk/workspace/thesis/cpp/RandomFuzzyTree.h
+definitions.h
+/home/faruk/workspace/thesis/cpp/definitions.h
+
+/home/faruk/workspace/thesis/cpp/RandomFuzzyTree.h
+includes.h
+/home/faruk/workspace/thesis/cpp/includes.h
+math_functions.h
+/home/faruk/workspace/thesis/cpp/math_functions.h
+data.h
+/home/faruk/workspace/thesis/cpp/data.h
+
 /home/faruk/workspace/thesis/cpp/data.h
 functional
 -
@@ -37,8 +53,12 @@ cstdio
 -
 atomic
 -
+definitions.h
+/home/faruk/workspace/thesis/cpp/definitions.h
 
-/home/faruk/workspace/thesis/cpp/main.cpp
+/home/faruk/workspace/thesis/cpp/definitions.h
+
+/home/faruk/workspace/thesis/cpp/includes.h
 set
 -
 functional
@@ -83,10 +103,18 @@ cstdlib
 -
 ctime
 -
+
+/home/faruk/workspace/thesis/cpp/main.cpp
+includes.h
+/home/faruk/workspace/thesis/cpp/includes.h
 data.h
 /home/faruk/workspace/thesis/cpp/data.h
-math_functions.h
-/home/faruk/workspace/thesis/cpp/math_functions.h
+definitions.h
+/home/faruk/workspace/thesis/cpp/definitions.h
+RandomFuzzyTree.h
+/home/faruk/workspace/thesis/cpp/RandomFuzzyTree.h
+RandomFuzzyForest.h
+/home/faruk/workspace/thesis/cpp/RandomFuzzyForest.h
 
 /home/faruk/workspace/thesis/cpp/math_functions.h
 functional
