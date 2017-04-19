@@ -188,7 +188,7 @@ void load_data(const string &dataset,
                              151);
         numerical_features = {4};
         categorical_features = {0, 1, 2, 3};
-        accuracy = 0.9727;
+        accuracy = 0.6255;
     } else if(dataset.compare("BUP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/bupa.dat",
                              {0, 1, 2, 3, 4, 5},
@@ -197,14 +197,6 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5};
         categorical_features = {};
         accuracy = 0.7270;
-    } else if(dataset.compare("APP") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
-                             {0, 1, 2, 3, 4, 5, 6},
-                             7,
-                             106);
-        numerical_features = {0, 1, 2, 3, 4, 5, 6};
-        categorical_features = {};
-        accuracy = 0.8773;
     } else if(dataset.compare("APP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
                              {0, 1, 2, 3, 4, 5, 6},
@@ -236,7 +228,7 @@ void load_data(const string &dataset,
                              462);
         numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
         categorical_features = {4};
-        accuracy = 0.7513;
+        accuracy = 0.7051;
     }
 }
 

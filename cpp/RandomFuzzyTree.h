@@ -14,6 +14,7 @@ struct Node {
     double entropy;
     double cardinality;
     map<string, double> weights;
+    set<int> categorical_features_used;
 
     bool is_leaf() {
         return children.size() == 0;
@@ -29,7 +30,6 @@ private:
     double min_gain_threshold;
     map<string, double> w;
     set<int> all_categorical_features;
-    set<int> categorical_features_left;
 public:
     RandomFuzzyTree() {
 
@@ -48,14 +48,13 @@ public:
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
-        this->p = int(ceil(sqrt(feature_n)));
+        this->p = int(sqrt(feature_n));
         this->min_gain_threshold = min_gain_threshold;
 
         if (categorical_features.size() == 0 and numerical_features.size() == 0) {
             generate_categorical_features(data, categorical_features, numerical_features);
         } else {
             this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
-            this->categorical_features_left = set<int>(categorical_features.begin(), categorical_features.end());
         }
 
         for (auto &d : data) {
@@ -74,7 +73,6 @@ public:
             if (find(numerical_features.begin(), numerical_features.end(), i) == numerical_features.end()) {
                 if (find(categorical_features.begin(), categorical_features.end(), i) != categorical_features.end()) {
                     this->all_categorical_features.insert(i);
-                    this->categorical_features_left.insert(i);
                 } else {
                     bool is_categorical = true;
                     set<int> unique_values;
@@ -90,7 +88,6 @@ public:
 
                     if (is_categorical and unique_values.size() < 5) {
                         this->all_categorical_features.insert(i);
-                        this->categorical_features_left.insert(i);
                     }
                 }
             }
@@ -139,7 +136,7 @@ public:
                     Node *child = new Node(children[i]);
                     node->children.push_back(child);
 
-                    if (!(are_only_categorical() and no_categorical_left())) {
+                    if (!(are_only_categorical() and no_categorical_left(node)) && child->data.size() > 1) {
                         frontier.push(make_pair(child, lvl + 1));
                     }
                 }
@@ -149,9 +146,13 @@ public:
         }
     }
 
-    bool no_categorical_left() const { return categorical_features_left.size() == 0; }
+    bool no_categorical_left(Node *node) const {
+        return node->categorical_features_used.size() == this->all_categorical_features.size();
+    }
 
-    bool are_only_categorical() const { return feature_n - all_categorical_features.size() == 0; }
+    bool are_only_categorical() const {
+        return feature_n - all_categorical_features.size() == 0;
+    }
 
     vector<Node> get_best_children(Node *node) {
         vector<int> features = generate_random_features();
@@ -189,11 +190,6 @@ public:
                 }
             }
 
-            const set<int>::iterator &feature_position = categorical_features_left.find(best_feature);
-            if(feature_position != categorical_features_left.end()) {
-                categorical_features_left.erase(feature_position);
-            }
-
             return best_children;
         }
     }
@@ -225,7 +221,7 @@ public:
     }
 
     vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
-        if (categorical_features_left.find(feature) != categorical_features_left.end()) {
+        if (pNode->categorical_features_used.find(feature) == pNode->categorical_features_used.end()) {
             set<int> values;
             for (auto &d : pNode->data) {
                 values.insert((int &&) d.first[feature]);
@@ -243,6 +239,10 @@ public:
                         child_memberships.push_back(pNode->memberships[i]);
                     }
                 }
+
+                auto categorical_features_used = pNode->categorical_features_used;
+                categorical_features_used.insert(feature);
+
                 Node child;
                 child.data = child_data;
                 child.ranges = pNode->ranges;
@@ -250,6 +250,7 @@ public:
                 child.cardinality = fuzzy_cardinality(&child);
                 child.entropy = fuzzy_entropy(&child);
                 child.weights = weights(&child, pNode);
+                child.categorical_features_used = categorical_features_used;
                 child.f = [feature, v](pair<vector<double>, string> d) {
                     return (int) d.first[feature] == (int) v;
                 };
@@ -497,6 +498,14 @@ public:
     }
 
     vector<int> generate_random_features() {
+//        static bool is_first = true;
+//
+//        if(is_first) {
+//            is_first = false;
+//            return {0, 1, 2, 3, 4};
+//        } else {
+//            return {0, 1, 2, 3};
+//        }
         vector<int> features;
         for (int i = 0; i < p; i++) {
             int rand_ind = rand();
@@ -507,10 +516,17 @@ public:
             }
             rand_ind %= n;
 
-            features.push_back(rand_ind);
+            if(not chosen(features, rand_ind)) {
+                features.push_back(rand_ind);
+            }
         }
 
         return features;
+    }
+
+
+    bool chosen(vector<int> &features, int rand_ind) const {
+        return find(features.begin(), features.end(), rand_ind) != features.end();
     }
 
     Node generate_root_node(data_t &data, vector<range_t > &ranges) {

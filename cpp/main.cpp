@@ -23,7 +23,7 @@ int main() {
                                "GLA",
                                "SAH"};
 
-    datasets = {"SAH"};
+//    datasets = {"TAE"};
 
     for (string &dataset : datasets) {
         vector<example_t > string_data;
@@ -53,7 +53,7 @@ int main() {
             random_shuffle(data.begin(), data.end());
         }
 
-        int clasifier_n = 10;
+        int clasifier_n = 100;
         int job_n = 4;
 
         int fold_n = 10;
