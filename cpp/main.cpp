@@ -11,6 +11,11 @@ int main() {
     bool shuffle = true;
     bool debug = false;
 
+    int clasifier_n = 100;
+    int job_n = 4;
+
+    int fold_n = 10;
+
     vector<string> datasets = {"HAB",
                                "HAY",
                                "IRI",
@@ -53,10 +58,6 @@ int main() {
             random_shuffle(data.begin(), data.end());
         }
 
-        int clasifier_n = 100;
-        int job_n = 4;
-
-        int fold_n = 10;
         int per_fold = (int) (data.size() / fold_n);
 
         RandomFuzzyForest rff(clasifier_n, job_n);
