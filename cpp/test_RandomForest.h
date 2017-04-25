@@ -25,8 +25,11 @@ void test_all_numeric() {
     data_t data = {
             { {1, 2, 3}, "2" }
     };
+    vector<range_t> ranges = {
+            {1, 5}
+    };
 
-    cout << data << endl;
+    rft.fit(data, ranges);
 }
 
 void run_all_tests() {
