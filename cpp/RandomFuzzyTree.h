@@ -30,9 +30,16 @@ private:
     double min_gain_threshold;
     map<string, double> w;
     set<int> all_categorical_features;
+    function<vector<int>(void)> random_feature_generator;
+    bool is_rfg_set = false;
 public:
     RandomFuzzyTree() {
 
+    }
+
+    void set_random_feature_generator(function<vector<int>(void)> rfg) {
+        this->random_feature_generator = rfg;
+        this->is_rfg_set = true;
     }
 
     map<string, double> &weights() {
@@ -498,14 +505,10 @@ public:
     }
 
     vector<int> generate_random_features() {
-//        static bool is_first = true;
-//
-//        if(is_first) {
-//            is_first = false;
-//            return {0, 1, 2, 3, 4};
-//        } else {
-//            return {0, 1, 2, 3};
-//        }
+        if(this->is_rfg_set) {
+            return this->random_feature_generator();
+        }
+
         vector<int> features;
         for (int i = 0; i < p; i++) {
             int rand_ind = rand();

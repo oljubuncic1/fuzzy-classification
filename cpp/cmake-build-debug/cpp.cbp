@@ -105,6 +105,9 @@
 		<Unit filename="/home/faruk/workspace/thesis/cpp/math_functions.h">
 			<Option target="cpp"/>
 		</Unit>
+		<Unit filename="/home/faruk/workspace/thesis/cpp/test_RandomForest.h">
+			<Option target="cpp"/>
+		</Unit>
 		<Unit filename="/home/faruk/workspace/thesis/cpp/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

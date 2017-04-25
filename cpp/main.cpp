@@ -3,6 +3,7 @@
 #include "definitions.h"
 #include "RandomFuzzyTree.h"
 #include "RandomFuzzyForest.h"
+#include "test_RandomForest.h"
 
 using namespace std;
 
@@ -10,11 +11,18 @@ using namespace std;
 int main() {
     bool shuffle = true;
     bool debug = false;
+    bool run_tests = true;
 
     int clasifier_n = 100;
     int job_n = 4;
 
     int fold_n = 10;
+
+    if(run_tests) {
+        run_all_tests();
+
+        return 0;
+    }
 
     vector<string> datasets = {"HAB",
                                "HAY",
