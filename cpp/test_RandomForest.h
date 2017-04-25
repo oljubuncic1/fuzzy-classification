@@ -12,7 +12,7 @@ void test_all_numeric() {
         static int i = 0;
 
         static vector<vector<int>> feature_sets = {
-                {0, 1},
+                {0},
                 {2, 3}
         };
 
@@ -21,9 +21,15 @@ void test_all_numeric() {
 
     RandomFuzzyTree rft;
     rft.set_random_feature_generator(rfg);
+    rft.set_max_depth(1);
 
     data_t data = {
-            { {1, 2, 3}, "2" }
+            { {2, 2, 3, 4}, "1" },
+            { {2, 2, 3, 4}, "1" },
+            { {3, 2, 3, 4}, "2" },
+            { {3, 2, 3, 4}, "2" },
+            { {4, 2, 3, 4}, "3" },
+            { {2, 2, 3, 4}, "1" },
     };
     vector<range_t> ranges = {
             {1, 5}

@@ -32,6 +32,8 @@ public:
     set<int> all_categorical_features;
     function<vector<int>(void)> random_feature_generator;
     bool is_rfg_set = false;
+    int max_depth = -1;
+
     RandomFuzzyTree() {
 
     }
@@ -39,6 +41,10 @@ public:
     void set_random_feature_generator(function<vector<int>(void)> rfg) {
         this->random_feature_generator = rfg;
         this->is_rfg_set = true;
+    }
+
+    void set_max_depth(const int &max_depth) {
+        this->max_depth = max_depth;
     }
 
     map<string, double> &weights() {
@@ -136,14 +142,16 @@ public:
             Node *node = curr.first;
             int lvl = curr.second;
 
-            vector<Node> children = get_best_children(node);
-            if (are_regular_children(children)) {
-                for (int i = 0; i < children.size(); i++) {
-                    Node *child = new Node(children[i]);
-                    node->children.push_back(child);
+            if(this->max_depth == -1 or lvl <= this->max_depth) {
+                vector<Node> children = get_best_children(node);
+                if (are_regular_children(children)) {
+                    for (int i = 0; i < children.size(); i++) {
+                        Node *child = new Node(children[i]);
+                        node->children.push_back(child);
 
-                    if (!(are_only_categorical() and no_categorical_left(node)) && child->data.size() > 1) {
-                        frontier.push(make_pair(child, lvl + 1));
+                        if (!(are_only_categorical() and no_categorical_left(node)) && child->data.size() > 1) {
+                            frontier.push(make_pair(child, lvl + 1));
+                        }
                     }
                 }
             }
