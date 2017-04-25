@@ -22,7 +22,7 @@ struct Node {
 };
 
 class RandomFuzzyTree {
-private:
+public:
     Node root;
     int p;
     int feature_n;
@@ -32,7 +32,6 @@ private:
     set<int> all_categorical_features;
     function<vector<int>(void)> random_feature_generator;
     bool is_rfg_set = false;
-public:
     RandomFuzzyTree() {
 
     }

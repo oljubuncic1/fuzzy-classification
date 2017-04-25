@@ -5,13 +5,14 @@
 #include "includes.h"
 #include "RandomFuzzyTree.h"
 
-void test_all_numeric() {
+#include <cassert>
 
+void test_all_numeric() {
     function<vector<int>(void)> rfg = []() -> vector<int> {
-        static i = 0;
+        static int i = 0;
 
         static vector<vector<int>> feature_sets = {
-                {1, 2},
+                {0, 1},
                 {2, 3}
         };
 
