@@ -61,7 +61,7 @@ function<double(pair<vector<double>, string>)> triangular(double center, double 
         if(eq(x, SPECIAL_VALUE)) {
             return name;
         } else if(eq(x, PRINT_VALUE)) {
-            cout << left << " to " << right << " k = " << k << " center: " << center;
+//            cout << left << " to " << right << " k = " << k << " center: " << center;
             return 0.0;
         } else if(eq(x, PRINT_NAME)) {
             cout << name;

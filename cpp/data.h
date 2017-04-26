@@ -229,6 +229,14 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
         categorical_features = {4};
         accuracy = 0.7051;
+    } else if(dataset.compare("WIS") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/winsconsin.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                             10,
+                             462);
+        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
+        categorical_features = {4};
+        accuracy = 0.7051;
     }
 }
 

@@ -62,7 +62,7 @@ public:
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
-        this->p = int(sqrt(feature_n));
+        this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
 
         if (categorical_features.size() == 0 and numerical_features.size() == 0) {
