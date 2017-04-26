@@ -16,6 +16,7 @@ struct Node {
     double cardinality;
     int feature;
     map<string, double> weights;
+    double cut_point;
     set<int> categorical_features_used;
 
     bool is_leaf() {
@@ -174,19 +175,14 @@ public:
         vector<int> features = generate_random_features();
 
         map<int, vector<Node>> feature_children;
+        map<int, double> cut_points_per_feature;
         for (auto f : features) {
             double cut_point = -1;
             vector<Node> children = generate_feature_best_children(node, f, cut_point);
+            cut_points_per_feature[f] = cut_point;
+
             if (are_regular_children(children)) {
                 feature_children[f] = children;
-
-//                cout << "Feature " << f << endl;
-                python_plot(node, f, cut_point);
-                int i = 0;
-                for(auto &child : children) {
-//                    cout << "\tChildren " << i++ << endl;
-                    python_plot(&child, f, cut_point);
-                }
             }
         }
 
@@ -207,6 +203,7 @@ public:
             }
 
             node->feature = best_feature;
+            node->cut_point = cut_points_per_feature[best_feature];
 
             return best_children;
         }
@@ -439,7 +436,7 @@ public:
         vector<double> next_memberships;
 
         for (int i = 0; i < node->memberships.size(); i++) {
-            if (node->memberships[i] > a_cut) {
+            if (local_memberships[i] > a_cut) {
                 next_data.push_back(node->data[i]);
                 next_memberships.push_back(node->memberships[i] *
                                            node->f(node->data[i]));
