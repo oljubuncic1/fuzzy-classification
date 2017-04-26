@@ -128,7 +128,7 @@ public:
         if (node.is_leaf()) {
             map<string, double> weights;
             if(node.data.size() == 0) {
-                weights = node.parent->weights;
+                weights = root.weights;
             } else {
                 weights = node.weights;
             }
@@ -255,8 +255,11 @@ public:
                 values.insert((int &&) d.first[feature]);
             }
 
+            int min_el = *min_element(values.begin(), values.end());
+            int max_el = *max_element(values.begin(), values.end());
+
             vector<Node> children;
-            for (auto v : values) {
+            for (int v = min_el; v <= max_el; v++) {
                 data_t child_data;
                 vector<double> child_memberships;
                 for (int i = 0; i < pNode->data.size(); i++) {
@@ -280,7 +283,11 @@ public:
                 child.weights = weights(&child);
                 child.categorical_features_used = categorical_features_used;
                 child.f = [feature, v](pair<vector<double>, string> d) {
-                    return (int) d.first[feature] == (int) v;
+                    if( (int) d.first[feature] == (int) v) {
+                        return 1.0;
+                    } else {
+                        return 0.0;
+                    }
                 };
 
                 children.push_back(child);
@@ -445,7 +452,7 @@ public:
         Node right_child;
         right_child.f = triangular(upper, (upper - point), feature);
         right_child.ranges = node->ranges;
-        right_child.ranges[feature].first = point;
+        right_child.ranges[feature].first = (upper + point) / 2;
         right_child.parent = node;
         fill_node_properties(node, &right_child);
         children.push_back(right_child);
