@@ -122,8 +122,19 @@ public:
                       double membership) {
         membership *= node.f(x);
 
+        if(membership == 0) {
+            return;
+        }
+
         if (node.is_leaf()) {
-            for (auto kv : node.weights) {
+            map<string, double> weights;
+            if(node.data.size() == 0) {
+                weights = node.parent->weights;
+            } else {
+                weights = node.weights;
+            }
+
+            for (auto kv : weights) {
                 memberships[kv.first] += kv.second * membership;
             }
         } else {
@@ -205,12 +216,15 @@ public:
             node->feature = best_feature;
             node->cut_point = cut_points_per_feature[best_feature];
 
+            python_plot(node, best_feature, cut_points_per_feature[best_feature]);
+
             return best_children;
         }
     }
 
     void python_plot(const Node *node, int f, double cut_point) const {
         return;
+
         string plot_arr_str ="python3 /home/faruk/workspace/thesis/cpp/plot.py \"[";
         int i = 0;
         for(auto &d : node->data) {
@@ -402,6 +416,10 @@ public:
         left_child.parent = node;
         left_child.ranges[feature].second = point;
         fill_node_properties(node, &left_child);
+
+        item_t item = {{0.1, 2, 3}, "2"};
+        auto dbg_result = left_child.f(item);
+
         children.push_back(left_child);
 
         Node middle_child;
@@ -438,8 +456,7 @@ public:
         for (int i = 0; i < node->memberships.size(); i++) {
             if (local_memberships[i] > a_cut) {
                 next_data.push_back(node->data[i]);
-                next_memberships.push_back(node->memberships[i] *
-                                           node->f(node->data[i]));
+                next_memberships.push_back(node->memberships[i]);
             }
         }
 

@@ -41,29 +41,42 @@ public:
                          const vector<range_t > &ranges,
                          vector<int> categorical_features = vector<int>(),
                          vector<int> numerical_features = vector<int>()) {
-        vector<thread> threads(classifiers.size());
+        bool parallel = false;
+        if(parallel) {
+            vector<thread> threads(classifiers.size());
 
-        for (int i = 0; i < ceil((double) classifiers.size() / job_n); i++) {
-            for (int j = 0; j < job_n; j++) {
-                int curr_ind = i * job_n + j;
-                if (curr_ind < classifiers.size()) {
-                    threads[j] = thread([this, data, ranges, curr_ind, categorical_features, numerical_features] {
-                        fit_classifier(&classifiers[curr_ind],
-                                       data,
-                                       ranges,
-                                       categorical_features,
-                                       numerical_features);
-                    });
+            for (int i = 0; i < ceil((double) classifiers.size() / job_n); i++) {
+                for (int j = 0; j < job_n; j++) {
+                    int curr_ind = i * job_n + j;
+                    if (curr_ind < classifiers.size()) {
+                        threads[j] = thread([this, data, ranges, curr_ind, categorical_features, numerical_features] {
+                            fit_classifier(&classifiers[curr_ind],
+                                           data,
+                                           ranges,
+                                           categorical_features,
+                                           numerical_features);
+                        });
+                    }
+                }
+
+                for (int j = 0; j < job_n; j++) {
+                    int curr_ind = i * job_n + j;
+                    if (curr_ind < classifiers.size()) {
+                        threads[j].join();
+                    }
                 }
             }
-
-            for (int j = 0; j < job_n; j++) {
-                int curr_ind = i * job_n + j;
-                if (curr_ind < classifiers.size()) {
-                    threads[j].join();
-                }
+        } else {
+            for(auto &classifier : classifiers) {
+                fit_classifier(&classifier,
+                              data,
+                              ranges,
+                              categorical_features,
+                              numerical_features);
             }
         }
+
+        return;
     }
 
     void fit_weights(data_t &data) {
