@@ -154,6 +154,21 @@ public:
             }
         }
 
+        if(membs_per_class.size() == 0) {
+            auto weights = classifiers[0].root.weights;
+            string max_label;
+            double max_memb = -10000;
+
+            for(auto &kv : weights) {
+                if(kv.second > max_memb) {
+                    max_memb = kv.second;
+                    max_label = kv.first;
+                }
+            }
+
+            return max_label;
+        }
+
         return std::max_element(membs_per_class.begin(),
                                 membs_per_class.end(),
                                 [](const pair<string, int> &p1, const pair<string, int> &p2) {

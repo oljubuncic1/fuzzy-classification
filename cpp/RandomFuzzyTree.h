@@ -410,20 +410,24 @@ public:
         double upper = node->ranges[feature].second;
 
         Node left_child;
-        left_child.f = triangular(lower, 2 * (point - lower), feature);
+        left_child.f = triangular(lower, (point - lower), feature);
         left_child.ranges = node->ranges;
         left_child.parent = node;
-        left_child.ranges[feature].second = point;
+        left_child.ranges[feature].second = (lower + point) / 2;
         fill_node_properties(node, &left_child);
-
-        item_t item = {{0.1, 2, 3}, "2"};
-        auto dbg_result = left_child.f(item);
-
         children.push_back(left_child);
+
+        Node left_center_child;
+        left_center_child.f = triangular((point + lower) / 2, (point - lower), feature);
+        left_center_child.ranges = node->ranges;
+        left_center_child.parent = node;
+        left_center_child.ranges[feature].second = point;
+        fill_node_properties(node, &left_center_child);
+        children.push_back(left_center_child);
 
         Node middle_child;
         middle_child.f = composite_triangular(point,
-                                              2 * (point - lower),
+                                              (point - lower),
                                               2 * (upper - point),
                                               feature);
         middle_child.ranges = node->ranges;

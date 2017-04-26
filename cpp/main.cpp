@@ -13,7 +13,7 @@ int main() {
     bool debug = false;
     bool run_tests = false;
 
-    int clasifier_n = 10;
+    int clasifier_n = 100;
 
     int job_n = 4;
 
