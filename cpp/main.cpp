@@ -10,10 +10,10 @@ using namespace std;
 
 int main() {
     bool shuffle = true;
-    bool debug = false;
+    bool debug = true;
     bool run_tests = true;
 
-    int clasifier_n = 100;
+    int clasifier_n = 10;
     int job_n = 4;
 
     int fold_n = 10;

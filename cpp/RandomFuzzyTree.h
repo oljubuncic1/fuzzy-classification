@@ -11,8 +11,10 @@ struct Node {
     vector<pair<double, double>> ranges;
     function<double(item_t)> f;
     vector<Node *> children;
+    Node* parent = nullptr;
     double entropy;
     double cardinality;
+    int feature;
     map<string, double> weights;
     set<int> categorical_features_used;
 
@@ -204,6 +206,8 @@ public:
                 }
             }
 
+            node->feature = best_feature;
+
             return best_children;
         }
     }
@@ -259,6 +263,7 @@ public:
 
                 Node child;
                 child.data = child_data;
+                child.parent = pNode;
                 child.ranges = pNode->ranges;
                 child.memberships = child_memberships;
                 child.cardinality = fuzzy_cardinality(&child);
@@ -329,6 +334,8 @@ public:
 //            }
 //        }
 
+        double resolution = 0.1;
+//        for(double point = lower + resolution; point < upper; point += resolution) {
         for (double point : points) {
             if (point > search_interval.first and point < search_interval.second and !eq(point, lower) and
                 !eq(point, upper)) {
@@ -395,6 +402,7 @@ public:
         Node left_child;
         left_child.f = triangular(lower, 2 * (point - lower), feature);
         left_child.ranges = node->ranges;
+        left_child.parent = node;
         left_child.ranges[feature].second = point;
         fill_node_properties(node, &left_child);
         children.push_back(left_child);
@@ -405,6 +413,7 @@ public:
                                               2 * (upper - point),
                                               feature);
         middle_child.ranges = node->ranges;
+        middle_child.parent = node;
         fill_node_properties(node, &middle_child);
         children.push_back(middle_child);
 
@@ -412,6 +421,7 @@ public:
         right_child.f = triangular(upper, 2 * (upper - point), feature);
         right_child.ranges = node->ranges;
         right_child.ranges[feature].first = point;
+        right_child.parent = node;
         fill_node_properties(node, &right_child);
         children.push_back(right_child);
 

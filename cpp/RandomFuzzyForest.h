@@ -137,7 +137,7 @@ public:
                 string cls = kv.first;
                 double val = kv.second;
 
-                membs_per_class[cls] += val * classifier.weights()[cls];
+                membs_per_class[cls] += val;
             }
         }
 

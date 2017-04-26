@@ -11,9 +11,8 @@ void test_all_numeric() {
     function<vector<int>(void)> rfg = []() -> vector<int> {
         static int i = 0;
 
-        static vector<vector<int>> feature_sets = {
-                {0},
-                {2, 3}
+        vector<vector<int>> feature_sets = {
+                {0, 1},
         };
 
         return feature_sets[i++];
@@ -21,25 +20,39 @@ void test_all_numeric() {
 
     RandomFuzzyTree rft;
     rft.set_random_feature_generator(rfg);
-    rft.set_max_depth(1);
+    rft.set_max_depth(0);
 
     data_t data = {
-            { {2, 2, 3, 4}, "1" },
-            { {2, 2, 3, 4}, "1" },
-            { {3, 2, 3, 4}, "2" },
-            { {3, 2, 3, 4}, "2" },
-            { {4, 2, 3, 4}, "3" },
-            { {2, 2, 3, 4}, "1" },
+            { {0.1, 0.1, 3, 4}, "1" },
+            { {0.2, 0.6, 3, 4}, "1" },
+            { {0.3, 1.2, 3, 4}, "1" },
+            { {0.6, 0.2, 3, 4}, "2" },
+            { {0.7, 0.7, 3, 4}, "2" },
+            { {0.8, 1.3, 3, 4}, "2" },
+            { {1.2, 0.3, 3, 4}, "3" },
+            { {1.3, 0.8, 3, 4}, "3" },
+            { {1.4, 1.4, 3, 4}, "3" },
     };
     vector<range_t> ranges = {
-            {1, 5}
+            {0, 1.4},
+            {0, 1.4},
     };
 
-    rft.fit(data, ranges);
+    vector<int> categorical_features = {};
+    vector<int> numerical_features = {0, 1};
+
+    rft.fit(data,
+            ranges,
+            categorical_features,
+            numerical_features);
+
+    return;
 }
 
 void run_all_tests() {
     test_all_numeric();
+
+    cout << "All tests passed" << endl;
 }
 
 #endif //CPP_TEST_RANDOMFOREST_H
