@@ -38,7 +38,6 @@ public:
     int max_depth = -1;
 
     RandomFuzzyTree() {
-
     }
 
     void set_random_feature_generator(function<vector<int>(void)> rfg) {
@@ -279,7 +278,7 @@ public:
                 child.memberships = child_memberships;
                 child.cardinality = fuzzy_cardinality(&child);
                 child.entropy = fuzzy_entropy(&child);
-                child.weights = weights(&child, pNode);
+                child.weights = weights(&child);
                 child.categorical_features_used = categorical_features_used;
                 child.f = [feature, v](pair<vector<double>, string> d) {
                     return (int) d.first[feature] == (int) v;
@@ -444,9 +443,11 @@ public:
     }
 
     void fill_node_properties(Node *parent, Node *node) {
-        node->data = parent->data;
+        if(parent != node) {
+            node->data = parent->data;
+            node->memberships = parent->memberships;
+        }
 
-        node->memberships = parent->memberships;
         vector<double> local_memberships = get_local_memberships(node);
         node->memberships = vec_mult(node->memberships, local_memberships);
 
@@ -460,14 +461,17 @@ public:
             }
         }
 
-        node->data = next_data;
-        node->memberships = next_memberships;
+        if(node != parent) {
+            node->data = next_data;
+            node->memberships = next_memberships;
+        }
+
         node->cardinality = fuzzy_cardinality(node);
         node->entropy = fuzzy_entropy(node);
-        node->weights = weights(node, parent);
+        node->weights = weights(node);
     }
 
-    map<string, double> weights(Node *node, Node *parent = nullptr) {
+    map<string, double> weights(Node *node) {
         if (node->data.size() != 0) {
             map<string, double> weights_values = {};
 
@@ -569,6 +573,8 @@ public:
         root.ranges = ranges;
         root.memberships = vector<double>(data.size(), 1.0);
         root.f = function<double(item_t)>([](item_t i) { return 1.0; });
+
+        auto prev_data = root.data;
 
         fill_node_properties(&root, &root);
 

@@ -67,16 +67,16 @@ public:
                 }
             }
         } else {
-            for(auto &classifier : classifiers) {
-                fit_classifier(&classifier,
+            for(int i = 0; i < classifiers.size(); i++) {
+                fit_classifier(&classifiers[i],
                               data,
                               ranges,
                               categorical_features,
                               numerical_features);
+
+                int dmy = 1;
             }
         }
-
-        return;
     }
 
     void fit_weights(data_t &data) {
