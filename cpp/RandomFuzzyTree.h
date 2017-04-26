@@ -257,7 +257,6 @@ public:
 
             vector<Node> children;
             for (auto v : values) {
-
                 data_t child_data;
                 vector<double> child_memberships;
                 for (int i = 0; i < pNode->data.size(); i++) {
@@ -428,15 +427,23 @@ public:
         Node middle_child;
         middle_child.f = composite_triangular(point,
                                               (point - lower),
-                                              2 * (upper - point),
+                                              (upper - point),
                                               feature);
         middle_child.ranges = node->ranges;
         middle_child.parent = node;
         fill_node_properties(node, &middle_child);
         children.push_back(middle_child);
 
+        Node right_center_child;
+        right_center_child.f = triangular((upper + point) / 2, (upper - point), feature);
+        right_center_child.ranges = node->ranges;
+        right_center_child.ranges[feature].first = point;
+        right_center_child.parent = node;
+        fill_node_properties(node, &right_center_child);
+        children.push_back(right_center_child);
+
         Node right_child;
-        right_child.f = triangular(upper, 2 * (upper - point), feature);
+        right_child.f = triangular(upper, (upper - point), feature);
         right_child.ranges = node->ranges;
         right_child.ranges[feature].first = point;
         right_child.parent = node;
