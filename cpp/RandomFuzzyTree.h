@@ -129,7 +129,6 @@ public:
             map<string, double> weights;
             if(node.data.size() == 0) {
                 weights = root.weights;
-                weights = node.parent->weights;
             } else {
                 weights = node.weights;
             }
@@ -263,16 +262,8 @@ public:
 
     vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
         if (pNode->categorical_features_used.find(feature) == pNode->categorical_features_used.end()) {
-            set<int> values;
-            for (auto &d : pNode->data) {
-                values.insert((int &&) d.first[feature]);
-            }
-
-            int min_el = *min_element(values.begin(), values.end());
-            int max_el = *max_element(values.begin(), values.end());
-
             vector<Node> children;
-            for (int v = min_el; v <= max_el; v++) {
+            for (int v = pNode->ranges[feature].first; v <= pNode->ranges[feature].second; v++) {
                 data_t child_data;
                 vector<double> child_memberships;
                 for (int i = 0; i < pNode->data.size(); i++) {
