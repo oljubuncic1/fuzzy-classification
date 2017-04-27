@@ -46,7 +46,47 @@ void test_all_numeric() {
             categorical_features,
             numerical_features);
 
-    return;
+    assert(rft.root.feature == 0);
+    assert(eq(rft.root.cut_point, 0.6));
+
+    item_t dmy = { {0, 2, 3, 4}, "1" };
+    item_t dmy2 = { {0, 2, 3, 4}, "1" };
+
+    assert(eq(rft.root.children[0]->f(dmy), 1));
+
+    dmy.first[0] = 0.6;
+    assert(eq(rft.root.children[0]->f(dmy), 0));
+
+    dmy.first[0] = -1;
+    assert(eq(rft.root.children[0]->f(dmy), 0));
+
+    dmy.first[0] = 0.7;
+    assert(eq(rft.root.children[0]->f(dmy), 0));
+
+    dmy.first[0] = 0.3;
+    dmy2.first[0] = 0.4;
+    assert(rft.root.children[0]->f(dmy2) < rft.root.children[0]->f(dmy));
+
+    dmy.first[0] = 0;
+    assert(eq(rft.root.children[1]->f(dmy), 0));
+
+    dmy.first[0] = 0.6;
+    assert(eq(rft.root.children[1]->f(dmy), 1));
+
+    dmy.first[0] = 1.4;
+    assert(eq(rft.root.children[1]->f(dmy), 0));
+
+    dmy.first[0] = 0.3;
+    dmy2.first[0] = 0.4;
+    assert(rft.root.children[1]->f(dmy) < rft.root.children[1]->f(dmy2));
+
+    dmy.first[0] = 0.7;
+    dmy2.first[0] = 0.8;
+    assert(rft.root.children[1]->f(dmy2) < rft.root.children[1]->f(dmy));
+
+    dmy.first[0] = 0.8;
+    dmy2.first[0] = 0.9;
+    assert(rft.root.children[1]->f(dmy2) < rft.root.children[1]->f(dmy));
 }
 
 void run_all_tests() {

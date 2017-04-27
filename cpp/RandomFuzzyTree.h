@@ -129,6 +129,7 @@ public:
             map<string, double> weights;
             if(node.data.size() == 0) {
                 weights = root.weights;
+                weights = node.parent->weights;
             } else {
                 weights = node.weights;
             }
@@ -162,7 +163,9 @@ public:
                         Node *child = new Node(children[i]);
                         node->children.push_back(child);
 
-                        if (!(are_only_categorical() and no_categorical_left(node)) && child->data.size() > 1) {
+                        if (not (are_only_categorical() and no_categorical_left(node)) and
+                                child->data.size() >= 1 and
+                                not all_same(child)) {
                             frontier.push(make_pair(child, lvl + 1));
                         }
                     }
@@ -171,6 +174,16 @@ public:
 
             frontier.pop();
         }
+    }
+
+    bool all_same(Node *node) {
+        for(int i = 1; i < node->data.size(); i++) {
+            if(node->data[i].second.compare(node->data[0].second) != 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     bool no_categorical_left(Node *node) const {
@@ -182,7 +195,7 @@ public:
     }
 
     vector<Node> get_best_children(Node *node) {
-        vector<int> features = generate_random_features();
+        vector<int> features = generate_random_features(node);
 
         map<int, vector<Node>> feature_children;
         map<int, double> cut_points_per_feature;
@@ -402,7 +415,7 @@ public:
 
         int non_zero_n = 0;
         for (auto &child : children) {
-            if (child.data.size() != 0) {
+            if (child.data.size() > 0) {
                 non_zero_n++;
             }
         }
@@ -416,10 +429,10 @@ public:
         double upper = node->ranges[feature].second;
 
         Node left_child;
-        left_child.f = triangular(lower, (point - lower), feature);
+        left_child.f = triangular(lower, 2 * (point - lower), feature);
         left_child.ranges = node->ranges;
         left_child.parent = node;
-        left_child.ranges[feature].second = (lower + point) / 2;
+        left_child.ranges[feature].second = point;//(lower + point) / 2;
         fill_node_properties(node, &left_child);
         children.push_back(left_child);
 
@@ -429,12 +442,12 @@ public:
         left_center_child.parent = node;
         left_center_child.ranges[feature].second = point;
         fill_node_properties(node, &left_center_child);
-        children.push_back(left_center_child);
+//        children.push_back(left_center_child);
 
         Node middle_child;
         middle_child.f = composite_triangular(point,
-                                              (point - lower),
-                                              (upper - point),
+                                              2 * (point - lower),
+                                              2 * (upper - point),
                                               feature);
         middle_child.ranges = node->ranges;
         middle_child.parent = node;
@@ -447,12 +460,12 @@ public:
         right_center_child.ranges[feature].first = point;
         right_center_child.parent = node;
         fill_node_properties(node, &right_center_child);
-        children.push_back(right_center_child);
+//        children.push_back(right_center_child);
 
         Node right_child;
-        right_child.f = triangular(upper, (upper - point), feature);
+        right_child.f = triangular(upper, 2 * (upper - point), feature);
         right_child.ranges = node->ranges;
-        right_child.ranges[feature].first = (upper + point) / 2;
+        right_child.ranges[feature].first = point;//(upper + point) / 2;
         right_child.parent = node;
         fill_node_properties(node, &right_child);
         children.push_back(right_child);
@@ -557,13 +570,13 @@ public:
         return local_memberships;
     }
 
-    vector<int> generate_random_features() {
+    vector<int> generate_random_features(Node *node) {
         if(this->is_rfg_set) {
             return this->random_feature_generator();
         }
 
         vector<int> features;
-        for (int i = 0; i < p; i++) {
+        for (int i = 0; i < 4 * p and features.size() < p; i++) {
             int rand_ind = rand();
             int n = feature_n;
 
@@ -572,7 +585,7 @@ public:
             }
             rand_ind %= n;
 
-            if(not chosen(features, rand_ind)) {
+            if(not in(node->categorical_features_used, rand_ind)) {
                 features.push_back(rand_ind);
             }
         }
@@ -580,6 +593,9 @@ public:
         return features;
     }
 
+    bool in(const set<int> &s, int el) {
+        return s.find(el) != s.end();
+    }
 
     bool chosen(vector<int> &features, int rand_ind) const {
         return find(features.begin(), features.end(), rand_ind) != features.end();

@@ -38,6 +38,7 @@ int main() {
                                "SAH"};
 
 //    datasets = {"TAE"};
+    datasets = {"HAB", "HAY", "TAE"};
 
     for (string &dataset : datasets) {
         vector<example_t > string_data;

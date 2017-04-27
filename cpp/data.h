@@ -141,8 +141,8 @@ void load_data(const string &dataset,
                              14,
                              306,
                              ' ');
-        numerical_features = {0, 1};
-        categorical_features = {2};
+        numerical_features = {0, 1, 2};
+        categorical_features = {};
         accuracy = 0.7072;
     } else if (dataset.compare("SEG") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
@@ -151,11 +151,11 @@ void load_data(const string &dataset,
                              2310);
     } else if(dataset.compare("HAY") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/hayes-roth.dat",
-                             {1, 2, 3, 4},
+                             {2, 3, 4},
                              5,
                              132);
-        numerical_features = {1};
-        categorical_features = {0, 2, 3};
+        numerical_features = {};
+        categorical_features = {0, 1, 2};
         accuracy = 0.8082;
     } else if(dataset.compare("IRI") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/iris.dat",
