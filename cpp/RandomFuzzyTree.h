@@ -11,7 +11,7 @@ struct Node {
     vector<pair<double, double>> ranges;
     function<double(item_t)> f;
     vector<Node *> children;
-    Node* parent = nullptr;
+    Node *parent = nullptr;
     double entropy;
     double cardinality;
     int feature;
@@ -82,7 +82,8 @@ public:
         return fabs(value - (int) value) < 0.000001;
     }
 
-    void generate_categorical_features(data_t &data, vector<int> &categorical_features, vector<int> &numerical_features) {
+    void
+    generate_categorical_features(data_t &data, vector<int> &categorical_features, vector<int> &numerical_features) {
         for (int i = 0; i < feature_n; i++) {
             if (find(numerical_features.begin(), numerical_features.end(), i) == numerical_features.end()) {
                 if (find(categorical_features.begin(), categorical_features.end(), i) != categorical_features.end()) {
@@ -121,13 +122,13 @@ public:
                       double membership) {
         membership *= node.f(x);
 
-        if(membership == 0) {
+        if (membership == 0) {
             return;
         }
 
         if (node.is_leaf()) {
             map<string, double> weights;
-            if(node.data.size() == 0) {
+            if (node.data.size() == 0) {
                 weights = root.weights;
             } else {
                 weights = node.weights;
@@ -155,16 +156,16 @@ public:
             Node *node = curr.first;
             int lvl = curr.second;
 
-            if(this->max_depth == -1 or lvl <= this->max_depth) {
+            if (this->max_depth == -1 or lvl <= this->max_depth) {
                 vector<Node> children = get_best_children(node);
                 if (are_regular_children(children)) {
                     for (int i = 0; i < children.size(); i++) {
                         Node *child = new Node(children[i]);
                         node->children.push_back(child);
 
-                        if (not (are_only_categorical() and no_categorical_left(node)) and
-                                child->data.size() >= 1 and
-                                not all_same(child)) {
+                        if (not(are_only_categorical() and no_categorical_left(node)) and
+                            child->data.size() >= 1 and
+                            not all_same(child)) {
                             frontier.push(make_pair(child, lvl + 1));
                         }
                     }
@@ -176,8 +177,8 @@ public:
     }
 
     bool all_same(Node *node) {
-        for(int i = 1; i < node->data.size(); i++) {
-            if(node->data[i].second.compare(node->data[0].second) != 0) {
+        for (int i = 1; i < node->data.size(); i++) {
+            if (node->data[i].second.compare(node->data[0].second) != 0) {
                 return false;
             }
         }
@@ -236,16 +237,17 @@ public:
     void python_plot(const Node *node, int f, double cut_point) const {
         return;
 
-        string plot_arr_str ="python3 /home/faruk/workspace/thesis/cpp/plot.py \"[";
+        string plot_arr_str = "python3 /home/faruk/workspace/thesis/cpp/plot.py \"[";
         int i = 0;
-        for(auto &d : node->data) {
+        for (auto &d : node->data) {
             string classification;
-            if(d.second[d.second.size() - 1] == '\n') {
+            if (d.second[d.second.size() - 1] == '\n') {
                 classification = d.second.substr(0, d.second.length() - 1);
             } else {
                 classification = d.second;
             }
-            plot_arr_str += "(" + to_string(d.first[f]) + "," +  to_string(node->memberships[i]) + "," + classification + "),";
+            plot_arr_str +=
+                    "(" + to_string(d.first[f]) + "," + to_string(node->memberships[i]) + "," + classification + "),";
             i++;
         }
         plot_arr_str += "]\" " + to_string(cut_point);
@@ -263,7 +265,7 @@ public:
     vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
         if (pNode->categorical_features_used.find(feature) == pNode->categorical_features_used.end()) {
             vector<Node> children;
-            for (int v = pNode->ranges[feature].first; v <= pNode->ranges[feature].second; v++) {
+            for (double v = pNode->ranges[feature].first; v <= pNode->ranges[feature].second; v++) {
                 data_t child_data;
                 vector<double> child_memberships;
                 for (int i = 0; i < pNode->data.size(); i++) {
@@ -287,7 +289,7 @@ public:
                 child.weights = weights(&child);
                 child.categorical_features_used = categorical_features_used;
                 child.f = [feature, v](pair<vector<double>, string> d) {
-                    if( (int) d.first[feature] == (int) v) {
+                    if ((int) d.first[feature] == (int) v) {
                         return 1.0;
                     } else {
                         return 0.0;
@@ -413,59 +415,92 @@ public:
         return non_zero_n >= 2;
     }
 
-    vector<Node> generate_children_at_point(Node *node, int feature, double point) {
+    vector<Node> generate_children_at_point(Node *node, int feature, double point, int n = 3) {
         vector<Node> children;
+        if (n == 3) {
+            double lower = node->ranges[feature].first;
+            double upper = node->ranges[feature].second;
 
-        double lower = node->ranges[feature].first;
-        double upper = node->ranges[feature].second;
+            Node left_child;
+            left_child.f = triangular(lower, 2 * (point - lower), feature);
+            left_child.ranges = node->ranges;
+            left_child.parent = node;
+            left_child.ranges[feature].second = point;
+            fill_node_properties(node, &left_child);
+            children.push_back(left_child);
 
-        Node left_child;
-        left_child.f = triangular(lower, 2 * (point - lower), feature);
-        left_child.ranges = node->ranges;
-        left_child.parent = node;
-        left_child.ranges[feature].second = point;//(lower + point) / 2;
-        fill_node_properties(node, &left_child);
-        children.push_back(left_child);
 
-        Node left_center_child;
-        left_center_child.f = triangular((point + lower) / 2, (point - lower), feature);
-        left_center_child.ranges = node->ranges;
-        left_center_child.parent = node;
-        left_center_child.ranges[feature].second = point;
-        fill_node_properties(node, &left_center_child);
-//        children.push_back(left_center_child);
+            Node middle_child;
+            middle_child.f = composite_triangular(point,
+                                                  2 * (point - lower),
+                                                  2 * (upper - point),
+                                                  feature);
+            middle_child.ranges = node->ranges;
+            middle_child.parent = node;
+            fill_node_properties(node, &middle_child);
+            children.push_back(middle_child);
 
-        Node middle_child;
-        middle_child.f = composite_triangular(point,
-                                              2 * (point - lower),
-                                              2 * (upper - point),
-                                              feature);
-        middle_child.ranges = node->ranges;
-        middle_child.parent = node;
-        fill_node_properties(node, &middle_child);
-        children.push_back(middle_child);
+            Node right_child;
+            right_child.f = triangular(upper, 2 * (upper - point), feature);
+            right_child.ranges = node->ranges;
+            right_child.ranges[feature].first = point;
+            right_child.parent = node;
+            fill_node_properties(node, &right_child);
+            children.push_back(right_child);
 
-        Node right_center_child;
-        right_center_child.f = triangular((upper + point) / 2, (upper - point), feature);
-        right_center_child.ranges = node->ranges;
-        right_center_child.ranges[feature].first = point;
-        right_center_child.parent = node;
-        fill_node_properties(node, &right_center_child);
-//        children.push_back(right_center_child);
+            return children;
+        } else if (n == 5) {
+            double lower = node->ranges[feature].first;
+            double upper = node->ranges[feature].second;
 
-        Node right_child;
-        right_child.f = triangular(upper, 2 * (upper - point), feature);
-        right_child.ranges = node->ranges;
-        right_child.ranges[feature].first = point;//(upper + point) / 2;
-        right_child.parent = node;
-        fill_node_properties(node, &right_child);
-        children.push_back(right_child);
+            Node left_child;
+            left_child.f = triangular(lower, (point - lower), feature);
+            left_child.ranges = node->ranges;
+            left_child.parent = node;
+            left_child.ranges[feature].second = (lower + point) / 2;
+            fill_node_properties(node, &left_child);
+            children.push_back(left_child);
 
-        return children;
+            Node left_center_child;
+            left_center_child.f = triangular((point + lower) / 2, (point - lower), feature);
+            left_center_child.ranges = node->ranges;
+            left_center_child.parent = node;
+            left_center_child.ranges[feature].second = point;
+            fill_node_properties(node, &left_center_child);
+            children.push_back(left_center_child);
+
+            Node middle_child;
+            middle_child.f = composite_triangular(point,
+                                                  (point - lower),
+                                                  (upper - point),
+                                                  feature);
+            middle_child.ranges = node->ranges;
+            middle_child.parent = node;
+            fill_node_properties(node, &middle_child);
+            children.push_back(middle_child);
+
+            Node right_center_child;
+            right_center_child.f = triangular((upper + point) / 2, (upper - point), feature);
+            right_center_child.ranges = node->ranges;
+            right_center_child.ranges[feature].first = point;
+            right_center_child.parent = node;
+            fill_node_properties(node, &right_center_child);
+            children.push_back(right_center_child);
+
+            Node right_child;
+            right_child.f = triangular(upper, (upper - point), feature);
+            right_child.ranges = node->ranges;
+            right_child.ranges[feature].first = (upper + point) / 2;
+            right_child.parent = node;
+            fill_node_properties(node, &right_child);
+            children.push_back(right_child);
+
+            return children;
+        }
     }
 
     void fill_node_properties(Node *parent, Node *node) {
-        if(parent != node) {
+        if (parent != node) {
             node->data = parent->data;
             node->memberships = parent->memberships;
         }
@@ -483,7 +518,7 @@ public:
             }
         }
 
-        if(node != parent) {
+        if (node != parent) {
             node->data = next_data;
             node->memberships = next_memberships;
         }
@@ -562,7 +597,7 @@ public:
     }
 
     vector<int> generate_random_features(Node *node) {
-        if(this->is_rfg_set) {
+        if (this->is_rfg_set) {
             return this->random_feature_generator();
         }
 
@@ -576,7 +611,7 @@ public:
             }
             rand_ind %= n;
 
-            if(not in(node->categorical_features_used, rand_ind)) {
+            if (not in(node->categorical_features_used, rand_ind)) {
                 features.push_back(rand_ind);
             }
         }

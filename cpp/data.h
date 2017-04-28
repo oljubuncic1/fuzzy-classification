@@ -108,14 +108,14 @@ void find_ranges(
                         to_double(min_element(
                                 examples.begin(),
                                 examples.end(),
-                                [i](example_t x, example_t y) {
+                                [i](example_t x, example_t y) -> double {
                                     return to_double(x.first[i]) < to_double(y.first[i]);
                                 }
                         )->first[i]),
                         to_double(max_element(
                                 examples.begin(),
                                 examples.end(),
-                                [i](example_t x, example_t y) {
+                                [i](example_t x, example_t y) -> double {
                                     return to_double(x.first[i]) < to_double(y.first[i]);
                                 }
                         )->first[i])
@@ -195,7 +195,7 @@ void load_data(const string &dataset,
                              345);
         numerical_features = {0, 1, 2, 3, 4, 5};
         categorical_features = {};
-        accuracy = 0.7270;
+        accuracy = 0.7220;
     } else if(dataset.compare("APP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
                              {0, 1, 2, 3, 4, 5, 6},
@@ -222,20 +222,36 @@ void load_data(const string &dataset,
         accuracy = 0.7513;
     } else if(dataset.compare("SAH") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/saheart.dat",
-                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+                             {1, 2, 3, 4, 5, 6, 7, 8, 9},
                              10,
                              462);
         numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
         categorical_features = {4};
         accuracy = 0.7051;
     } else if(dataset.compare("WIS") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/data/winsconsin.dat",
-                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-                             10,
-                             462);
-        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
-        categorical_features = {4};
-        accuracy = 0.7051;
+        data = load_csv_data("/home/faruk/workspace/thesis/data/wisconsin.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8},
+                             9,
+                             699);
+        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8};
+        categorical_features = {};
+        accuracy = 0.9728;
+    } else if(dataset.compare("CLE") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/cleveland.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                             13,
+                             303);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        categorical_features = {};
+        accuracy = 0.5836;
+    } else if(dataset.compare("HEA") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/heart.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                             13,
+                             270);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        categorical_features = {};
+        accuracy = 0.8389;
     }
 }
 

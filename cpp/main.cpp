@@ -35,10 +35,12 @@ int main() {
                                "APP",
                                "PIM",
                                "GLA",
-                               "SAH"};
+                               "SAH",
+                               "WIS",
+                               "CLE"};
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
-//    datasets = {"HAB"};
+    datasets = {"HEA"};
 
     for (string &dataset : datasets) {
         vector<example_t > string_data;
