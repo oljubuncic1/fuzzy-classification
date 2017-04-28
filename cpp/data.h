@@ -293,7 +293,33 @@ void load_data(const string &dataset,
                              2310);
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
         categorical_features = {};
-        accuracy = 0.8958;
+        accuracy = 0.9620;
+    } else if(dataset.compare("THY") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/thyroid.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
+                             21,
+                             7200);
+        numerical_features = {0, 16, 17, 18, 19};
+        categorical_features = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        accuracy = 0.9730;
+    } else if(dataset.compare("WDB") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/wdbc.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
+                             30,
+                             569);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+        categorical_features = {};
+        accuracy = 0.9601;
+    } else if(dataset.compare("DER") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/dermatology.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                              16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33},
+                             34,
+                             366);
+        numerical_features = {33};
+        categorical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                                16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
+        accuracy = 0.9764;
     }
 }
 
