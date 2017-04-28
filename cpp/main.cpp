@@ -13,7 +13,7 @@ int main() {
     bool debug = false;
     bool run_tests = false;
 
-    int clasifier_n = 10;
+    int clasifier_n = 100;
 
     int job_n = 4;
 
@@ -39,15 +39,20 @@ int main() {
                                "WIS",
                                "CLE",
                                "HEA",
+                               "WIN",
                                "AUS",
                                "VEH",
+                               "BAN",
                                "HEP",
                                "IMA",
                                "THY",
-                               "WDB"};
+                               "WDB",
+                               "DER",
+                               "ION",
+                               "SON"};
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
-    datasets = {"DER"};
+    datasets = {"SON"};
 
     for (string &dataset : datasets) {
         vector<example_t > string_data;
