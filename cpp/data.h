@@ -188,16 +188,16 @@ void load_data(const string &dataset,
                              {0, 1, 2, 3, 4},
                              5,
                              151);
-        numerical_features = {4};
-        categorical_features = {0, 1, 2, 3};
+        numerical_features = {};
+        categorical_features = {0, 1, 2, 3, 4};
         accuracy = 0.6255;
     } else if(dataset.compare("BUP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/bupa.dat",
                              {0, 1, 2, 3, 4, 5},
                              6,
                              345);
-        numerical_features = {};
-        categorical_features = {0, 1, 2, 3, 4, 5};
+        numerical_features = {5};
+        categorical_features = {0, 1, 2, 3, 4};
         accuracy = 0.7220;
     } else if(dataset.compare("APP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
@@ -225,10 +225,10 @@ void load_data(const string &dataset,
         accuracy = 0.7513;
     } else if(dataset.compare("SAH") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/saheart.dat",
-                             {1, 2, 3, 4, 5, 6, 7, 8, 9},
-                             10,
+                             {1, 2, 3, 4, 5, 6, 7, 8},
+                             9,
                              462);
-        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8, 9};
+        numerical_features = {0, 1, 2, 3, 6, 7, 8};
         categorical_features = {4};
         accuracy = 0.7051;
     } else if(dataset.compare("WIS") == 0) {
