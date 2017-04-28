@@ -10,7 +10,7 @@ using namespace std;
 
 int main() {
     bool shuffle = true;
-    bool debug = false;
+    bool debug = true;
     bool run_tests = false;
 
     int clasifier_n = 10;
@@ -37,10 +37,14 @@ int main() {
                                "GLA",
                                "SAH",
                                "WIS",
-                               "CLE"};
+                               "CLE",
+                               "HEA",
+                               "AUS",
+                               "VEH",
+                               "HEP"};
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
-    datasets = {"HEA"};
+    datasets = {"IMA"};
 
     for (string &dataset : datasets) {
         vector<example_t > string_data;

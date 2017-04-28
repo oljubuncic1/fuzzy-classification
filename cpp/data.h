@@ -129,13 +129,7 @@ void load_data(const string &dataset,
                vector<int> &categorical_features,
                vector<int> &numerical_features,
                double &accuracy) {
-    if (dataset.compare("AUS") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
-                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
-                             14,
-                             690,
-                             ' ');
-    } else if (dataset.compare("HAB") == 0) {
+    if (dataset.compare("HAB") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/haberman.dat",
                              {0, 1, 2},
                              3,
@@ -250,8 +244,56 @@ void load_data(const string &dataset,
                              13,
                              270);
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-        categorical_features = {};
+        categorical_features = {1, 2, 8};
         accuracy = 0.8389;
+    } else if(dataset.compare("WIN") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/wine.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+                             13,
+                             178);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+        categorical_features = {};
+        accuracy = 0.9728;
+    } else if(dataset.compare("AUS") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/australian.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+                             14,
+                             690);
+        numerical_features = {};
+        categorical_features = {0, 7, 8, 10};
+        accuracy = 0.8600;
+    } else if(dataset.compare("VEH") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/vehicle.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17},
+                             18,
+                             846);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+        categorical_features = {};
+        accuracy = 0.7538;
+    } else if(dataset.compare("BAN") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/bands.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+                             19,
+                             539);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+        categorical_features = {};
+        accuracy = 0.7089;
+    } else if(dataset.compare("HEP") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/hepatitis.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+                             19,
+                             155);
+        numerical_features = {0, 13, 14, 15, 16, 17};
+        categorical_features = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18};
+        accuracy = 0.8958;
+    } else if(dataset.compare("IMA") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
+                             19,
+                             2310);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+        categorical_features = {};
+        accuracy = 0.8958;
     }
 }
 
