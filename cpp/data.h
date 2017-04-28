@@ -136,11 +136,10 @@ void load_data(const string &dataset,
                              690,
                              ' ');
     } else if (dataset.compare("HAB") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/cpp/data/australian.dat",
+        data = load_csv_data("/home/faruk/workspace/thesis/data/haberman.dat",
                              {0, 1, 2},
-                             14,
-                             306,
-                             ' ');
+                             3,
+                             306);
         numerical_features = {0, 1, 2};
         categorical_features = {};
         accuracy = 0.7072;
