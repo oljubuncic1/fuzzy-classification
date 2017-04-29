@@ -197,7 +197,7 @@ void load_data(const string &dataset,
                              6,
                              345);
         numerical_features = {5};
-        categorical_features = {0, 1, 2, 3, 4};
+        categorical_features = {1, 2, 3, 4};
         accuracy = 0.7220;
     } else if(dataset.compare("APP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",

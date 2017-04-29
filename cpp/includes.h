@@ -29,4 +29,16 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <functional>
+#include <cctype>
+#include <locale>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
+#include <sstream>
+
 #endif //CPP_INCLUDES_H
