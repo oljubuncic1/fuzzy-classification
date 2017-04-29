@@ -34,80 +34,20 @@ public:
         }
 
         fit_classifiers(classifier_data, ranges, categorical_features, numerical_features);
-        fit_weights(weight_data);
     }
 
     void fit_classifiers(data_t &data,
                          const vector<range_t > &ranges,
                          vector<int> categorical_features = vector<int>(),
                          vector<int> numerical_features = vector<int>()) {
-        bool parallel = false;
-        if(parallel) {
-            vector<thread> threads(classifiers.size());
+        for(int i = 0; i < classifiers.size(); i++) {
+            fit_classifier(&classifiers[i],
+                          data,
+                          ranges,
+                          categorical_features,
+                          numerical_features);
 
-            for (int i = 0; i < ceil((double) classifiers.size() / job_n); i++) {
-                for (int j = 0; j < job_n; j++) {
-                    int curr_ind = i * job_n + j;
-                    if (curr_ind < classifiers.size()) {
-                        threads[j] = thread([this, data, ranges, curr_ind, categorical_features, numerical_features] {
-                            fit_classifier(&classifiers[curr_ind],
-                                           data,
-                                           ranges,
-                                           categorical_features,
-                                           numerical_features);
-                        });
-                    }
-                }
-
-                for (int j = 0; j < job_n; j++) {
-                    int curr_ind = i * job_n + j;
-                    if (curr_ind < classifiers.size()) {
-                        threads[j].join();
-                    }
-                }
-            }
-        } else {
-            for(int i = 0; i < classifiers.size(); i++) {
-                fit_classifier(&classifiers[i],
-                              data,
-                              ranges,
-                              categorical_features,
-                              numerical_features);
-
-                int dmy = 1;
-            }
-        }
-    }
-
-    void fit_weights(data_t &data) {
-        double alpha = 0;
-
-        for (auto &d : data) {
-            string y = d.second;
-
-            for (auto &classifier : classifiers) {
-                map<string, double> prediction = classifier.predict_memberships(d);
-
-                double total = 0;
-                auto &weights = classifier.weights();
-                for (auto &kv : prediction) {
-                    total += weights[kv.first] * kv.second;
-                }
-
-                for (auto kv : weights) {
-                    double t;
-                    if (kv.first.compare(y) == 0) {
-                        t = total;
-                    } else {
-                        t = 0;
-                    }
-
-                    double dy = weights[kv.first] * prediction[kv.first] - t;
-                    double delta_w = -alpha * dy * prediction[kv.first];
-
-                    weights[kv.first] += delta_w;
-                }
-            }
+            int dmy = 1;
         }
     }
 

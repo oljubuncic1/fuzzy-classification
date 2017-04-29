@@ -50,9 +50,9 @@ int main() {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = false;
+    bool local = true;
 
-    int clasifier_n = 50;
+    int clasifier_n = 10;
 
     int job_n = 4;
 
@@ -92,7 +92,7 @@ int main() {
                                    "SON"};
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
-        datasets = {"BUP"};
+//        datasets = {"BUP"};
 
         for (string &dataset : datasets) {
             vector<example_t > string_data;
