@@ -69,9 +69,6 @@ public:
                         categorical_features,
                         line_cnt);
 
-        cout << 1 << "\t" << 1 << endl;
-        return;
-
 //        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
 //                                                            attribute_inds,
 //                                                            class_ind,
@@ -93,6 +90,7 @@ public:
 
         string line;
         while (getline(cin, line)) {
+            cout << 1 << "\t" << 1 << endl;
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
@@ -134,7 +132,6 @@ public:
 //                    auto membs = rff.predict_memberships(v);
 //                    cout << v << "\t" << membs << endl;
 //                }
-                cout << 1 << "\t" << 1 << endl;
 
                 // start a new
                 curr_id = id;
