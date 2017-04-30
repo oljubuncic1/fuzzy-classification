@@ -136,7 +136,7 @@ public:
 //                }
 
                 // start a new
-//                curr_id = id;
+                curr_id = id;
 //                curr_data = vector<example_t>();
             }
         }
