@@ -69,21 +69,21 @@ public:
                         categorical_features,
                         line_cnt);
 
-//        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
-//                                                            attribute_inds,
-//                                                            class_ind,
-//                                                            line_cnt,
-//                                                            separation_char);
-//
-//        data_t verification_data;
-//        for (auto &x : verification_str_data) {
-//            vector<double> item;
-//            for (auto val : x.first) {
-//                item.push_back(to_double(val));
-//            }
-//            string classification = x.second;
-//            verification_data.push_back(make_pair(item, classification));
-//        }
+        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
+                                                            attribute_inds,
+                                                            class_ind,
+                                                            line_cnt,
+                                                            separation_char);
+
+        data_t verification_data;
+        for (auto &x : verification_str_data) {
+            vector<double> item;
+            for (auto val : x.first) {
+                item.push_back(to_double(val));
+            }
+            string classification = x.second;
+            verification_data.push_back(make_pair(item, classification));
+        }
 
         int curr_id = -1;
         vector<example_t> curr_data;
@@ -99,7 +99,6 @@ public:
             ss >> id;
 
             if(id == curr_id) {
-                cout << id << "\t" << id << endl;
                 example_t curr_example;
                 curr_example = example_from_line(example_str,
                                                  attribute_inds,
