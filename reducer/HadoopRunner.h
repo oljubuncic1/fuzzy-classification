@@ -69,20 +69,25 @@ public:
                         categorical_features,
                         line_cnt);
 
-        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
-                                                            attribute_inds,
-                                                            class_ind,
-                                                            line_cnt,
-                                                            separation_char);
+        try {
+            vector<example_t> verification_str_data = load_csv_data(verification_data_path,
+                                                                    attribute_inds,
+                                                                    class_ind,
+                                                                    line_cnt,
+                                                                    separation_char);
 
-        data_t verification_data;
-        for (auto &x : verification_str_data) {
-            vector<double> item;
-            for (auto val : x.first) {
-                item.push_back(to_double(val));
+            data_t verification_data;
+            for (auto &x : verification_str_data) {
+                vector<double> item;
+                for (auto val : x.first) {
+                    item.push_back(to_double(val));
+                }
+                string classification = x.second;
+                verification_data.push_back(make_pair(item, classification));
             }
-            string classification = x.second;
-            verification_data.push_back(make_pair(item, classification));
+
+        } catch (const std::exception &exc) {
+            std::cerr << exc.what();
         }
 
         int curr_id = -1;
