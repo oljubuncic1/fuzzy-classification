@@ -80,15 +80,12 @@ public:
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
-            cout << line << endl;
-            continue;
-            
             string example_str = tokens[1];
             std::istringstream ss(tokens[0]);
             int id;
             ss >> id;
 
-            cout << "|" << example_str << "|" << " " << id << endl;
+            cout << line << endl;
             continue;
 
             if(id == curr_id) {
