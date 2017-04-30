@@ -77,6 +77,8 @@ public:
 
         string line;
         while (getline(cin, line)) {
+            cout << line << endl;
+            continue;
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
@@ -84,6 +86,9 @@ public:
             std::istringstream ss(tokens[0]);
             int id;
             ss >> id;
+
+            cout << "|" << example_str << "|" << " " << id << endl;
+            continue;
 
             if(id == curr_id) {
                 example_t curr_example;
