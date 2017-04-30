@@ -55,9 +55,6 @@ public:
              const string &dataset,
              int tree_n,
              string verification_data_path) {
-        cout << 1 << "\t" << 1 << endl;
-        return;
-
         vector<int> attribute_inds;
         vector<int> numerical_features;
         vector<int> categorical_features;
@@ -72,21 +69,21 @@ public:
                         categorical_features,
                         line_cnt);
 
-        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
-                                                            attribute_inds,
-                                                            class_ind,
-                                                            line_cnt,
-                                                            separation_char);
-
-        data_t verification_data;
-        for (auto &x : verification_str_data) {
-            vector<double> item;
-            for (auto val : x.first) {
-                item.push_back(to_double(val));
-            }
-            string classification = x.second;
-            verification_data.push_back(make_pair(item, classification));
-        }
+//        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
+//                                                            attribute_inds,
+//                                                            class_ind,
+//                                                            line_cnt,
+//                                                            separation_char);
+//
+//        data_t verification_data;
+//        for (auto &x : verification_str_data) {
+//            vector<double> item;
+//            for (auto val : x.first) {
+//                item.push_back(to_double(val));
+//            }
+//            string classification = x.second;
+//            verification_data.push_back(make_pair(item, classification));
+//        }
 
         int curr_id = -1;
         vector<example_t> curr_data;
@@ -130,10 +127,11 @@ public:
                         categorical_features,
                         numerical_features);
 
-                for(auto &v : verification_data) {
-                    auto membs = rff.predict_memberships(v);
-                    cout << v << "\t" << membs << endl;
-                }
+//                for(auto &v : verification_data) {
+//                    auto membs = rff.predict_memberships(v);
+//                    cout << v << "\t" << membs << endl;
+//                }
+                cout << 1 << "\t" << 1 << endl;
 
                 // start a new
                 curr_id = id;
