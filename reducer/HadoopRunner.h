@@ -108,36 +108,36 @@ public:
 
                 curr_data.push_back(curr_example);
             } else {
-//                if(id != -1) {
-//                    // build a tree for prev and classify
-//                    vector<range_t> ranges;
-//                    find_ranges(curr_data, ranges);
-//
-//                    data_t data;
-//                    for (auto &x : curr_data) {
-//                        vector<double> item;
-//                        for (auto val : x.first) {
-//                            item.push_back(to_double(val));
-//                        }
-//                        string classification = x.second;
-//                        data.push_back(make_pair(item, classification));
+                if(id != -1) {
+                    // build a tree for prev and classify
+                    vector<range_t> ranges;
+                    find_ranges(curr_data, ranges);
+
+                    data_t data;
+                    for (auto &x : curr_data) {
+                        vector<double> item;
+                        for (auto val : x.first) {
+                            item.push_back(to_double(val));
+                        }
+                        string classification = x.second;
+                        data.push_back(make_pair(item, classification));
+                    }
+
+                    RandomFuzzyForest rff(tree_n);
+                    rff.fit(data,
+                            ranges,
+                            categorical_features,
+                            numerical_features);
+
+//                    for(auto &v : verification_data) {
+//                        auto membs = rff.predict_memberships(v);
+//                        cout << v << "\t" << membs << endl;
 //                    }
-//
-//                    RandomFuzzyForest rff(tree_n);
-//                    rff.fit(data,
-//                            ranges,
-//                            categorical_features,
-//                            numerical_features);
-//
-////                    for(auto &v : verification_data) {
-////                        auto membs = rff.predict_memberships(v);
-////                        cout << v << "\t" << membs << endl;
-////                    }
-//                }
+                }
 
                 // start a new
                 curr_id = id;
-//                curr_data = vector<example_t>();
+                curr_data = vector<example_t>();
             }
         }
 
