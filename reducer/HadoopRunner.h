@@ -127,7 +127,8 @@ public:
         find_ranges(curr_data, ranges);
 
         data_t data;
-        for (auto &x : curr_data) {
+        for (int i = 0; i < curr_data.size(); i++) {
+            auto x = curr_data[i];
             cout << x << endl;
 //            vector<double> item;
 //            for (auto val : x.first) {
