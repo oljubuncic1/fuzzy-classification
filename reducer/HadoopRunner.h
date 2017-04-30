@@ -72,8 +72,8 @@ public:
         vector<RandomFuzzyForest> forests;
 
         int curr_id = -1;
-        vector<example_t> curr_data;
-        vector<example_t> curr_test_data;
+        vector<example_t > curr_data;
+        vector<example_t > curr_test_data;
 
         string line;
         while (getline(cin, line)) {
@@ -85,10 +85,10 @@ public:
             int id;
             ss >> id;
 
-            if(id == curr_id) {
+            if (id == curr_id) {
                 example_t curr_example;
 
-                if(example_str[0] == 't') {
+                if (example_str[0] == 't') {
                     curr_example = example_from_line(example_str.substr(1),
                                                      attribute_inds,
                                                      class_ind,
@@ -104,15 +104,15 @@ public:
                     curr_data.push_back(curr_example);
                 }
             } else {
-                if(curr_id != -1) {
+                if (curr_id != -1) {
                     // build a tree for prev and classify
                     train_and_predict(tree_n, curr_data, curr_test_data);
                 }
 
                 // start a new (off by one)
                 curr_id = id;
-                curr_data = vector<example_t>();
-                curr_test_data = vector<example_t>();
+                curr_data = vector<example_t >();
+                curr_test_data = vector<example_t >();
             }
         }
 
@@ -123,24 +123,27 @@ public:
     void train_and_predict(int tree_n,
                            const vector<pair<vector<string>, string>> &curr_data,
                            const vector<pair<vector<string>, string>> &curr_test_data) const {
-        vector<range_t> ranges;
+        cout << curr_data.size() << endl;
+        return;
+
+        vector<range_t > ranges;
         find_ranges(curr_data, ranges);
 
         data_t data;
         for (auto &x : curr_data) {
-                        vector<double> item;
-                        for (auto val : x.first) {
-                            item.push_back(to_double(val));
-                        }
-                        string classification = x.second;
-                        data.push_back(make_pair(item, classification));
-                    }
+            vector<double> item;
+            for (auto val : x.first) {
+                item.push_back(to_double(val));
+            }
+            string classification = x.second;
+            data.push_back(make_pair(item, classification));
+        }
 
-//        RandomFuzzyForest rff(tree_n);
-//        rff.fit(data,
-//                ranges,
-//                categorical_features,
-//                numerical_features);
+        RandomFuzzyForest rff(tree_n);
+        rff.fit(data,
+                ranges,
+                categorical_features,
+                numerical_features);
     }
 };
 
