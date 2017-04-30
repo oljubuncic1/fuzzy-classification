@@ -100,7 +100,10 @@ public:
 
             if(id == curr_id) {
                 example_t curr_example;
-                curr_example = example_from_line(example_str, attribute_inds, class_ind, separation_char);
+                curr_example = example_from_line(example_str,
+                                                 attribute_inds,
+                                                 class_ind,
+                                                 separation_char);
 
                 curr_data.push_back(curr_example);
             } else {
@@ -125,6 +128,8 @@ public:
                         numerical_features);
 
                 for(auto &v : verification_data) {
+                    auto membs = rff.predict_memberships(v);
+                    cout << v << "\t" << membs << endl;
                 }
 
                 // start a new

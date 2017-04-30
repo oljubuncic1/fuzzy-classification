@@ -76,6 +76,16 @@ public:
     }
 
     string predict(item_t &x) {
+        map<string, double> membs_per_class = predict_memberships(x);
+
+        return std::max_element(membs_per_class.begin(),
+                                membs_per_class.end(),
+                                [](const pair<string, int> &p1, const pair<string, int> &p2) {
+                                    return p1.second < p2.second;
+                                })->first;
+    }
+
+    map<string, double> predict_memberships(pair<vector<double>, string> &x) const {
         map<string, double> membs_per_class;
 
         for (int i = 0; i < classifiers.size(); i++) {
@@ -88,27 +98,7 @@ public:
                 membs_per_class[cls] += val;
             }
         }
-
-        if (membs_per_class.size() == 0) {
-            auto weights = classifiers[0].root.weights;
-            string max_label;
-            double max_memb = -10000;
-
-            for (auto &kv : weights) {
-                if (kv.second > max_memb) {
-                    max_memb = kv.second;
-                    max_label = kv.first;
-                }
-            }
-
-            return max_label;
-        }
-
-        return std::max_element(membs_per_class.begin(),
-                                membs_per_class.end(),
-                                [](const pair<string, int> &p1, const pair<string, int> &p2) {
-                                    return p1.second < p2.second;
-                                })->first;
+        return membs_per_class;
     }
 
     double score(data_t &data) {

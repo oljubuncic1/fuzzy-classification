@@ -19,11 +19,11 @@ int main() {
     bool local = false;
 
     int reducer_n = 5;
-    string verification_data_path = "./test.dat";
+    string verification_data_path = "./testdat";
     string big_dataset = "";
     int tree_n = 10;
 
-    int clasifier_n = 10;
+    int clasifier_n = 100;
 
     int job_n = 4;
 
