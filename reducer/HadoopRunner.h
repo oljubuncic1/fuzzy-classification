@@ -77,11 +77,12 @@ public:
 
         string line;
         while (getline(cin, line)) {
-            cout << line << endl;
-            continue;
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
+            cout << line << endl;
+            continue;
+            
             string example_str = tokens[1];
             std::istringstream ss(tokens[0]);
             int id;
