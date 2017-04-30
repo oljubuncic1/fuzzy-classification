@@ -91,24 +91,24 @@ public:
         string line;
         while (getline(cin, line)) {
             trim(line);
-            vector<string> tokens = split_str(line, '\t');
+//            vector<string> tokens = split_str(line, '\t');
+            cout << line << "\t" << 1 << endl;
 
-            string example_str = tokens[1];
-            std::istringstream ss(tokens[0]);
-            int id;
-            ss >> id;
+//            string example_str = tokens[1];
+//            std::istringstream ss(tokens[0]);
+//            int id;
+//            ss >> id;
+//
 
-            if(id == curr_id) {
-                example_t curr_example;
-                curr_example = example_from_line(example_str,
-                                                 attribute_inds,
-                                                 class_ind,
-                                                 separation_char);
-
-                curr_data.push_back(curr_example);
-
-                cout << curr_example << "\t" << 1 << endl;
-            } else {
+//            if(id == curr_id) {
+//                example_t curr_example;
+//                curr_example = example_from_line(example_str,
+//                                                 attribute_inds,
+//                                                 class_ind,
+//                                                 separation_char);
+//
+//                curr_data.push_back(curr_example);
+//            } else {
 //                if(id != -1) {
 //                    // build a tree for prev and classify
 //                    vector<range_t> ranges;
@@ -137,9 +137,9 @@ public:
 //                }
 
                 // start a new
-                curr_id = id;
-                curr_data = vector<example_t>();
-            }
+//                curr_id = id;
+//                curr_data = vector<example_t>();
+//            }
         }
 
         // take care of the last one
