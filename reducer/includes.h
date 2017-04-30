@@ -54,7 +54,6 @@
 #include <iostream>
 #include <thread>
 #include <cstdio>
-#include <atomic>
 
 using namespace std;
 
