@@ -138,8 +138,6 @@ public:
 //            data.push_back(make_pair(item, classification));
         }
 
-        return;
-
         RandomFuzzyForest rff(tree_n);
         rff.fit(data,
                 ranges,
