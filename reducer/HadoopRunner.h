@@ -85,8 +85,6 @@ public:
             int id;
             ss >> id;
 
-            cout << id << "\t" << curr_id << endl;
-
             if(id == curr_id) {
                 example_t curr_example;
 
@@ -141,6 +139,7 @@ public:
         }
 
         // take care of the last one
+        cout << curr_data.size() << endl;
     }
 };
 
