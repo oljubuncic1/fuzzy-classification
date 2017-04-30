@@ -98,17 +98,16 @@ public:
             int id;
             ss >> id;
 
-            cout << "example_str: " << example_str << " id: " << id << endl;
+            if(id == curr_id) {
+                cout << id << "\t" << id << endl;
+                example_t curr_example;
+                curr_example = example_from_line(example_str,
+                                                 attribute_inds,
+                                                 class_ind,
+                                                 separation_char);
 
-//            if(id == curr_id) {
-//                example_t curr_example;
-//                curr_example = example_from_line(example_str,
-//                                                 attribute_inds,
-//                                                 class_ind,
-//                                                 separation_char);
-//
-//                curr_data.push_back(curr_example);
-//            } else {
+                curr_data.push_back(curr_example);
+            } else {
 //                if(id != -1) {
 //                    // build a tree for prev and classify
 //                    vector<range_t> ranges;
@@ -139,7 +138,7 @@ public:
                 // start a new
 //                curr_id = id;
 //                curr_data = vector<example_t>();
-//            }
+            }
         }
 
         // take care of the last one
