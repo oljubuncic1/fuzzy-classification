@@ -85,20 +85,16 @@ public:
             int id;
             ss >> id;
 
-            cout << (example_str[0] == 't') << " " << example_str.substr(1) << endl;
-            continue;
-
-
             if(id == curr_id) {
                 example_t curr_example;
 
                 if(example_str[0] == 't') {
-//                    curr_example = example_from_line(example_str.substr(1),
-//                                                     attribute_inds,
-//                                                     class_ind,
-//                                                     separation_char);
-//
-//                    curr_test_data.push_back(curr_example);
+                    curr_example = example_from_line(example_str.substr(1),
+                                                     attribute_inds,
+                                                     class_ind,
+                                                     separation_char);
+
+                    curr_test_data.push_back(curr_example);
                 } else {
                     curr_example = example_from_line(example_str,
                                                      attribute_inds,
@@ -110,28 +106,28 @@ public:
             } else {
                 if(id != -1) {
                     // build a tree for prev and classify
-                    vector<range_t> ranges;
-                    find_ranges(curr_data, ranges);
-
-                    data_t data;
-                    for (auto &x : curr_data) {
-                        vector<double> item;
-                        for (auto val : x.first) {
-                            item.push_back(to_double(val));
-                        }
-                        string classification = x.second;
-                        data.push_back(make_pair(item, classification));
-                    }
-
-                    RandomFuzzyForest rff(tree_n);
-                    rff.fit(data,
-                            ranges,
-                            categorical_features,
-                            numerical_features);
-
-                    for(auto &x : curr_test_data) {
-                        cout << id << "\t" << x << endl;
-                    }
+//                    vector<range_t> ranges;
+//                    find_ranges(curr_data, ranges);
+//
+//                    data_t data;
+//                    for (auto &x : curr_data) {
+//                        vector<double> item;
+//                        for (auto val : x.first) {
+//                            item.push_back(to_double(val));
+//                        }
+//                        string classification = x.second;
+//                        data.push_back(make_pair(item, classification));
+//                    }
+//
+//                    RandomFuzzyForest rff(tree_n);
+//                    rff.fit(data,
+//                            ranges,
+//                            categorical_features,
+//                            numerical_features);
+//
+//                    for(auto &x : curr_test_data) {
+//                        cout << id << "\t" << x << endl;
+//                    }
                 }
 
                 // start a new (off by one)
