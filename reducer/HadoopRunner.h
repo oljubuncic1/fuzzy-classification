@@ -77,7 +77,6 @@ public:
 
         string line;
         while (getline(cin, line)) {
-            cout << line << endl;
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
@@ -90,12 +89,12 @@ public:
                 example_t curr_example;
 
                 if(example_str[0] == 't') {
-                    curr_example = example_from_line(example_str.substr(1),
-                                                     attribute_inds,
-                                                     class_ind,
-                                                     separation_char);
-
-                    curr_test_data.push_back(curr_example);
+//                    curr_example = example_from_line(example_str.substr(1),
+//                                                     attribute_inds,
+//                                                     class_ind,
+//                                                     separation_char);
+//
+//                    curr_test_data.push_back(curr_example);
                 } else {
                     curr_example = example_from_line(example_str,
                                                      attribute_inds,
