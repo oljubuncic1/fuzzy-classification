@@ -50,17 +50,17 @@ std::vector<std::string> split_str(const std::string &s, char delim) {
 
 
 class HadoopRunner {
+    vector<int> attribute_inds;
+    vector<int> numerical_features;
+    vector<int> categorical_features;
+    int class_ind;
+    char separation_char;
+    int line_cnt;
 public:
     void run(int reducer_n,
              const string &dataset,
              int tree_n,
              string verification_data_path) {
-        vector<int> attribute_inds;
-        vector<int> numerical_features;
-        vector<int> categorical_features;
-        int class_ind;
-        char separation_char;
-        int line_cnt;
         data_properties(dataset,
                         attribute_inds,
                         class_ind,
@@ -105,30 +105,8 @@ public:
                 }
             } else {
                 if(id != -1) {
-//                     build a tree for prev and classify
-
-//                    vector<range_t> ranges;
-//                    find_ranges(curr_data, ranges);
-//
-//                    data_t data;
-//                    for (auto &x : curr_data) {
-//                        vector<double> item;
-//                        for (auto val : x.first) {
-//                            item.push_back(to_double(val));
-//                        }
-//                        string classification = x.second;
-//                        data.push_back(make_pair(item, classification));
-//                    }
-
-//                    RandomFuzzyForest rff(tree_n);
-//                    rff.fit(data,
-//                            ranges,
-//                            categorical_features,
-//                            numerical_features);
-//
-//                    for(auto &x : curr_test_data) {
-//                        cout << id << "\t" << x << endl;
-//                    }
+                    // build a tree for prev and classify
+                    train_and_predict(tree_n, curr_data, curr_test_data);
                 }
 
                 // start a new (off by one)
@@ -139,7 +117,30 @@ public:
         }
 
         // take care of the last one
-        cout << curr_data.size() << endl;
+        train_and_predict(tree_n, curr_data, curr_test_data);
+    }
+
+    void train_and_predict(int tree_n,
+                           const vector<pair<vector<string>, string>> &curr_data,
+                           const vector<pair<vector<string>, string>> &curr_test_data) const {
+        vector<range_t> ranges;
+        find_ranges(curr_data, ranges);
+
+        data_t data;
+        for (auto &x : curr_data) {
+                        vector<double> item;
+                        for (auto val : x.first) {
+                            item.push_back(to_double(val));
+                        }
+                        string classification = x.second;
+                        data.push_back(make_pair(item, classification));
+                    }
+
+        RandomFuzzyForest rff(tree_n);
+        rff.fit(data,
+                            ranges,
+                categorical_features,
+                numerical_features);
     }
 };
 
