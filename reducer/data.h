@@ -1,21 +1,7 @@
 #ifndef _DATA_H
 #define _DATA_H
 
-#include <functional>
-#include <vector>
-#include <string>
-#include <tuple>
-#include <utility> // std::pair
-#include <cmath>
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-#include <thread>
-#include <cstdio>
-#include <atomic>
+#include "includes.h"
 #include "definitions.h"
 
 using namespace std;
@@ -347,6 +333,23 @@ void load_data(const string &dataset,
         numerical_features = generate_range(60);
         categorical_features = {};
         accuracy = 0.7993;
+    }
+}
+
+void data_properties(const string &dataset,
+                     vector<int> &attribute_inds,
+                     int &class_ind,
+                     char &separation_char,
+                     vector<int> &numerical_features,
+                     vector<int> &categorical_features,
+                     int &line_cnt) {
+    if(dataset.compare("a") == 0) {
+        attribute_inds = {1};
+        class_ind = 1;
+        separation_char = ',';
+        numerical_features = {};
+        categorical_features = {};
+        line_cnt = 0;
     }
 }
 

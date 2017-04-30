@@ -41,4 +41,22 @@
 #include <iterator>
 #include <sstream>
 
+#include <functional>
+#include <vector>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <cmath>
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <thread>
+#include <cstdio>
+#include <atomic>
+
+using namespace std;
+
 #endif //CPP_INCLUDES_H

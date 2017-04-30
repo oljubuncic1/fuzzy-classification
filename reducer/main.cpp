@@ -16,7 +16,12 @@ int main() {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = true;
+    bool local = false;
+
+    int reducer_n = 5;
+    string verification_data_path = "./test.dat";
+    string big_dataset = "";
+    int tree_n = 10;
 
     int clasifier_n = 10;
 
@@ -36,7 +41,7 @@ int main() {
     } else {
         // reducer code
         HadoopRunner hadoopRunner;
-        hadoopRunner.run();
+        hadoopRunner.run(reducer_n, big_dataset, tree_n, verification_data_path);
 
         return 0;
     }
