@@ -91,14 +91,14 @@ public:
         string line;
         while (getline(cin, line)) {
             trim(line);
-//            vector<string> tokens = split_str(line, '\t');
-            cout << line << "\t" << 1 << endl;
+            vector<string> tokens = split_str(line, '\t');
 
-//            string example_str = tokens[1];
-//            std::istringstream ss(tokens[0]);
-//            int id;
-//            ss >> id;
-//
+            string example_str = tokens[1];
+            std::istringstream ss(tokens[0]);
+            int id;
+            ss >> id;
+
+            cout << "example_str: " << example_str << " id: " << id << endl;
 
 //            if(id == curr_id) {
 //                example_t curr_example;
