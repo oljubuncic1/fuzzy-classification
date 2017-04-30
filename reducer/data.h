@@ -59,14 +59,13 @@ vector<example_t > load_csv_data(
     char line[1000];
     for (int i = 0; i < line_cnt; i++) {
         fgets(line, 1000, in);
-        cout << line << "\t" << 1 << endl;
-//        if(string(line).find("?") == string::npos) {
-//            example_t e = example_from_line(string(line),
-//                                            attribute_indices,
-//                                            class_index,
-//                                            separation_char);
-//            data.push_back(e);
-//        }
+        if(string(line).find("?") == string::npos) {
+            example_t e = example_from_line(string(line),
+                                            attribute_indices,
+                                            class_index,
+                                            separation_char);
+            data.push_back(e);
+        }
     }
 
     fclose(in);

@@ -70,11 +70,12 @@ public:
                         line_cnt);
 
         try {
-            vector<example_t> verification_str_data = load_csv_data(verification_data_path,
-                                                                    attribute_inds,
-                                                                    class_ind,
-                                                                    line_cnt,
-                                                                    separation_char);
+            auto in = fopen(verification_data_path.c_str(), "r");
+//            vector<example_t> verification_str_data = load_csv_data(verification_data_path,
+//                                                                    attribute_inds,
+//                                                                    class_ind,
+//                                                                    line_cnt,
+//                                                                    separation_char);
 
 //            data_t verification_data;
 //            for (auto &x : verification_str_data) {
@@ -87,7 +88,7 @@ public:
 //            }
 
         } catch (const std::exception &exc) {
-            std::cerr << exc.what();
+            cout << exc.what() << "\t1" << endl;
         }
 
         int curr_id = -1;
