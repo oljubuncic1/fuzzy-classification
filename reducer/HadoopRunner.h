@@ -104,7 +104,7 @@ public:
                     curr_data.push_back(curr_example);
                 }
             } else {
-                if(id != -1) {
+                if(curr_id != -1) {
                     // build a tree for prev and classify
                     train_and_predict(tree_n, curr_data, curr_test_data);
                 }
