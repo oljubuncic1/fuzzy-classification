@@ -86,6 +86,9 @@ public:
             ss >> id;
 
             cout << "|" << example_str << "|" << endl;
+            if(example_str[0] == 't') {
+                cout << "this one" << endl;
+            }
             continue;
 
 
