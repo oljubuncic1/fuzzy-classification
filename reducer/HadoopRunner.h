@@ -85,10 +85,7 @@ public:
             int id;
             ss >> id;
 
-            cout << "|" << example_str << "|" << endl;
-            if(example_str[0] == 't') {
-                cout << "this one" << endl;
-            }
+            cout << "|" << (example_str[0] == 't') << "|" << endl;
             continue;
 
 
