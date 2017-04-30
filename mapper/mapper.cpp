@@ -3,7 +3,7 @@
 
 using namespace std;
 
-#define REDUCER_N 5;
+#define REDUCER_N 3
 
 int main() {
 
