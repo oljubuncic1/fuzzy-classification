@@ -136,11 +136,11 @@ public:
                         data.push_back(make_pair(item, classification));
                     }
 
-        RandomFuzzyForest rff(tree_n);
-        rff.fit(data,
-                            ranges,
-                categorical_features,
-                numerical_features);
+//        RandomFuzzyForest rff(tree_n);
+//        rff.fit(data,
+//                ranges,
+//                categorical_features,
+//                numerical_features);
     }
 };
 
