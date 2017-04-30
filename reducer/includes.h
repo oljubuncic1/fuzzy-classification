@@ -20,7 +20,6 @@
 #include <iostream>
 #include <thread>
 #include <cstdio>
-#include <atomic>
 #include <queue>
 #include <thread>
 #include <iomanip>
