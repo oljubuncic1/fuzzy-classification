@@ -105,20 +105,20 @@ public:
                 }
             } else {
                 if(id != -1) {
-                    // build a tree for prev and classify
-//                    vector<range_t> ranges;
-//                    find_ranges(curr_data, ranges);
-//
-//                    data_t data;
-//                    for (auto &x : curr_data) {
-//                        vector<double> item;
-//                        for (auto val : x.first) {
-//                            item.push_back(to_double(val));
-//                        }
-//                        string classification = x.second;
-//                        data.push_back(make_pair(item, classification));
-//                    }
-//
+//                     build a tree for prev and classify
+                    vector<range_t> ranges;
+                    find_ranges(curr_data, ranges);
+
+                    data_t data;
+                    for (auto &x : curr_data) {
+                        vector<double> item;
+                        for (auto val : x.first) {
+                            item.push_back(to_double(val));
+                        }
+                        string classification = x.second;
+                        data.push_back(make_pair(item, classification));
+                    }
+
 //                    RandomFuzzyForest rff(tree_n);
 //                    rff.fit(data,
 //                            ranges,
