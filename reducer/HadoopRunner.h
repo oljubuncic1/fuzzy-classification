@@ -55,6 +55,9 @@ public:
              const string &dataset,
              int tree_n,
              string verification_data_path) {
+        cout << 1 << "\t" << 1 << endl;
+        return;
+
         vector<int> attribute_inds;
         vector<int> numerical_features;
         vector<int> categorical_features;
