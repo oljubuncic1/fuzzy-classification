@@ -126,17 +126,18 @@ public:
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
 
-        return;
-
         data_t data;
         for (auto &x : curr_data) {
-            vector<double> item;
-            for (auto val : x.first) {
-                item.push_back(to_double(val));
-            }
-            string classification = x.second;
-            data.push_back(make_pair(item, classification));
+            cout << x << endl;
+//            vector<double> item;
+//            for (auto val : x.first) {
+//                item.push_back(to_double(val));
+//            }
+//            string classification = x.second;
+//            data.push_back(make_pair(item, classification));
         }
+
+        return;
 
         RandomFuzzyForest rff(tree_n);
         rff.fit(data,
