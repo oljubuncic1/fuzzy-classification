@@ -85,7 +85,7 @@ public:
             int id;
             ss >> id;
 
-            cout << "|" << (example_str[0] == 't') << "|" << endl;
+            cout << (example_str[0] == 't') << " " << example_str.substr(1) << endl;
             continue;
 
 
