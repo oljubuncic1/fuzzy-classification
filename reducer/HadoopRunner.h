@@ -76,15 +76,15 @@ public:
                                                                     line_cnt,
                                                                     separation_char);
 
-            data_t verification_data;
-            for (auto &x : verification_str_data) {
-                vector<double> item;
-                for (auto val : x.first) {
-                    item.push_back(to_double(val));
-                }
-                string classification = x.second;
-                verification_data.push_back(make_pair(item, classification));
-            }
+//            data_t verification_data;
+//            for (auto &x : verification_str_data) {
+//                vector<double> item;
+//                for (auto val : x.first) {
+//                    item.push_back(to_double(val));
+//                }
+//                string classification = x.second;
+//                verification_data.push_back(make_pair(item, classification));
+//            }
 
         } catch (const std::exception &exc) {
             std::cerr << exc.what();

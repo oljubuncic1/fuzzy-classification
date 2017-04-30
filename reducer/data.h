@@ -59,13 +59,14 @@ vector<example_t > load_csv_data(
     char line[1000];
     for (int i = 0; i < line_cnt; i++) {
         fgets(line, 1000, in);
-        if(string(line).find("?") == string::npos) {
-            example_t e = example_from_line(string(line),
-                                            attribute_indices,
-                                            class_index,
-                                            separation_char);
-            data.push_back(e);
-        }
+        cout << line << "\t" << 1 << endl;
+//        if(string(line).find("?") == string::npos) {
+//            example_t e = example_from_line(string(line),
+//                                            attribute_indices,
+//                                            class_index,
+//                                            separation_char);
+//            data.push_back(e);
+//        }
     }
 
     fclose(in);
@@ -349,7 +350,7 @@ void data_properties(const string &dataset,
         attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         class_ind = 9;
         separation_char = ',';
-        line_cnt = 699;
+        line_cnt = 100;
     }
 }
 
