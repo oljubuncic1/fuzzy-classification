@@ -108,7 +108,9 @@ public:
 //                     build a tree for prev and classify
 
                     cout << curr_data.size() << endl;
-                    
+                    cout << curr_test_data.size() << endl;
+                    cout << string(50, '-') << endl;
+
 //                    vector<range_t> ranges;
 //                    find_ranges(curr_data, ranges);
 //
