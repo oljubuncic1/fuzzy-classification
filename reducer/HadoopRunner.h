@@ -69,6 +69,9 @@ public:
                         categorical_features,
                         line_cnt);
 
+        cout << 1 << "\t" << 1 << endl;
+        return;
+
 //        vector<example_t> verification_str_data = load_csv_data(verification_data_path,
 //                                                            attribute_inds,
 //                                                            class_ind,
