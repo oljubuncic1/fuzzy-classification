@@ -19,7 +19,7 @@ int main() {
     bool local = false;
 
     int reducer_n = 5;
-    string verification_data_path = "./testdat";
+    string verification_data_path = "testdat";
     string big_dataset = "WIN";
     int tree_n = 10;
 
