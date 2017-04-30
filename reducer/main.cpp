@@ -18,7 +18,7 @@ int main() {
     bool run_tests = false;
     bool local = false;
 
-    int reducer_n = 5;
+    int reducer_n = 3;
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
     int tree_n = 10;

@@ -69,30 +69,11 @@ public:
                         categorical_features,
                         line_cnt);
 
-        try {
-            auto in = fopen(verification_data_path.c_str(), "r");
-//            vector<example_t> verification_str_data = load_csv_data(verification_data_path,
-//                                                                    attribute_inds,
-//                                                                    class_ind,
-//                                                                    line_cnt,
-//                                                                    separation_char);
-
-//            data_t verification_data;
-//            for (auto &x : verification_str_data) {
-//                vector<double> item;
-//                for (auto val : x.first) {
-//                    item.push_back(to_double(val));
-//                }
-//                string classification = x.second;
-//                verification_data.push_back(make_pair(item, classification));
-//            }
-
-        } catch (const std::exception &exc) {
-            cout << exc.what() << "\t1" << endl;
-        }
+        vector<RandomFuzzyForest> forests;
 
         int curr_id = -1;
         vector<example_t> curr_data;
+        vector<example_t> curr_test_data;
 
         string line;
         while (getline(cin, line)) {
@@ -106,12 +87,22 @@ public:
 
             if(id == curr_id) {
                 example_t curr_example;
-                curr_example = example_from_line(example_str,
-                                                 attribute_inds,
-                                                 class_ind,
-                                                 separation_char);
 
-                curr_data.push_back(curr_example);
+                if(example_str[0] == 't') {
+                    curr_example = example_from_line(example_str.substr(1),
+                                                     attribute_inds,
+                                                     class_ind,
+                                                     separation_char);
+
+                    curr_test_data.push_back(curr_example);
+                } else {
+                    curr_example = example_from_line(example_str,
+                                                     attribute_inds,
+                                                     class_ind,
+                                                     separation_char);
+
+                    curr_data.push_back(curr_example);
+                }
             } else {
                 if(id != -1) {
                     // build a tree for prev and classify
@@ -134,15 +125,15 @@ public:
                             categorical_features,
                             numerical_features);
 
-//                    for(auto &v : verification_data) {
-//                        auto membs = rff.predict_memberships(v);
-//                        cout << v << "\t" << membs << endl;
-//                    }
+                    for(auto &x : curr_test_data) {
+                        cout << id << "\t" << x << endl;
+                    }
                 }
 
-                // start a new
+                // start a new (off by one)
                 curr_id = id;
                 curr_data = vector<example_t>();
+                curr_test_data = vector<example_t>();
             }
         }
 
