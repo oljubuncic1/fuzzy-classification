@@ -123,11 +123,10 @@ public:
     void train_and_predict(int tree_n,
                            const vector<pair<vector<string>, string>> &curr_data,
                            const vector<pair<vector<string>, string>> &curr_test_data) const {
-        cout << curr_data.size() << endl;
-        return;
-
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
+
+        return;
 
         data_t data;
         for (auto &x : curr_data) {
