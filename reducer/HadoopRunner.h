@@ -85,8 +85,9 @@ public:
             int id;
             ss >> id;
 
-            cout << line << endl;
+            cout << "|" << example_str << "|" << endl;
             continue;
+
 
             if(id == curr_id) {
                 example_t curr_example;
