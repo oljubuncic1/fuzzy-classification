@@ -343,13 +343,13 @@ void data_properties(const string &dataset,
                      vector<int> &numerical_features,
                      vector<int> &categorical_features,
                      int &line_cnt) {
-    if(dataset.compare("WIN") == 0) {
-        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    if(dataset.compare("WIS") == 0) {
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         categorical_features = {};
-        attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-        class_ind = 13;
+        attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+        class_ind = 9;
         separation_char = ',';
-        line_cnt = 178;
+        line_cnt = 699;
     }
 }
 
