@@ -85,6 +85,8 @@ public:
             int id;
             ss >> id;
 
+            cout << id << "\t" << curr_id << endl;
+
             if(id == curr_id) {
                 example_t curr_example;
 
@@ -106,10 +108,6 @@ public:
             } else {
                 if(id != -1) {
 //                     build a tree for prev and classify
-
-                    cout << curr_data.size() << endl;
-                    cout << curr_test_data.size() << endl;
-                    cout << string(50, '-') << endl;
 
 //                    vector<range_t> ranges;
 //                    find_ranges(curr_data, ranges);
