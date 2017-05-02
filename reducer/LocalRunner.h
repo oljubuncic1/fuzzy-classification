@@ -45,6 +45,7 @@ public:
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
 //        datasets = {"BUP", "TAE"};
+        srand(time(NULL));
 
         for (string &dataset : datasets) {
             vector<example_t > string_data;
@@ -61,12 +62,20 @@ public:
             find_ranges(string_data, ranges);
 
             data_t data;
+            string last_label = "";
             for (auto &x : string_data) {
                 vector<double> item;
                 for (auto val : x.first) {
-                    item.push_back(to_double(val));
+                    double real_val = to_double(val);
+                    if((double)rand() / RAND_MAX < 0.2) {
+                        real_val *= 1.20;
+                    }
+                    item.push_back(real_val);
                 }
                 string classification = x.second;
+
+
+                last_label = classification;
                 data.push_back(make_pair(item, classification));
             }
 

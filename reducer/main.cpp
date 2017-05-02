@@ -16,11 +16,11 @@ int main() {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = false;
+    bool local = true;
 
     int reducer_n = 3;
     string verification_data_path = "./testdat";
-    string big_dataset = "WIS";
+    string big_dataset = "WIN";
     int tree_n = 10;
 
     int clasifier_n = 100;

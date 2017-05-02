@@ -59,7 +59,7 @@ vector<example_t > load_csv_data(
     char line[1000];
     for (int i = 0; i < line_cnt; i++) {
         fgets(line, 1000, in);
-        if(string(line).find("?") == string::npos) {
+        if (string(line).find("?") == string::npos) {
             example_t e = example_from_line(string(line),
                                             attribute_indices,
                                             class_index,
@@ -84,7 +84,7 @@ vector<int> get_range(const int &n) {
 
 void find_ranges(
         const vector<example_t > &examples,
-        vector<range_t> &ranges
+        vector<range_t > &ranges
 ) {
     ranges = {};
     vector<int> indices = get_range((const int &) examples[0].first.size());
@@ -112,7 +112,7 @@ void find_ranges(
 
 vector<int> generate_range(int n) {
     vector<int> rng = {};
-    for(int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         rng.push_back(i);
     }
 
@@ -137,7 +137,7 @@ void load_data(const string &dataset,
                              {1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                              0,
                              2310);
-    } else if(dataset.compare("HAY") == 0) {
+    } else if (dataset.compare("HAY") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/hayes-roth.dat",
                              {2, 3, 4},
                              5,
@@ -145,7 +145,7 @@ void load_data(const string &dataset,
         numerical_features = {};
         categorical_features = {0, 1, 2};
         accuracy = 0.8082;
-    } else if(dataset.compare("IRI") == 0) {
+    } else if (dataset.compare("IRI") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/iris.dat",
                              {0, 1, 2, 3},
                              4,
@@ -153,7 +153,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3};
         categorical_features = {};
         accuracy = 0.9533;
-    } else if(dataset.compare("MAM") == 0) {
+    } else if (dataset.compare("MAM") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/mamographic.dat",
                              {0, 1, 2, 3, 4},
                              5,
@@ -161,7 +161,7 @@ void load_data(const string &dataset,
         numerical_features = {1};
         categorical_features = {0, 2, 3, 4};
         accuracy = 0.8380;
-    } else if(dataset.compare("NEW") == 0) {
+    } else if (dataset.compare("NEW") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/new_thyroid.dat",
                              {1, 2, 3, 4, 5},
                              0,
@@ -169,7 +169,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4};
         categorical_features = {};
         accuracy = 0.9727;
-    } else if(dataset.compare("TAE") == 0) {
+    } else if (dataset.compare("TAE") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/tae.dat",
                              {0, 1, 2, 3, 4},
                              5,
@@ -177,7 +177,7 @@ void load_data(const string &dataset,
         numerical_features = {};
         categorical_features = {0, 1, 2, 3, 4};
         accuracy = 0.6255;
-    } else if(dataset.compare("BUP") == 0) {
+    } else if (dataset.compare("BUP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/bupa.dat",
                              {0, 1, 2, 3, 4, 5},
                              6,
@@ -185,7 +185,7 @@ void load_data(const string &dataset,
         numerical_features = {5};
         categorical_features = {1, 2, 3, 4};
         accuracy = 0.7220;
-    } else if(dataset.compare("APP") == 0) {
+    } else if (dataset.compare("APP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/appendicitis.dat",
                              {0, 1, 2, 3, 4, 5, 6},
                              7,
@@ -193,7 +193,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6};
         categorical_features = {};
         accuracy = 0.8773;
-    } else if(dataset.compare("PIM") == 0) {
+    } else if (dataset.compare("PIM") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/pima.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7},
                              8,
@@ -201,7 +201,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7};
         categorical_features = {};
         accuracy = 0.7648;
-    } else if(dataset.compare("GLA") == 0) {
+    } else if (dataset.compare("GLA") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/glass.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
                              10,
@@ -209,7 +209,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         categorical_features = {};
         accuracy = 0.7513;
-    } else if(dataset.compare("SAH") == 0) {
+    } else if (dataset.compare("SAH") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/saheart.dat",
                              {1, 2, 3, 4, 5, 6, 7, 8},
                              9,
@@ -217,7 +217,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 6, 7, 8};
         categorical_features = {4};
         accuracy = 0.7051;
-    } else if(dataset.compare("WIS") == 0) {
+    } else if (dataset.compare("WIS") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/wisconsin.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8},
                              9,
@@ -225,7 +225,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 5, 6, 7, 8};
         categorical_features = {};
         accuracy = 0.9728;
-    } else if(dataset.compare("CLE") == 0) {
+    } else if (dataset.compare("CLE") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/cleveland.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
                              13,
@@ -233,7 +233,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         categorical_features = {};
         accuracy = 0.5836;
-    } else if(dataset.compare("HEA") == 0) {
+    } else if (dataset.compare("HEA") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/heart.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
                              13,
@@ -241,7 +241,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         categorical_features = {1, 2, 8};
         accuracy = 0.8389;
-    } else if(dataset.compare("WIN") == 0) {
+    } else if (dataset.compare("WIN") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/wine.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
                              13,
@@ -249,7 +249,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         categorical_features = {};
         accuracy = 0.9728;
-    } else if(dataset.compare("AUS") == 0) {
+    } else if (dataset.compare("AUS") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/australian.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
                              14,
@@ -257,7 +257,7 @@ void load_data(const string &dataset,
         numerical_features = {};
         categorical_features = {0, 7, 8, 10};
         accuracy = 0.8600;
-    } else if(dataset.compare("VEH") == 0) {
+    } else if (dataset.compare("VEH") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/vehicle.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17},
                              18,
@@ -265,7 +265,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
         categorical_features = {};
         accuracy = 0.7538;
-    } else if(dataset.compare("BAN") == 0) {
+    } else if (dataset.compare("BAN") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/bands.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                              19,
@@ -273,7 +273,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
         categorical_features = {};
         accuracy = 0.7089;
-    } else if(dataset.compare("HEP") == 0) {
+    } else if (dataset.compare("HEP") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/hepatitis.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                              19,
@@ -281,7 +281,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 13, 14, 15, 16, 17};
         categorical_features = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18};
         accuracy = 0.8958;
-    } else if(dataset.compare("IMA") == 0) {
+    } else if (dataset.compare("IMA") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/segmentation.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18},
                              19,
@@ -289,7 +289,7 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
         categorical_features = {};
         accuracy = 0.9620;
-    } else if(dataset.compare("THY") == 0) {
+    } else if (dataset.compare("THY") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/thyroid.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
                              21,
@@ -297,15 +297,17 @@ void load_data(const string &dataset,
         numerical_features = {0, 16, 17, 18, 19};
         categorical_features = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         accuracy = 0.9730;
-    } else if(dataset.compare("WDB") == 0) {
+    } else if (dataset.compare("WDB") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/wdbc.dat",
-                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
+                             {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                              25, 26, 27, 28, 29},
                              30,
                              569);
-        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                              25, 26, 27, 28, 29};
         categorical_features = {};
         accuracy = 0.9601;
-    } else if(dataset.compare("DER") == 0) {
+    } else if (dataset.compare("DER") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/dermatology.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33},
@@ -315,7 +317,7 @@ void load_data(const string &dataset,
         categorical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                                 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
         accuracy = 0.9764;
-    } else if(dataset.compare("ION") == 0) {
+    } else if (dataset.compare("ION") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/ionosphere.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
@@ -325,7 +327,7 @@ void load_data(const string &dataset,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
         categorical_features = {0};
         accuracy = 0.9201;
-    } else if(dataset.compare("SON") == 0) {
+    } else if (dataset.compare("SON") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/sonar.dat",
                              generate_range(60),
                              60,
@@ -343,7 +345,14 @@ void data_properties(const string &dataset,
                      vector<int> &numerical_features,
                      vector<int> &categorical_features,
                      int &line_cnt) {
-    if(dataset.compare("WIS") == 0) {
+    if (dataset.compare("WIS") == 0) {
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+        categorical_features = {};
+        attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+        class_ind = 9;
+        separation_char = ',';
+        line_cnt = 100;
+    } else if (dataset.compare("POK") == 0) {
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         categorical_features = {};
         attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
