@@ -138,7 +138,7 @@ public:
 
         for(auto &d : test_data) {
             map<string, double> prediction = rff.predict_memberships(d);
-            cout << "{";
+            cout << d << "\t" <<  "{";
             for(auto &kv : prediction) {
                 cout << kv.first << " : " << kv.second << ", ";
             }
