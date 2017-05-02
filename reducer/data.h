@@ -92,12 +92,12 @@ void find_ranges(
         double min_el = 100000, max_el = -100000;
         for(auto &e : examples) {
             double val = to_double(e.first[i]);
-            if(val < min_el) {
-                min_el = val;
-            }
-            if(val > max_el) {
-                max_el = val;
-            }
+//            if(val < min_el) {
+//                min_el = val;
+//            }
+//            if(val > max_el) {
+//                max_el = val;
+//            }
         }
 
         ranges.push_back(make_pair(min_el, max_el));
