@@ -95,17 +95,19 @@ int main() {
     string line;
     int i = 0;
 	while (getline(cin, line)) {
-        trim(line);
+        // trim(line);
         vector<string> tokens = split_str(line, '\t');
 
         string example_str = tokens[0];
         string predictions_str = tokens[1];
 
-        cout << example_str << "\t" << predictions_str << endl;
-        continue;
-
         vector<string> predictions = split_str(predictions_str, ' ');
-        
+
+        predictions.erase(
+            remove_if(predictions.begin(), predictions.end(), [](string s) { return s == " " or s == ""; }),
+            predictions.end()
+        );
+
         if(curr_example == example_str) {
             // continue
             for(int i = 0; i < predictions.size() / 2; i++) {
