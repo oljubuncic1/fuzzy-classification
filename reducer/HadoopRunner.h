@@ -77,8 +77,6 @@ public:
 
         string line;
         while (getline(cin, line)) {
-            cout << line << endl;
-            return;
             trim(line);
             vector<string> tokens = split_str(line, '\t');
 
