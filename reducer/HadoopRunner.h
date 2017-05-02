@@ -106,7 +106,6 @@ public:
             } else {
                 if (curr_id != -1) {
                     // build a tree for prev and classify
-                    cout << curr_data.size() << "\t" << curr_test_data.size() << endl;
 //                    train_and_predict(tree_n, curr_data, curr_test_data);
                 }
 
@@ -119,7 +118,7 @@ public:
 
         // take care of the last one
         cout << curr_data.size() << "\t" << curr_test_data.size() << endl;
-//        train_and_predict(tree_n, curr_data, curr_test_data);
+        train_and_predict(tree_n, curr_data, curr_test_data);
     }
 
     void train_and_predict(int tree_n,
@@ -129,22 +128,22 @@ public:
         find_ranges(curr_data, ranges);
 
         data_t data;
-        for (int i = 0; i < curr_data.size(); i++) {
-            auto x = curr_data[i];
-            cout << x << endl;
+//        for (int i = 0; i < curr_data.size(); i++) {
+//            auto x = curr_data[i];
+//            cout << x << endl;
 //            vector<double> item;
 //            for (auto val : x.first) {
 //                item.push_back(to_double(val));
 //            }
 //            string classification = x.second;
 //            data.push_back(make_pair(item, classification));
-        }
+//        }
 
-        RandomFuzzyForest rff(tree_n);
-        rff.fit(data,
-                ranges,
-                categorical_features,
-                numerical_features);
+//        RandomFuzzyForest rff(tree_n);
+//        rff.fit(data,
+//                ranges,
+//                categorical_features,
+//                numerical_features);
     }
 };
 
