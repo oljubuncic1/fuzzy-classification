@@ -128,8 +128,8 @@ public:
 
         data_t data;
         for (int i = 0; i < curr_data.size(); i++) {
-            auto x = curr_data[i];
-            cout << x << endl;
+//            auto x = curr_data[i];
+//            cout << x << endl;
 //            vector<double> item;
 //            for (auto val : x.first) {
 //                item.push_back(to_double(val));
