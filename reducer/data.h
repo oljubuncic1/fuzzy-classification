@@ -88,9 +88,10 @@ void find_ranges(
 ) {
     ranges = {};
     vector<int> indices = get_range((const int &) examples[0].first.size());
-    cout << "Size: " << examples.size() << endl;
     for (auto i : indices) {
-        cout << i << endl;
+        for(auto &e : examples) {
+            cout << e.first[i] << endl;
+        }
 //        ranges.push_back(
 //                make_pair(
 //                        to_double(min_element(
