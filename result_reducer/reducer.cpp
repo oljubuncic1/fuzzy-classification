@@ -101,6 +101,9 @@ int main() {
         string example_str = tokens[0];
         string predictions_str = tokens[1];
 
+        cout << example_str << "\t" << prediction_str << endl;
+        continue;
+
         vector<string> predictions = split_str(predictions_str, ' ');
         
         if(curr_example == example_str) {
