@@ -125,7 +125,7 @@ public:
                            const vector<pair<vector<string>, string>> &curr_data,
                            const vector<pair<vector<string>, string>> &curr_test_data) const {
         vector<range_t > ranges;
-        find_ranges(curr_data, ranges);
+//        find_ranges(curr_data, ranges);
 
         data_t data;
 //        for (int i = 0; i < curr_data.size(); i++) {
