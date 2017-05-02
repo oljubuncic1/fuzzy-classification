@@ -55,15 +55,17 @@ using namespace std;
 
 int main() {
     srand(time(NULL));
-    
+
     string line;
     int i = 0;
 
     while (getline(cin, line)) {
-        if(rand() % 10 == 0) {
-            cout << "t" << line << endl;
-        } else {
-            cout << line << endl;
+        if(line.find("?") == string::npos) {
+            if(rand() % 10 == 0) {
+                cout << "t" << line << endl;
+            } else {
+                cout << line << endl;
+            }
         }
     }
 
