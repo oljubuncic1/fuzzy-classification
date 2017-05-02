@@ -10,7 +10,7 @@ int main() {
     string line;
     int i = 0;
 	while (getline(cin, line)) {
-        if(find(line.begin(), line.end(), '?') == line.end()) {
+        if(line.find("?") == line.end()) {
             if(line[0] == 't') {
                 for(int j = 0; j < REDUCER_N; j++) {
                     cout << j << "\t" << line << endl;
