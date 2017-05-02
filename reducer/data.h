@@ -88,6 +88,7 @@ void find_ranges(
 ) {
     ranges = {};
     vector<int> indices = get_range((const int &) examples[0].first.size());
+    cout << "Size: " << examples.size() << endl;
     for (auto i : indices) {
         cout << i << endl;
 //        ranges.push_back(
