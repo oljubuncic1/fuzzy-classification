@@ -117,7 +117,7 @@ public:
         }
 
         // take care of the last one
-//        train_and_predict(tree_n, curr_data, curr_test_data);
+        train_and_predict(tree_n, curr_data, curr_test_data);
     }
 
     void train_and_predict(int tree_n,
