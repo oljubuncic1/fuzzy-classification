@@ -100,7 +100,7 @@ void find_ranges(
 //            }
         }
 
-        ranges.push_back(make_pair(min_el, max_el));
+//        ranges.push_back(make_pair(min_el, max_el));
 //        ranges.push_back(
 //                make_pair(
 //                        to_double(min_element(
