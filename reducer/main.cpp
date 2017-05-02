@@ -20,7 +20,7 @@ int main() {
 
     int reducer_n = 3;
     string verification_data_path = "./testdat";
-    string big_dataset = "WIN";
+    string big_dataset = "WIS";
     int tree_n = 10;
 
     int clasifier_n = 100;
