@@ -28,4 +28,4 @@ for line in sys.stdin:
             print(curr_k, "\t", curr_predictions)
             
         curr_k = k
-        curr_predictions = {}
+        curr_predictions = m
