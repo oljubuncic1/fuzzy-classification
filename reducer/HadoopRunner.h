@@ -137,7 +137,12 @@ public:
         data_t test_data = convert(curr_test_data);
 
         for(auto &d : test_data) {
-            cout << d << "\t" << rff.predict_memberships(d) << endl;
+            map<string, double> prediction = rff.predict_memberships(d);
+            cout << "{";
+            for(auto &kv : prediction) {
+                cout << kv.first << " : " << kv.second << ", ";
+            }
+            cout << "}" << endl;
         }
     }
 
