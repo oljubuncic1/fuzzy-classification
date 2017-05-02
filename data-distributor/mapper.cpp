@@ -54,7 +54,9 @@
 using namespace std;
 
 int main() {
+    string line;
     int i = 0;
+
     while (getline(cin, line)) {
         if(i % 10 == 0) {
             cout << "t" << line << endl;
