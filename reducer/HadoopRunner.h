@@ -106,7 +106,7 @@ public:
             } else {
                 if (curr_id != -1) {
                     // build a tree for prev and classify
-//                    train_and_predict(tree_n, curr_data, curr_test_data);
+                    train_and_predict(tree_n, curr_data, curr_test_data);
                 }
 
                 // start a new (off by one)
