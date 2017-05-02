@@ -106,6 +106,7 @@ public:
             } else {
                 if (curr_id != -1) {
                     // build a tree for prev and classify
+                    cout << curr_data.size() << "\t" << curr_test_data.size() << endl;
 //                    train_and_predict(tree_n, curr_data, curr_test_data);
                 }
 
@@ -117,6 +118,7 @@ public:
         }
 
         // take care of the last one
+        cout << curr_data.size() << "\t" << curr_test_data.size() << endl;
 //        train_and_predict(tree_n, curr_data, curr_test_data);
     }
 
