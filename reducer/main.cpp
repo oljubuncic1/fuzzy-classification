@@ -16,7 +16,7 @@ int main() {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = true;
+    bool local = false;
 
     int reducer_n = 3;
     string verification_data_path = "./testdat";
