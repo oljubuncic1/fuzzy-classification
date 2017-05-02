@@ -8,7 +8,6 @@ using namespace std;
 int main() {
 
     string line;
-    int i = 0;
 	while (getline(cin, line)) {
         if(line.find("?") == std::string::npos) {
             if(line[0] == 't') {
@@ -16,9 +15,8 @@ int main() {
                     cout << j << "\t" << line << endl;
                 }
             } else {
-                cout << i << "\t" << line << endl;
+                cout << (rand() % REDUCER_N) << "\t" << line << endl;
             }
-            i = (i + 1) % REDUCER_N;
         }
 	}
 
