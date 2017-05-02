@@ -85,8 +85,6 @@ public:
             int id;
             ss >> id;
 
-            continue;
-
             if (id == curr_id) {
                 example_t curr_example;
 
@@ -119,7 +117,7 @@ public:
         }
 
         // take care of the last one
-        train_and_predict(tree_n, curr_data, curr_test_data);
+//        train_and_predict(tree_n, curr_data, curr_test_data);
     }
 
     void train_and_predict(int tree_n,
