@@ -126,23 +126,23 @@ public:
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
 
-//        data_t data;
-//        for (int i = 0; i < curr_data.size(); i++) {
-//            auto x = curr_data[i];
-//            cout << x << endl;
-//            vector<double> item;
-//            for (auto val : x.first) {
-//                item.push_back(to_double(val));
-//            }
-//            string classification = x.second;
-//            data.push_back(make_pair(item, classification));
-//        }
+        data_t data;
+        for (int i = 0; i < curr_data.size(); i++) {
+            auto x = curr_data[i];
+            cout << x << endl;
+            vector<double> item;
+            for (auto val : x.first) {
+                item.push_back(to_double(val));
+            }
+            string classification = x.second;
+            data.push_back(make_pair(item, classification));
+        }
 
-//        RandomFuzzyForest rff(tree_n);
-//        rff.fit(data,
-//                ranges,
-//                categorical_features,
-//                numerical_features);
+        RandomFuzzyForest rff(tree_n);
+        rff.fit(data,
+                ranges,
+                categorical_features,
+                numerical_features);
     }
 };
 
