@@ -91,7 +91,8 @@ void find_ranges(
     for (auto i : indices) {
         double min_el = 100000, max_el = -100000;
         for(auto &e : examples) {
-            double val = to_double(e.first[i]);
+            cout << e.first[i] << endl;
+//            double val = to_double(e.first[i]);
 //            if(val < min_el) {
 //                min_el = val;
 //            }
