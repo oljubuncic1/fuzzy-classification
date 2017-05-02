@@ -54,17 +54,17 @@
 using namespace std;
 
 int main() {
+    srand(time(NULL));
+    
     string line;
     int i = 0;
 
     while (getline(cin, line)) {
-        if(i % 10 == 0) {
+        if(rand() % 10 == 0) {
             cout << "t" << line << endl;
         } else {
             cout << line << endl;
         }
-
-        i = (i + 1) % 10;
     }
 
     return 0;
