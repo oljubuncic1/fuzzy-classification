@@ -117,7 +117,6 @@ public:
         }
 
         // take care of the last one
-        cout << curr_data.size() << "\t" << curr_test_data.size() << endl;
         train_and_predict(tree_n, curr_data, curr_test_data);
     }
 
