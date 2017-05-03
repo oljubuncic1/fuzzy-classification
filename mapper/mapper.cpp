@@ -3,9 +3,10 @@
 
 using namespace std;
 
-#define REDUCER_N 3
 
 int main() {
+
+    int REDUCER_N = stod(getenv("REDUCERN"));
 
     string line;
 	while (getline(cin, line)) {

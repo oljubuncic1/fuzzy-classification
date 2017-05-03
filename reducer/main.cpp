@@ -22,9 +22,6 @@ int main() {
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
 
-    const char* env_p = std::getenv("DATASET");
-    big_dataset = env_p;
-
     int tree_n = 10;
 
     int clasifier_n = 100;
