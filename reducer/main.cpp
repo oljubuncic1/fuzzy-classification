@@ -21,6 +21,10 @@ int main() {
     int reducer_n = 3;
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
+
+    const char* env_p = std::getenv("DATASET");
+    big_dataset = env_p;
+
     int tree_n = 10;
 
     int clasifier_n = 100;
