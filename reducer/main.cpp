@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
     int reducer_n = stoi(getenv("REDUCERN"));
     string verification_data_path = "./testdat";
-    string big_dataset = "WIS";
+    string big_dataset = getenv("DATASETSTR");
 
     int tree_n = 10;
 
