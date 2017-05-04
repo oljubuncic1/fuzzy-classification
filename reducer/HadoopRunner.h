@@ -78,15 +78,16 @@ public:
         string line;
         while (getline(cin, line)) {
             trim(line);
+
+            cout << line << endl;
+            continue;
+            
             vector<string> tokens = split_str(line, '\t');
 
             string example_str = tokens[1];
             std::istringstream ss(tokens[0]);
             int id;
             ss >> id;
-
-            cout << id << "\t" << example_str << endl;
-            continue;
 
             if (id == curr_id) {
                 example_t curr_example;
