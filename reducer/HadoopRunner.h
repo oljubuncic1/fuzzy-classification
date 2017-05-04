@@ -81,7 +81,7 @@ public:
 
             cout << line << endl;
             continue;
-            
+
             vector<string> tokens = split_str(line, '\t');
 
             string example_str = tokens[1];
