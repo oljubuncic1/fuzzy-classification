@@ -4,9 +4,9 @@
 using namespace std;
 
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
 
-    int REDUCER_N = stoi(argv[1]);
+    int REDUCER_N = stoi(getenv("REDUCERN"));
 
     string line;
 	while (getline(cin, line)) {

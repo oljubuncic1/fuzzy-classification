@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     bool run_tests = false;
     bool local = false;
 
-    int reducer_n = stoi(argv[1]);
+    int reducer_n = stoi(getenv("REDUCERN"));
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
 
