@@ -88,7 +88,7 @@ std::vector<std::string> split_str(const std::string &s, char delim) {
     return elems;
 }
 
-int main() {
+int main(int argc, char **argv) {
     string curr_example = "";
     map<string, double> curr_predictions;
 
