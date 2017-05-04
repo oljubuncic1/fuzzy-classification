@@ -87,7 +87,7 @@ public:
 
             if (id == curr_id) {
                 example_t curr_example;
-
+s
                 if (example_str[0] == 't') {
                     curr_example = example_from_line(example_str.substr(1),
                                                      attribute_inds,
@@ -113,6 +113,24 @@ public:
                 curr_id = id;
                 curr_data = vector<example_t >();
                 curr_test_data = vector<example_t >();
+
+                example_t curr_example;
+
+                if (example_str[0] == 't') {
+                    curr_example = example_from_line(example_str.substr(1),
+                                                     attribute_inds,
+                                                     class_ind,
+                                                     separation_char);
+
+                    curr_test_data.push_back(curr_example);
+                } else {
+                    curr_example = example_from_line(example_str,
+                                                     attribute_inds,
+                                                     class_ind,
+                                                     separation_char);
+
+                    curr_data.push_back(curr_example);
+                }
             }
         }
 

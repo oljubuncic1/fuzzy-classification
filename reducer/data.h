@@ -351,7 +351,7 @@ void data_properties(const string &dataset,
         attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         class_ind = 9;
         separation_char = ',';
-        line_cnt = 100;
+        line_cnt = 699;
     } else if (dataset.compare("POK") == 0) {
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         categorical_features = {};
