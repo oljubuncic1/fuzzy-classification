@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 
     while (getline(cin, line)) {
         if(line.find("?") == string::npos) {
-            if(i % 10 == 0) {
+            if(rand() % 10 == 0) {
                 cout << "t" << line << endl;
             } else {
                 cout << line << endl;
