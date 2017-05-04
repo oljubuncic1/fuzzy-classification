@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
 
-    int REDUCER_N = stod(getenv("REDUCERN"));
+    int REDUCER_N = stoi(getenv("REDUCERN"));
 
     string line;
 	while (getline(cin, line)) {

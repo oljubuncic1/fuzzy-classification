@@ -18,7 +18,7 @@ int main() {
     bool run_tests = false;
     bool local = false;
 
-    int reducer_n = stod(getenv("REDUCERN"));
+    int reducer_n = stoi(getenv("REDUCERN"));
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
 
