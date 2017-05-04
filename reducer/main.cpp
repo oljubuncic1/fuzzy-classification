@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     string verification_data_path = "./testdat";
     string big_dataset = getenv("DATASETSTR");
 
-    int tree_n = 10;
+    int tree_n = stoi(getenv("TREEN"));
 
     int clasifier_n = 100;
 

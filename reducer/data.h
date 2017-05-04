@@ -353,10 +353,10 @@ void data_properties(const string &dataset,
         separation_char = ',';
         line_cnt = 699;
     } else if (dataset.compare("POK") == 0) {
-        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-        categorical_features = {};
-        attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-        class_ind = 9;
+        numerical_features = {};
+        categorical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        attribute_inds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        class_ind = 11;
         separation_char = ',';
         line_cnt = 100;
     } else if (dataset.compare("WAV") == 0) {
