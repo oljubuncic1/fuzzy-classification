@@ -12,13 +12,13 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char **argv) {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
     bool local = false;
 
-    int reducer_n = stoi(getenv("REDUCERN"));
+    int reducer_n = stoi(argv[1]);
     string verification_data_path = "./testdat";
     string big_dataset = "WIS";
 
