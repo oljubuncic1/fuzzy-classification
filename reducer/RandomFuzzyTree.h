@@ -324,17 +324,30 @@ public:
         double upper = node->ranges[feature].second;
 
 
-        double min_el = *min_element(points.begin(), points.end());
-        double max_el = *max_element(points.begin(), points.end());
-        pair<double, double> search_interval(min_el, max_el);
-
+//        double min_el = *min_element(points.begin(), points.end());
+//        double max_el = *max_element(points.begin(), points.end());
+//        pair<double, double> search_interval(min_el, max_el);
+//
         map<double, vector<Node>> children_per_point;
 
-        double last_point = -10000;
+        int n = 10;
+        if(node->data.size() < n) {
+            n = (int) node->data.size();
+        }
 
-        random_device rd; // obtain a random number from hardware
-        mt19937 eng(rd()); // seed the generator
-        uniform_int_distribution<> distr(lower, upper); // define the range
+        for(int i = 0; i < n; i++) {
+            double factor = (double)rand() / RAND_MAX;
+            double p = lower + factor * (upper - lower);
+
+            children_per_point[p] = generate_children_at_point(node, feature, p);
+        }
+
+//
+//        double last_point = -10000;
+//
+//        random_device rd; // obtain a random number from hardware
+//        mt19937 eng(rd()); // seed the generator
+//        uniform_int_distribution<> distr(lower, upper); // define the range
 
 //        int top;
 //        int n = 100;
@@ -356,18 +369,16 @@ public:
 //            }
 //        }
 
-        double resolution = 0.1;
-//        for(double point = lower + resolution; point < upper; point += resolution) {
-        for (double point : points) {
-            if (point > search_interval.first and point < search_interval.second and !eq(point, lower) and
-                !eq(point, upper)) {
-                vector<Node> children =
-                        generate_children_at_point(node, feature, point);
-                if (are_regular_children(children)) {
-                    children_per_point[point] = children;
-                }
-            }
-        }
+//        for (double point : points) {
+//            if (point > search_interval.first and point < search_interval.second and !eq(point, lower) and
+//                !eq(point, upper)) {
+//                vector<Node> children =
+//                        generate_children_at_point(node, feature, point);
+//                if (are_regular_children(children)) {
+//                    children_per_point[point] = children;
+//                }
+//            }
+//        }
 
         if (children_per_point.size() == 0) {
             return vector<Node>();
