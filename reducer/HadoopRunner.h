@@ -123,10 +123,9 @@ public:
                            vector<pair<vector<string>, string>> &curr_data,
                            vector<pair<vector<string>, string>> &curr_test_data) {
 
-        cout << "curr_data: " << curr_data.size() <<
-             "\t" << "curr_test_data: " <<
-             curr_test_data.size() << endl;
-        return;
+        if(curr_data.size() == 0 or curr_test_data.size() == 0) {
+            return;
+        }
 
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
