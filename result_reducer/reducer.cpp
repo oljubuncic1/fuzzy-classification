@@ -95,6 +95,8 @@ int main(int argc, char **argv) {
     string line;
     int i = 0;
 	while (getline(cin, line)) {
+        cout << line << endl;
+        continue;
         // trim(line);
         vector<string> tokens = split_str(line, '\t');
 
