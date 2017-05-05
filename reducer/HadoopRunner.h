@@ -79,7 +79,6 @@ public:
         while (getline(cin, line)) {
             cout << line << endl;
             continue;
-            
             vector<string> tokens = split_str(line, '\t');
 
             string example_str = tokens[1];
@@ -125,6 +124,7 @@ public:
     void train_and_predict(int tree_n,
                            vector<pair<vector<string>, string>> &curr_data,
                            vector<pair<vector<string>, string>> &curr_test_data) {
+        return;
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
 
