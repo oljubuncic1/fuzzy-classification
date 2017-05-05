@@ -13,6 +13,9 @@
 using namespace std;
 
 int main(int argc, char **argv) {
+    cout << "Jello" << endl;
+    return 0;
+
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
@@ -24,8 +27,6 @@ int main(int argc, char **argv) {
 
     int tree_n = stoi(getenv("TREEN"));
 
-    cout << "Jello" << endl;
-    return 0;
 
     int clasifier_n = 100;
 
