@@ -126,6 +126,7 @@ public:
         cout << "curr_data: " << curr_data.size() <<
              "\t" << "curr_test_data: " <<
              curr_test_data.size() << endl;
+        return;
 
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
