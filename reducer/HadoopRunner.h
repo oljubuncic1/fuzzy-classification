@@ -75,11 +75,14 @@ public:
         vector<example_t > curr_data;
         vector<example_t > curr_test_data;
 
+        cout << "|hehe|" << endl;
+        return;
+
         string line;
         while (getline(cin, line)) {
             cout << line << endl;
             continue;
-            
+
             vector<string> tokens = split_str(line, '\t');
 
             string example_str = tokens[1];
