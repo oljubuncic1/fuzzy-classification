@@ -122,7 +122,11 @@ public:
     void train_and_predict(int tree_n,
                            vector<pair<vector<string>, string>> &curr_data,
                            vector<pair<vector<string>, string>> &curr_test_data) {
-        return;
+
+        cout << "curr_data: " << curr_data.size() <<
+             "\t" << "curr_test_data: " <<
+             curr_test_data.size() << endl;
+
         vector<range_t > ranges;
         find_ranges(curr_data, ranges);
 
@@ -136,10 +140,10 @@ public:
 
         data_t test_data = convert(curr_test_data);
 
-        for(auto &d : test_data) {
+        for (auto &d : test_data) {
             map<string, double> prediction = rff.predict_memberships(d);
             cout << d << "\t";
-            for(auto &kv : prediction) {
+            for (auto &kv : prediction) {
                 cout << kv.first << " " << kv.second << " ";
             }
             cout << endl;
