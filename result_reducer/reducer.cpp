@@ -110,11 +110,8 @@ void produce_output(string &curr_example, map<string, double> &curr_predictions)
         trim(max_label);
 
         if(correct_label == max_label) {
-            cout << "1";
-        } else {
-            cout << "0";
+            cout << "1" << endl;
         }
-        cout << endl;
     }
 }
 
