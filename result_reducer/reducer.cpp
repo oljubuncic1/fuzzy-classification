@@ -88,6 +88,23 @@ std::vector<std::string> split_str(const std::string &s, char delim) {
     return elems;
 }
 
+void produce_output(string &curr_example, map<string, double> &curr_predictions) {
+    if(curr_example != "") {
+        // finish last one
+        cout << curr_example << "\t";
+        
+        string max_label = "";
+        double max_membership = 0;
+        for(auto &kv : curr_predictions) {
+            if(kv.second > max_membership) {
+                max_membership = kv.second;
+                max_label = kv.first;
+            }
+        }    
+        cout << curr_example << "\t" << max_label << endl;
+    }
+}
+
 int main(int argc, char **argv) {
     string curr_example = "";
     map<string, double> curr_predictions;
@@ -95,9 +112,7 @@ int main(int argc, char **argv) {
     string line;
     int i = 0;
 	while (getline(cin, line)) {
-        cout << line << endl;
-        continue;
-        // trim(line);
+        trim(line);
         vector<string> tokens = split_str(line, '\t');
 
         string example_str = tokens[0];
@@ -117,14 +132,7 @@ int main(int argc, char **argv) {
                     stod(predictions[2*i + 1]);
             }
         } else {
-            if(curr_example != "") {
-                // finish last one
-                cout << curr_example << "\t";
-                for(auto &kv : curr_predictions) {
-                    cout << kv.first << " " << kv.second << ", ";
-                }    
-                cout << endl;
-            }
+            produce_output(curr_example, curr_predictions);
 
             curr_example = example_str;
             curr_predictions = map<string, double>();
@@ -135,15 +143,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    // last one
-    if(curr_example != "") {
-        // finish last one
-        cout << curr_example << "\t";
-        for(auto &kv : curr_predictions) {
-            cout << kv.first << " " << kv.second << ", ";
-        }    
-        cout << endl;
-    }
+    produce_output(curr_example, curr_predictions);
 
     return 0;
 }
