@@ -314,6 +314,8 @@ public:
         }
     }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCDFAInspection"
     vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
         bool random = false;
 
@@ -329,9 +331,6 @@ public:
 
         if (random) {
             int n = 10;
-            if (node->data.size() < n) {
-                n = (int) node->data.size();
-            }
 
             for (int i = 0; i < n; i++) {
                 double factor = (double) rand() / RAND_MAX;
@@ -355,7 +354,6 @@ public:
             }
         }
 
-
         if (children_per_point.size() == 0) {
             return vector<Node>();
         } else {
@@ -378,6 +376,7 @@ public:
             return best_children;
         }
     }
+#pragma clang diagnostic pop
 
     double gain(vector<Node> &nodes, Node *parent) {
         double gain = parent->entropy;
