@@ -97,7 +97,7 @@ void produce_output(string &curr_example, map<string, double> &curr_predictions)
         string correct_label = *(tokens.end() - 1);
         correct_label = correct_label.substr(0, correct_label.length() - 1);
 
-        cout << trim(correct_label) << "\t";
+        trim(correct_label);
 
         string max_label = "";
         double max_membership = 0;
@@ -107,7 +107,7 @@ void produce_output(string &curr_example, map<string, double> &curr_predictions)
                 max_label = kv.first;
             }
         }    
-        cout << trim(max_label);
+        trim(max_label);
 
         if(correct_label == max_label) {
             cout << "1";
