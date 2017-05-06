@@ -366,6 +366,13 @@ void data_properties(const string &dataset,
         class_ind = 21;
         separation_char = ',';
         line_cnt = 100;
+    } else if (dataset.compare("SUS") == 0) {
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+        categorical_features = {};
+        attribute_inds = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+        class_ind = 0;
+        separation_char = ',';
+        line_cnt = 100;
     }
 }
 

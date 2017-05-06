@@ -66,7 +66,11 @@ public:
             for (auto &x : string_data) {
                 vector<double> item;
                 for (auto val : x.first) {
-                    double real_val = to_double(val);
+                    double real_val;
+
+                    istringstream os(val);
+                    os >> real_val;
+
                     if((double)rand() / RAND_MAX < 0.2) {
                         real_val *= 1.20;
                     }

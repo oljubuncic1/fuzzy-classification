@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 
     string line;
     int i = 0;
-    int FOLD_N = 10;
+    int FOLD_N = 5;
 
     while (getline(cin, line)) {
         if(line.find("?") == string::npos) {
