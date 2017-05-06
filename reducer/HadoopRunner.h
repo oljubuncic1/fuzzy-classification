@@ -164,7 +164,9 @@ public:
             }
             string classification = x.second;
             data.push_back(make_pair(item, classification));
+            cout << item << "\t" << classification << endl;
         }
+
         return data;
     }
 };

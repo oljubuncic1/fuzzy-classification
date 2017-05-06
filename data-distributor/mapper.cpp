@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
     while (getline(cin, line)) {
         if(line.find("?") == string::npos) {
-            if(rand() % FOLD_N == 0) {
+            if(i % FOLD_N == 0) {
                 cout << "t" << line << endl;
             } else {
                 cout << line << endl;
