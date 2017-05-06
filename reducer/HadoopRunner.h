@@ -156,7 +156,11 @@ public:
             auto x = curr_data[i];
             vector<double> item;
             for (auto val : x.first) {
-                item.push_back(to_double(val));
+                istringstream os(val);
+                double d;
+                os >> d;
+
+                item.push_back(d);
             }
             string classification = x.second;
             data.push_back(make_pair(item, classification));
