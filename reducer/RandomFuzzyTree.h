@@ -164,7 +164,7 @@ public:
                         node->children.push_back(child);
 
                         if (not(are_only_categorical() and no_categorical_left(node)) and
-                            child->data.size() >= 1 and
+                            child->data.size() >= 5 and
                             not all_same(child)) {
                             frontier.push(make_pair(child, lvl + 1));
                         }
