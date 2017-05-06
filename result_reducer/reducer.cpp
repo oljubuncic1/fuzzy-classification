@@ -91,8 +91,14 @@ std::vector<std::string> split_str(const std::string &s, char delim) {
 void produce_output(string &curr_example, map<string, double> &curr_predictions) {
     if(curr_example != "") {
         // finish last one
-        cout << curr_example << "\t";
-        
+
+        trim(curr_example);
+        vector<string> tokens = split_str(curr_example, ',');
+        string correct_label = *(tokens.end() - 1);
+        correct_label = correct_label.substr(0, correct_label.length() - 1);
+
+        cout << correct_label << "\t";
+
         string max_label = "";
         double max_membership = 0;
         for(auto &kv : curr_predictions) {
@@ -101,7 +107,7 @@ void produce_output(string &curr_example, map<string, double> &curr_predictions)
                 max_label = kv.first;
             }
         }    
-        cout << curr_example << "\t" << max_label << endl;
+        cout << max_label << endl;
     }
 }
 
