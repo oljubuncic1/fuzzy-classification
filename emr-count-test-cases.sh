@@ -1,0 +1,1 @@
+hadoop fs -cat s3://farukintermediate/step-1-output/* | grep -o 't' | wc -l

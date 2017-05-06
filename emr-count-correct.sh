@@ -1,0 +1,1 @@
+hadoop fs -cat s3://farukintermediate/step-3-output/* | wc -l
