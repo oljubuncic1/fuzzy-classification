@@ -107,7 +107,14 @@ void produce_output(string &curr_example, map<string, double> &curr_predictions)
                 max_label = kv.first;
             }
         }    
-        cout << trim(max_label) << endl;
+        cout << trim(max_label);
+
+        if(correct_label == max_label) {
+            cout << "1";
+        } else {
+            cout << "0";
+        }
+        cout << endl;
     }
 }
 
