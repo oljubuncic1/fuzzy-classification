@@ -170,6 +170,7 @@ public:
                         }
                     }
                 }
+                node->data = data_t();
             }
 
             frontier.pop();
