@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
                     cout << j << "\t" << line << endl;
                 }
             } else {
-                cout << ( i % REDUCER_N ) << "\t" << line << endl;
+                cout << ( rand() % REDUCER_N ) << "\t" << line << endl;
             }
         }
 
