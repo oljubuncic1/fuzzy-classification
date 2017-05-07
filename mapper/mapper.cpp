@@ -57,6 +57,7 @@ using namespace std;
 int main(int argc, char **argv) {
 
     int REDUCER_N = stoi(getenv("REDUCERN"));
+    int K = 5;
     srand(time(NULL));
 
     string line;
@@ -68,7 +69,9 @@ int main(int argc, char **argv) {
                     cout << j << "\t" << line << endl;
                 }
             } else {
-                cout << ( rand() % REDUCER_N ) << "\t" << line << endl;
+                for(int j = 0; j < K; j++) {
+                    cout << ( rand() % REDUCER_N ) << "\t" << line << endl;
+                }
             }
         }
 
