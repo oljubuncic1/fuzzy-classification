@@ -171,6 +171,7 @@ public:
                     }
                 }
                 node->data = data_t();
+                node->memberships = vector<double>();
             }
 
             frontier.pop();

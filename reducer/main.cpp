@@ -18,19 +18,6 @@ int main(int argc, char **argv) {
     bool run_tests = false;
     bool local = false;
 
-    int reducer_n = stoi(getenv("REDUCERN"));
-    string verification_data_path = "./testdat";
-    string big_dataset = getenv("DATASETSTR");
-
-    int tree_n = stoi(getenv("TREEN"));
-
-
-    int clasifier_n = 100;
-
-    int job_n = 4;
-
-    int fold_n = 10;
-
     if (run_tests) {
         run_all_tests();
 
@@ -38,9 +25,18 @@ int main(int argc, char **argv) {
     }
 
     if (local) {
+        int clasifier_n = 10;
+        int job_n = 4;
+        int fold_n = 10;
+
         LocalRunner localRunner;
         localRunner.run(shuffle, debug, clasifier_n, job_n, fold_n);
     } else {
+        int reducer_n = stoi(getenv("REDUCERN"));
+        string verification_data_path = "./testdat";
+        string big_dataset = getenv("DATASETSTR");
+
+        int tree_n = stoi(getenv("TREEN"));
         // reducer code
         HadoopRunner hadoopRunner;
         hadoopRunner.run(reducer_n, big_dataset, tree_n, verification_data_path);
