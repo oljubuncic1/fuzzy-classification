@@ -404,7 +404,7 @@ public:
         return non_zero_n >= 2;
     }
 
-    vector<Node> generate_children_at_point(Node *node, int feature, double point, int n = 3) {
+    vector<Node> generate_children_at_point(Node *node, int feature, double point, int n = 5) {
         vector<Node> children;
         if (n == 3) {
             double lower = node->ranges[feature].first;
