@@ -501,7 +501,7 @@ public:
         vector<double> next_memberships;
 
         for (int i = 0; i < node->memberships.size(); i++) {
-            if (local_memberships[i] > a_cut) {
+            if (node->memberships[i] > a_cut) {
                 next_data.push_back(node->data[i]);
                 next_memberships.push_back(node->memberships[i]);
             }

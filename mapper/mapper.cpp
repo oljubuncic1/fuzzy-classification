@@ -53,30 +53,49 @@
 
 using namespace std;
 
+struct ReducerGroup {
+    vector<int> ids;
+    int current;
+
+    ReducerGroup() {
+        current = 0;
+    }
+
+    void assign_item(string &line) {
+        if(line[0] == 't') {
+            cout << curr << "\t" << line << endl;
+        curr = (curr + 1) % ids.size();
+        } else {
+            for(auto id : ids) {
+                cout << id << "\t" << line << endl;
+            }
+        }
+    }
+};
 
 int main(int argc, char **argv) {
 
-    int REDUCER_N = stoi(getenv("REDUCERN"));
+    int REDUCERS_PER_GROUP = stoi(getenv("PERGROUP"));
+    int GROUP_N = stoi(getenv("GROUPN"));
     int K = stoi(getenv("K"));
     srand(time(NULL));
 
+    vector<ReducerGroup> groups(GROUP_N);
+    
+    int curr = 0;
+    for(int i = 0; i < GROUP_N; i++) {
+        for(int j = 0; j < REDUCERS_PER_GROUP; j++) {
+            groups[i].push_back(curr);
+            cur++;
+        }
+    }
+
     string line;
-    int i = 0;
 	while (getline(cin, line)) {
         if(line.find("?") == std::string::npos) {
-            if(line[0] == 't') {
-                for(int j = 0; j < REDUCER_N; j++) {
-                    cout << j << "\t" << line << endl;
-                }
-            } else {
-                for(int j = 0; j < K; j++) {
-                    cout << ( rand() % REDUCER_N ) << "\t" << line << endl;
-                }
-            }
+            groups[ rand() % groups.size() ].assign(line);
         }
-
-        i = (i + 1) % REDUCER_N;
-	}
+    }
 
     return 0;
 }
