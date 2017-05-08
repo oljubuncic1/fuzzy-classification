@@ -63,7 +63,7 @@ struct ReducerGroup {
 
     void assign_item(string &line) {
         if(line[0] == 't') {
-            cout << current << "\t" << line << endl;
+            cout << ids[current] << "\t" << line << endl;
             current = (current + 1) % ids.size();
         } else {
             for(auto id : ids) {
