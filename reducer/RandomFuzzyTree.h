@@ -320,7 +320,7 @@ public:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
     vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
-        bool random = false;
+        bool random = true;
 
         set<double> points;
         for (auto &d : node->data) {
