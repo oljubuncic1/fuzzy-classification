@@ -57,7 +57,7 @@ using namespace std;
 int main(int argc, char **argv) {
 
     int REDUCER_N = stoi(getenv("REDUCERN"));
-    int K = stoi(getenv("REDUCERN"));
+    int K = stoi(getenv("K"));
     srand(time(NULL));
 
     string line;
