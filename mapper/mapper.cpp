@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     string line;
 	while (getline(cin, line)) {
         if(line.find("?") == std::string::npos) {
-            groups[ rand() % groups.size() ].assign(line);
+            groups[ rand() % groups.size() ].assign_item(line);
         }
     }
 
