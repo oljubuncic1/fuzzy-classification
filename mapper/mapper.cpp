@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     int curr = 0;
     for(int i = 0; i < GROUP_N; i++) {
         for(int j = 0; j < REDUCERS_PER_GROUP; j++) {
-            groups[i].push_back(curr);
+            groups[i].ids.push_back(curr);
             cur++;
         }
     }
