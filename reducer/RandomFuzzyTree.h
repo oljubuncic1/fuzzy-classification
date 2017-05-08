@@ -64,6 +64,7 @@ public:
         this->feature_n = (int) ranges.size();
         this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
+        this->max_depth = (int)(1.5 * ranges.size());
 
         if (categorical_features.size() == 0 and numerical_features.size() == 0) {
             generate_categorical_features(data, categorical_features, numerical_features);
@@ -156,7 +157,7 @@ public:
             Node *node = curr.first;
             int lvl = curr.second;
 
-            if (this->max_depth == -1 or lvl <= this->max_depth) {
+            if (lvl <= this->max_depth) {
                 vector<Node> children = get_best_children(node);
                 if (are_regular_children(children)) {
                     for (int i = 0; i < children.size(); i++) {

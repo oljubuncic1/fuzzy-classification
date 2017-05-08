@@ -1,1 +1,1 @@
--D mapred.reduce.tasks=25 -cmdenv TREEN=20 -cmdenv REDUCERN=25 -cmdenv DATASETSTR=POK
+-D mapreduce.reduce.memory.mb=4000 -D mapred.reduce.tasks=25 -cmdenv TREEN=10 -cmdenv REDUCERN=25 -cmdenv DATASETSTR=SUS -cmdenv K=1
