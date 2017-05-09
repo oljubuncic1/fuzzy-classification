@@ -57,14 +57,14 @@ public:
              vector<range_t > &ranges,
              vector<int> categorical_features = vector<int>(),
              vector<int> numerical_features = vector<int>(),
-             double a_cut = 0.5,
+             double a_cut = 0.0,
              double min_gain_threshold = 0.000001) {
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
         this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
-        this->max_depth = (int)(1.5 * ranges.size());
+//        this->max_depth = (int) (1.5 * ranges.size());
 
         if (categorical_features.size() == 0 and numerical_features.size() == 0) {
             generate_categorical_features(data, categorical_features, numerical_features);
@@ -130,7 +130,7 @@ public:
         if (node.is_leaf()) {
             map<string, double> weights;
             if (node.data.size() == 0) {
-                weights = root.weights;
+                weights = node.weights;
             } else {
                 weights = node.weights;
             }
@@ -157,16 +157,17 @@ public:
             Node *node = curr.first;
             int lvl = curr.second;
 
-            if (lvl <= this->max_depth) {
+            if (this->max_depth == -1 or lvl <= this->max_depth) {
                 vector<Node> children = get_best_children(node);
                 if (are_regular_children(children)) {
                     for (int i = 0; i < children.size(); i++) {
                         Node *child = new Node(children[i]);
                         node->children.push_back(child);
 
-                        if (not(are_only_categorical() and no_categorical_left(node)) and
-                            child->data.size() >= 5 and
-                            not all_same(child)) {
+                        if (not(are_only_categorical() and
+                                no_categorical_left(node)) and
+                                child->data.size() >= 2 and
+                                not all_same(child)) {
                             frontier.push(make_pair(child, lvl + 1));
                         }
                     }
@@ -319,11 +320,12 @@ public:
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
-    vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
-        string method = "UNIFORM";
-        int uniform_steps = 30;
 
-        if(method == "UNIFORM" && node->data.size() < uniform_steps) {
+    vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
+        string method = "RANDOM";
+        int uniform_steps = 20;
+
+        if (method == "UNIFORM" && node->data.size() < uniform_steps) {
             method = "FULL";
         }
 
@@ -333,7 +335,7 @@ public:
         map<double, vector<Node>> children_per_point;
 
         if (method == "RANDOM") {
-            int n = 10;
+            int n = sqrt(node->data.size());
 
             for (int i = 0; i < n; i++) {
                 double factor = (double) rand() / RAND_MAX;
@@ -341,7 +343,7 @@ public:
 
                 children_per_point[p] = generate_children_at_point(node, feature, p);
             }
-        } else if(method == "FULL") {
+        } else if (method == "FULL") {
             set<double> points;
             for (auto &d : node->data) {
                 points.insert(d.first[feature]);
@@ -350,6 +352,8 @@ public:
             double min_el = *min_element(points.begin(), points.end());
             double max_el = *max_element(points.begin(), points.end());
             pair<double, double> search_interval(min_el, max_el);
+            double last_point = search_interval.first;
+
             for (double point : points) {
                 if (point > search_interval.first and point < search_interval.second and !eq(point, lower) and
                     !eq(point, upper)) {
@@ -358,12 +362,13 @@ public:
                     if (are_regular_children(children)) {
                         children_per_point[point] = children;
                     }
+                    last_point = point;
                 }
             }
-        } else if(method == "UNIFORM") {
+        } else if (method == "UNIFORM") {
             double delta = (upper - lower) / uniform_steps;
 
-            for(double point = lower; point <= upper; point += delta) {
+            for (double point = lower; point <= upper; point += delta) {
                 vector<Node> children =
                         generate_children_at_point(node, feature, point);
                 if (are_regular_children(children)) {
@@ -394,6 +399,7 @@ public:
             return best_children;
         }
     }
+
 #pragma clang diagnostic pop
 
     double gain(vector<Node> &nodes, Node *parent) {
@@ -419,7 +425,7 @@ public:
         return non_zero_n >= 2;
     }
 
-    vector<Node> generate_children_at_point(Node *node, int feature, double point, int n = 5) {
+    vector<Node> generate_children_at_point(Node *node, int feature, double point, int n = 2) {
         vector<Node> children;
         if (n == 3) {
             double lower = node->ranges[feature].first;
@@ -432,7 +438,6 @@ public:
             left_child.ranges[feature].second = point;
             fill_node_properties(node, &left_child);
             children.push_back(left_child);
-
 
             Node middle_child;
             middle_child.f = composite_triangular(point,
@@ -500,6 +505,39 @@ public:
             children.push_back(right_child);
 
             return children;
+        } else if (n == 2) {
+            double lower = node->ranges[feature].first;
+            double upper = node->ranges[feature].second;
+
+            double flat_percentage = 0.8;
+            double left_mid = lower + flat_percentage * (point - lower);
+            double right_mid = point + (1 - flat_percentage) * (upper - point);
+
+            Node left_child;
+            left_child.f = trapezoid_left(left_mid,
+                                          (left_mid - lower),
+                                          (right_mid - left_mid),
+                                          feature);
+            left_child.ranges = node->ranges;
+            left_child.parent = node;
+            left_child.ranges[feature].second = right_mid;
+            fill_node_properties(node, &left_child);
+
+            Node right_child;
+            right_child.f = trapezoid_right(right_mid,
+                                            (right_mid - left_mid),
+                                            (upper - right_mid),
+                                            feature);
+            right_child.ranges = node->ranges;
+            right_child.ranges[feature].first = left_mid;
+            right_child.parent = node;
+            fill_node_properties(node, &right_child);
+
+
+            children.push_back(left_child);
+            children.push_back(right_child);
+
+            return children;
         }
     }
 
@@ -516,7 +554,7 @@ public:
         vector<double> next_memberships;
 
         for (int i = 0; i < node->memberships.size(); i++) {
-            if (node->memberships[i] > a_cut) {
+            if (local_memberships[i] > a_cut) {
                 next_data.push_back(node->data[i]);
                 next_memberships.push_back(node->memberships[i]);
             }

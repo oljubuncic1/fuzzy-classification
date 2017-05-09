@@ -78,6 +78,10 @@ public:
     string predict(item_t &x) {
         map<string, double> membs_per_class = predict_memberships(x);
 
+        if(membs_per_class.size() == 0) {
+            return "CAN NOT PREDICT";
+        }
+
         return std::max_element(membs_per_class.begin(),
                                 membs_per_class.end(),
                                 [](const pair<string, int> &p1, const pair<string, int> &p2) {

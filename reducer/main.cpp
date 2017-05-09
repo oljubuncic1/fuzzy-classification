@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = true;
+    bool local = false;
 
     if (run_tests) {
         run_all_tests();
@@ -25,12 +25,18 @@ int main(int argc, char **argv) {
     }
 
     if (local) {
-        int clasifier_n = 50;
+        clock_t begin = clock();
+
+        int clasifier_n = 100;
         int job_n = 4;
         int fold_n = 10;
 
         LocalRunner localRunner;
         localRunner.run(shuffle, debug, clasifier_n, job_n, fold_n);
+
+        clock_t end = clock();
+
+        cout << "Time: " << (double)(end - begin) / CLOCKS_PER_SEC << endl;
     } else {
         int reducer_n = stoi(getenv("REDUCERN"));
         string verification_data_path = "./testdat";

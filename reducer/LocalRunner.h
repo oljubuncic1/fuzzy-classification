@@ -44,7 +44,8 @@ public:
                                    "SON"};
 
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
-//        datasets = {"BUP", "TAE"};
+//        datasets = {"BUP", "APP", "HEA", "CLE", "VEH", "BAN", "HEP"};
+        datasets = { "VEH" };
         srand(time(NULL));
 
         for (string &dataset : datasets) {
@@ -71,9 +72,9 @@ public:
                     istringstream os(val);
                     os >> real_val;
 
-                    if((double)rand() / RAND_MAX < 0.2) {
-                        real_val *= 1.20;
-                    }
+//                    if((double)rand() / RAND_MAX < 0.2) {
+//                        real_val *= 1.20;
+//                    }
                     item.push_back(real_val);
                 }
                 string classification = x.second;

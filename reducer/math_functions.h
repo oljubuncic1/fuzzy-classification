@@ -82,13 +82,43 @@ function<double(pair<vector<double>, string>)> composite_triangular(double cente
     auto left_f = triangular(center, left_width, feature, name);
     auto right_f = triangular(center, right_width, feature, name);
 
-    return [center, left_f, right_f, feature](pair<vector<double>, string> item) {
+    return [center, left_f, right_f, feature](pair<vector<double>, string> item) -> double {
         double x = item.first[feature];
 
         if(x < center) {
             return left_f(item);
         } else {
             return right_f(item);
+        }
+    };
+}
+
+function<double(pair<vector<double>, string>)> trapezoid_left(double center, double left_width, double right_width, int feature, double name = SPECIAL_VALUE + 1) {
+    auto left_f = triangular(center, left_width, feature, name);
+    auto right_f = triangular(center, right_width, feature, name);
+
+    return [center, left_f, right_f, feature](pair<vector<double>, string> item) -> double {
+        double x = item.first[feature];
+
+        if(x < center) {
+            return 1;
+        } else {
+            return right_f(item);
+        }
+    };
+}
+
+function<double(pair<vector<double>, string>)> trapezoid_right(double center, double left_width, double right_width, int feature, double name = SPECIAL_VALUE + 1) {
+    auto left_f = triangular(center, left_width, feature, name);
+    auto right_f = triangular(center, right_width, feature, name);
+
+    return [center, left_f, right_f, feature](pair<vector<double>, string> item) -> double {
+        double x = item.first[feature];
+
+        if(x < center) {
+            return left_f(item);
+        } else {
+            return 1;
         }
     };
 }
