@@ -320,11 +320,11 @@ public:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
     vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
-        bool random = true;
+        string method = "UNIFORM";
+        int uniform_steps = 30;
 
-        set<double> points;
-        for (auto &d : node->data) {
-            points.insert(d.first[feature]);
+        if(method == "UNIFORM" && node->data.size() < uniform_steps) {
+            method = "FULL";
         }
 
         double lower = node->ranges[feature].first;
@@ -332,7 +332,7 @@ public:
 
         map<double, vector<Node>> children_per_point;
 
-        if (random) {
+        if (method == "RANDOM") {
             int n = 10;
 
             for (int i = 0; i < n; i++) {
@@ -341,7 +341,12 @@ public:
 
                 children_per_point[p] = generate_children_at_point(node, feature, p);
             }
-        } else {
+        } else if(method == "FULL") {
+            set<double> points;
+            for (auto &d : node->data) {
+                points.insert(d.first[feature]);
+            }
+
             double min_el = *min_element(points.begin(), points.end());
             double max_el = *max_element(points.begin(), points.end());
             pair<double, double> search_interval(min_el, max_el);
@@ -353,6 +358,16 @@ public:
                     if (are_regular_children(children)) {
                         children_per_point[point] = children;
                     }
+                }
+            }
+        } else if(method == "UNIFORM") {
+            double delta = (upper - lower) / uniform_steps;
+
+            for(double point = lower; point <= upper; point += delta) {
+                vector<Node> children =
+                        generate_children_at_point(node, feature, point);
+                if (are_regular_children(children)) {
+                    children_per_point[point] = children;
                 }
             }
         }
