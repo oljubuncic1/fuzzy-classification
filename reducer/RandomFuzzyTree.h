@@ -335,7 +335,7 @@ public:
         map<double, vector<Node>> children_per_point;
 
         if (method == "RANDOM") {
-            int n = (int) sqrt(node->data.size());
+            int n = (int) log2(node->data.size());
 
             for (int i = 0; i < n; i++) {
                 double factor = (double) rand() / RAND_MAX;
