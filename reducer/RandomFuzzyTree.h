@@ -64,7 +64,7 @@ public:
         this->feature_n = (int) ranges.size();
         this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
-//        this->max_depth = (int) (1.5 * ranges.size());
+        this->max_depth = (int) (1.5 * ranges.size());
 
         if (categorical_features.size() == 0 and numerical_features.size() == 0) {
             generate_categorical_features(data, categorical_features, numerical_features);
@@ -166,7 +166,7 @@ public:
 
                         if (not(are_only_categorical() and
                                 no_categorical_left(node)) and
-                                child->data.size() >= 2 and
+                                child->data.size() >= 5 and
                                 not all_same(child)) {
                             frontier.push(make_pair(child, lvl + 1));
                         }
@@ -335,7 +335,7 @@ public:
         map<double, vector<Node>> children_per_point;
 
         if (method == "RANDOM") {
-            int n = sqrt(node->data.size());
+            int n = (int) sqrt(node->data.size());
 
             for (int i = 0; i < n; i++) {
                 double factor = (double) rand() / RAND_MAX;
