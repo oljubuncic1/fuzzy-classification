@@ -55,59 +55,25 @@ public:
 
     void fit(data_t &data,
              vector<range_t > &ranges,
-             vector<int> categorical_features = vector<int>(),
-             vector<int> numerical_features = vector<int>(),
-             double a_cut = 0.0,
+             vector<int> categorical_features,
+             vector<int> numerical_features,
+             double a_cut = 0.5,
              double min_gain_threshold = 0.000001) {
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
         this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
-        this->max_depth = (int) (1.5 * ranges.size());
+//        this->max_depth = (int) (1.5 * ranges.size());
 
-        if (categorical_features.size() == 0 and numerical_features.size() == 0) {
-            generate_categorical_features(data, categorical_features, numerical_features);
-        } else {
-            this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
-        }
+
+        this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
 
         for (auto &d : data) {
             w[d.second] = 1;
         }
 
         build_tree();
-    }
-
-    bool is_int(double value) {
-        return fabs(value - (int) value) < 0.000001;
-    }
-
-    void
-    generate_categorical_features(data_t &data, vector<int> &categorical_features, vector<int> &numerical_features) {
-        for (int i = 0; i < feature_n; i++) {
-            if (find(numerical_features.begin(), numerical_features.end(), i) == numerical_features.end()) {
-                if (find(categorical_features.begin(), categorical_features.end(), i) != categorical_features.end()) {
-                    this->all_categorical_features.insert(i);
-                } else {
-                    bool is_categorical = true;
-                    set<int> unique_values;
-                    for (auto &d : data) {
-                        double value = d.first[i];
-                        if (!is_int(value)) {
-                            is_categorical = false;
-                            break;
-                        } else {
-                            unique_values.insert((int) value);
-                        }
-                    }
-
-                    if (is_categorical and unique_values.size() < 5) {
-                        this->all_categorical_features.insert(i);
-                    }
-                }
-            }
-        }
     }
 
     map<string, double> predict_memberships(item_t &x) {
@@ -129,11 +95,11 @@ public:
 
         if (node.is_leaf()) {
             map<string, double> weights;
-            if (node.data.size() == 0) {
+//            if (node.data.size() == 0) {
+//                weights = root.weights;
+//            } else {
                 weights = node.weights;
-            } else {
-                weights = node.weights;
-            }
+//            }
 
             for (auto kv : weights) {
                 memberships[kv.first] += kv.second * membership;
@@ -158,23 +124,33 @@ public:
             int lvl = curr.second;
 
             if (this->max_depth == -1 or lvl <= this->max_depth) {
-                vector<Node> children = get_best_children(node);
-                if (are_regular_children(children)) {
-                    for (int i = 0; i < children.size(); i++) {
-                        Node *child = new Node(children[i]);
-                        node->children.push_back(child);
+                if(node->data.size() != 0) {
+                    vector<Node> children = get_best_children(node);
+                    if (are_regular_children(children)) {
+                        for (int i = 0; i < children.size(); i++) {
+                            Node *child = new Node(children[i]);
+                            node->children.push_back(child);
 
-                        if (not(are_only_categorical() and
-                                no_categorical_left(node)) and
-                                child->data.size() >= 5 and
+                            if (not(are_only_categorical() and
+                                    no_categorical_left(node)) and
+                                child->data.size() >= 2 and
                                 not all_same(child)) {
-                            frontier.push(make_pair(child, lvl + 1));
+                                frontier.push(make_pair(child, lvl + 1));
+                            } else {
+                                child->weights = weights(child);
+                                child->data = data_t();
+                                child->memberships = vector<double>();
+                            }
                         }
                     }
                 }
-                node->data = data_t();
-                node->memberships = vector<double>();
             }
+
+            if(node->children.size() == 0) {
+                node->weights = weights(node);
+            }
+            node->data = data_t();
+            node->memberships = vector<double>();
 
             frontier.pop();
         }
@@ -268,32 +244,35 @@ public:
 
     vector<Node> generate_best_children_categorical_feature(Node *pNode, int feature) {
         if (pNode->categorical_features_used.find(feature) == pNode->categorical_features_used.end()) {
-            vector<Node> children;
-            for (double v = pNode->ranges[feature].first; v <= pNode->ranges[feature].second; v++) {
-                data_t child_data;
-                vector<double> child_memberships;
-                for (int i = 0; i < pNode->data.size(); i++) {
-                    auto d = pNode->data[i];
-                    if ((int) d.first[feature] == (int) v) {
-                        child_data.push_back(d);
-                        child_memberships.push_back(pNode->memberships[i]);
-                    }
-                }
+            map<int, data_t> data_per_value;
+            map<int, vector<double>> memberships_per_value;
+            map<int, double> cardinality_per_value;
 
+            for(int i = 0; i < pNode->data.size(); i++) {
+                auto d = pNode->data[i];
+                int key = (int) d.first[feature];
+                data_per_value[key].push_back(d);
+                memberships_per_value[key].push_back(pNode->memberships[i]);
+                cardinality_per_value[key] += pNode->memberships[i];
+            }
+
+            vector<Node> children;
+
+            for(auto kv : data_per_value) {
                 auto categorical_features_used = pNode->categorical_features_used;
                 categorical_features_used.insert(feature);
 
                 Node child;
-                child.data = child_data;
+                child.data = kv.second;
                 child.parent = pNode;
                 child.ranges = pNode->ranges;
-                child.memberships = child_memberships;
-                child.cardinality = fuzzy_cardinality(&child);
+                child.memberships = memberships_per_value[kv.first];
+                child.cardinality = cardinality_per_value[kv.first];
                 child.entropy = fuzzy_entropy(&child);
-                child.weights = weights(&child);
+//                child.weights = weights(&child);
                 child.categorical_features_used = categorical_features_used;
-                child.f = [feature, v](pair<vector<double>, string> d) {
-                    if ((int) d.first[feature] == (int) v) {
+                child.f = [feature, kv](pair<vector<double>, string> d) {
+                    if ((int) d.first[feature] == kv.first) {
                         return 1.0;
                     } else {
                         return 0.0;
@@ -304,6 +283,44 @@ public:
             }
 
             return children;
+
+
+            // old code
+//            vector<Node> children;
+//            for (int v = (int) pNode->ranges[feature].first; v <= pNode->ranges[feature].second; v++) {
+//                data_t child_data;
+//                vector<double> child_memberships;
+//                for (int i = 0; i < pNode->data.size(); i++) {
+//                    auto d = pNode->data[i];
+//                    if ((int) d.first[feature] == (int) v) {
+//                        child_data.push_back(d);
+//                        child_memberships.push_back(pNode->memberships[i]);
+//                    }
+//                }
+//
+//                auto categorical_features_used = pNode->categorical_features_used;
+//                categorical_features_used.insert(feature);
+//
+//                Node child;
+//                child.data = child_data;
+//                child.parent = pNode;
+//                child.ranges = pNode->ranges;
+//                child.memberships = child_memberships;
+//                child.cardinality = fuzzy_cardinality(&child);
+//                child.entropy = fuzzy_entropy(&child);
+//                child.categorical_features_used = categorical_features_used;
+//                child.f = [feature, v](pair<vector<double>, string> d) {
+//                    if ((int) d.first[feature] == (int) v) {
+//                        return 1.0;
+//                    } else {
+//                        return 0.0;
+//                    }
+//                };
+//
+//                children.push_back(child);
+//            }
+//
+//            return children;
         } else {
             return vector<Node>();
         }
@@ -335,11 +352,14 @@ public:
         map<double, vector<Node>> children_per_point;
 
         if (method == "RANDOM") {
-            int n = (int) log2(node->data.size());
+            int n = 1;//(int) ceil(log2(node->data.size()));
 
             for (int i = 0; i < n; i++) {
                 double factor = (double) rand() / RAND_MAX;
-                double p = lower + factor * (upper - lower);
+                int rand_ind = (int) (factor * (node->data.size() - 1));
+                double p = node->data[rand_ind].first[feature];
+
+                return generate_children_at_point(node, feature, p);
 
                 children_per_point[p] = generate_children_at_point(node, feature, p);
             }
@@ -509,7 +529,7 @@ public:
             double lower = node->ranges[feature].first;
             double upper = node->ranges[feature].second;
 
-            double flat_percentage = 0.8;
+            double flat_percentage = 0.99;
             double left_mid = lower + flat_percentage * (point - lower);
             double right_mid = point + (1 - flat_percentage) * (upper - point);
 
@@ -521,7 +541,6 @@ public:
             left_child.ranges = node->ranges;
             left_child.parent = node;
             left_child.ranges[feature].second = right_mid;
-            fill_node_properties(node, &left_child);
 
             Node right_child;
             right_child.f = trapezoid_right(right_mid,
@@ -531,14 +550,50 @@ public:
             right_child.ranges = node->ranges;
             right_child.ranges[feature].first = left_mid;
             right_child.parent = node;
-            fill_node_properties(node, &right_child);
 
+            fill_node_properties_modified(node, &left_child, &right_child, left_mid, right_mid, feature, point);
 
             children.push_back(left_child);
             children.push_back(right_child);
 
             return children;
         }
+    }
+
+    void fill_node_properties_modified(Node *parent, Node *left, Node *right, double left_mid, double right_mid, int feature, double point) {
+        double left_sum = 0;
+        double right_sum = 0;
+
+        for(int i = 0; i < parent->data.size(); i++) {
+            auto d = parent->data[i];
+
+            if(d.first[feature] < left_mid) {
+                left->data.push_back(d);
+                left->memberships.push_back(parent->memberships[i]);
+                left_sum += parent->memberships[i];
+            } else if(d.first[feature] < point) {
+                left->data.push_back(d);
+
+                double curr_membership = parent->memberships[i] * left->f(d);
+                left->memberships.push_back(curr_membership);
+                left_sum += curr_membership;
+            } else if(d.first[feature] < right_mid) {
+                right->data.push_back(d);
+                double curr_membership = parent->memberships[i] * right->f(d);
+                right->memberships.push_back(curr_membership);
+                right_sum += curr_membership;
+            } else {
+                right->data.push_back(d);
+                right->memberships.push_back(parent->memberships[i]);
+                right_sum += parent->memberships[i];
+            }
+        }
+
+        left->cardinality = left_sum;
+        right->cardinality = right_sum;
+
+        left->entropy = fuzzy_entropy(left);
+        right->entropy = fuzzy_entropy(right);
     }
 
     void fill_node_properties(Node *parent, Node *node) {
@@ -567,7 +622,6 @@ public:
 
         node->cardinality = fuzzy_cardinality(node);
         node->entropy = fuzzy_entropy(node);
-        node->weights = weights(node);
     }
 
     map<string, double> weights(Node *node) {
@@ -644,7 +698,7 @@ public:
         }
 
         vector<int> features;
-        for (int i = 0; i < 4 * p and features.size() < p; i++) {
+        for (int i = 0; i < p and features.size() < p; i++) {
             int rand_ind = rand();
             int n = feature_n;
 

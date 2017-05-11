@@ -58,10 +58,10 @@ int main(int argc, char **argv) {
 
     string line;
     int i = 0;
-    int FOLD_N = 10;
+    int FOLD_N = 5;
 
     while (getline(cin, line)) {
-        if(line.find("?") == string::npos) {
+        if(line.find("?") == string::npos && i % 50) {
             if(rand() % FOLD_N == 0) {
                 cout << "t" << line << endl;
             } else {

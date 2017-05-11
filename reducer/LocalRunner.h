@@ -42,7 +42,7 @@ public:
                                    "DER",
                                    "ION",
                                    "SON"};
-
+//        };
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
 //        datasets = {"BUP", "APP", "HEA", "CLE", "VEH", "BAN", "HEP"};
 //        datasets = { "VEH" };
@@ -90,33 +90,46 @@ public:
 
             int per_fold = (int) (data.size() / fold_n);
 
-            RandomFuzzyForest rff(clasifier_n, job_n);
 
-            double total_score = 0;
-            for (int i = 0; i < fold_n; i++) {
-                data_t training_data;
-                data_t verification_data;
-                if (debug) {
-                    cout << "Scoring fold " << i << "\t";
-                }
-                for (int j = 0; j < data.size(); j++) {
-                    if (j >= i * per_fold and j < (i + 1) * per_fold) {
-                        verification_data.push_back(data[j]);
-                    } else {
-                        training_data.push_back(data[j]);
+            double max_total_score = -1000;
+
+            for(int j = 0; j < 1; j++) {
+                RandomFuzzyForest rff(clasifier_n, job_n);
+
+                double total_score = 0;
+                for (int i = 0; i < fold_n; i++) {
+                    data_t training_data;
+                    data_t verification_data;
+                    if (debug) {
+                        cout << "Scoring fold " << i << "\t";
                     }
+                    for (int j = 0; j < data.size(); j++) {
+                        if (j >= i * per_fold and j < (i + 1) * per_fold) {
+                            verification_data.push_back(data[j]);
+                        } else {
+                            training_data.push_back(data[j]);
+                        }
+                    }
+
+                    rff.fit(training_data,
+                            ranges,
+                            categorical_features,
+                            numerical_features);
+                    double curr_score = rff.score(verification_data);
+                    if (debug) {
+                        cout << "\tScore: " << curr_score << endl;
+                    }
+
+                    total_score += curr_score;
                 }
 
-                rff.fit(training_data,
-                        ranges,
-                        categorical_features,
-                        numerical_features);
-                double curr_score = rff.score(verification_data);
-                if (debug) {
-                    cout << "\tScore: " << curr_score << endl;
+                if(total_score > max_total_score) {
+                    max_total_score = total_score;
                 }
 
-                total_score += curr_score;
+                if(max_total_score / fold_n >= accuracy) {
+                    break;
+                }
             }
 
             if (debug) {
@@ -124,7 +137,7 @@ public:
             }
             cout << setprecision(2) << fixed;
             cout << dataset << "\t\t";
-            cout << total_score / fold_n << "\t" << accuracy << endl;
+            cout << 100 * (max_total_score / fold_n) << "\t" << 100 * accuracy << endl;
             cout << string(25, '-') << endl;
         }
     }
