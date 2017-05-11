@@ -48,6 +48,7 @@ public:
 //        datasets = { "VEH" };
         srand(time(NULL));
 
+        set<string> labels;
         for (string &dataset : datasets) {
             vector<example_t > string_data;
             vector<range_t > ranges;
@@ -66,22 +67,38 @@ public:
             string last_label = "";
             for (auto &x : string_data) {
                 vector<double> item;
+                int i = 0;
                 for (auto val : x.first) {
                     double real_val;
 
                     istringstream os(val);
                     os >> real_val;
 
-//                    if((double)rand() / RAND_MAX < 0.2) {
-//                        real_val *= 1.20;
+//                    if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
+//                        if((double)rand() / RAND_MAX < 0.6) {
+//                            bool negative = (rand() % 2 == 0);
+//                            if(negative) {
+//                                real_val *= -1.50;
+//                            } else {
+//                                real_val *= 1.50;
+//                            }
+//                        }
 //                    }
+
                     item.push_back(real_val);
+                    i++;
                 }
-                string classification = x.second;
+                string label = x.second;
+                labels.insert(label);
 
+                if(labels.size() > 1 && (double)rand() / RAND_MAX < 0.1) {
+                    auto it = labels.begin();
+                    advance(it, rand() % (labels.size() - 1));
 
-                last_label = classification;
-                data.push_back(make_pair(item, classification));
+                    label = *it;
+                }
+
+                data.push_back(make_pair(item, label));
             }
 
             if (shuffle) {
@@ -93,7 +110,7 @@ public:
 
             double max_total_score = -1000;
 
-            for(int j = 0; j < 1; j++) {
+            for(int j = 0; j < 10; j++) {
                 RandomFuzzyForest rff(clasifier_n, job_n);
 
                 double total_score = 0;

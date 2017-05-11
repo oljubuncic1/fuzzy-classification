@@ -57,7 +57,7 @@ public:
              vector<range_t > &ranges,
              vector<int> categorical_features,
              vector<int> numerical_features,
-             double a_cut = 0.5,
+             double a_cut = 0,
              double min_gain_threshold = 0.000001) {
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
@@ -662,9 +662,19 @@ public:
         }
 
         double entropy = 0;
+        vector<double> probs;
+        double sum = 0;
         for (auto kv : memberships_per_class) {
             double proba = kv.second / node->cardinality;
+            double softmax_val = exp(proba);
+            probs.push_back(softmax_val);
+            sum += softmax_val;
+        }
+
+        for(double proba : probs) {
             if (proba != 0) {
+                proba /= sum;
+                proba = pow(proba, 2);
                 entropy -= proba * log2(proba);
             }
         }

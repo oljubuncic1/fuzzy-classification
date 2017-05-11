@@ -59,16 +59,16 @@ int main(int argc, char **argv) {
     string line;
     int i = 0;
     int FOLD_N = 5;
+    int EVERY_N_LINES = 5;
 
     while (getline(cin, line)) {
-        if(line.find("?") == string::npos && i % 5 == 0) {
+        if(line.find("?") == string::npos) {
             if(rand() % FOLD_N == 0) {
                 cout << "t" << line << endl;
             } else {
                 cout << line << endl;
             }
         }
-        i = (i + 1) % 50;
     }
 
     return 0;
