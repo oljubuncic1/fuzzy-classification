@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
                 cout << line << endl;
             }
         }
-        i++;
+        i = (i + 1) % 50;
     }
 
     return 0;
