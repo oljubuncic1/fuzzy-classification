@@ -304,6 +304,11 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         categorical_features = {1, 2, 8};
         accuracy = 0.8389;
+        if(noise == 10) {
+            accuracy = 0.8241;
+        } else if(noise == 20) {
+            accuracy = 0.7904;
+        }
     } else if (dataset.compare("WIN") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/wine.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
@@ -312,6 +317,11 @@ void load_data(const string &dataset,
         numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
         categorical_features = {};
         accuracy = 0.9728;
+        if(noise == 10) {
+            accuracy = 0.9649;
+        } else if(noise == 20) {
+            accuracy = 0.9109;
+        }
     } else if (dataset.compare("AUS") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/australian.dat",
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13},

@@ -529,7 +529,7 @@ public:
             double lower = node->ranges[feature].first;
             double upper = node->ranges[feature].second;
 
-            double flat_percentage = 0.99;
+            double flat_percentage = 0.9;
             double left_mid = lower + flat_percentage * (point - lower);
             double right_mid = point + (1 - flat_percentage) * (upper - point);
 
@@ -655,6 +655,10 @@ public:
     }
 
     double fuzzy_entropy(Node *node) {
+        if(node->data.size() == 0) {
+            return 0;
+        }
+
         map<string, double> memberships_per_class;
         for (int i = 0; i < node->data.size(); i++) {
             string cls = node->data[i].second;
@@ -662,6 +666,7 @@ public:
         }
 
         double entropy = 0;
+
         vector<double> probs;
         double sum = 0;
         for (auto kv : memberships_per_class) {
@@ -672,9 +677,8 @@ public:
         }
 
         for(double proba : probs) {
+            proba /= sum;
             if (proba != 0) {
-                proba /= sum;
-                proba = pow(proba, 2);
                 entropy -= proba * log2(proba);
             }
         }
