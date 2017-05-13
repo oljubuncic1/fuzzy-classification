@@ -61,13 +61,11 @@ public:
     data_t random_sample(data_t &data, double factor = 1) {
         vector<item_t > sample;
         for (int i = 0; i < factor * data.size(); i++) {
-            int rand_ind = rand();
-            int n = (int) data.size();
+            std::random_device rd;  //Will be used to obtain a seed for the random number engine
+            std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+            std::uniform_int_distribution<> dis(0, (int) (data.size() - 1));
 
-            while (rand_ind >= RAND_MAX - (RAND_MAX % n)) {
-                rand_ind = rand();
-            }
-            rand_ind %= n;
+            int rand_ind = dis(gen);
 
             sample.push_back(data[rand_ind]);
         }

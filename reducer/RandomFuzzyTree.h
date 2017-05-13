@@ -18,6 +18,7 @@ struct Node {
     map<string, double> weights;
     double cut_point;
     set<int> categorical_features_used;
+    set<int> numerical_features_used;
 
     bool is_leaf() {
         return children.size() == 0;
@@ -62,10 +63,8 @@ public:
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
-        this->p = int(ceil(log2(feature_n)));
+        this->p = int(ceil(sqrt(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
-//        this->max_depth = (int) (1.5 * ranges.size());
-
 
         this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
 
@@ -134,7 +133,8 @@ public:
                             if (not(are_only_categorical() and
                                     no_categorical_left(node)) and
                                 child->data.size() >= 5 and
-                                not all_same(child)) {
+                                not all_same(child) and
+                                    (child->categorical_features_used.size() + child->numerical_features_used.size() < child->ranges.size())) {
                                 frontier.push(make_pair(child, lvl + 1));
                             } else {
                                 child->weights = weights(child);
@@ -355,8 +355,12 @@ public:
             int n = 1;//(int) ceil(log2(node->data.size()));
 
             for (int i = 0; i < n; i++) {
-                double factor = (double) rand() / RAND_MAX;
-                int rand_ind = (int) (factor * (node->data.size() - 1));
+                std::random_device rd;  //Will be used to obtain a seed for the random number engine
+                std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+                std::uniform_int_distribution<> dis(0, (int) (node->data.size() - 1));
+
+                int rand_ind = dis(gen);
+
                 double p = node->data[rand_ind].first[feature];
 
                 return generate_children_at_point(node, feature, p);
@@ -529,7 +533,7 @@ public:
             double lower = node->ranges[feature].first;
             double upper = node->ranges[feature].second;
 
-            double flat_percentage = 0.9;
+            double flat_percentage = 0.99;
             double left_mid = lower + flat_percentage * (point - lower);
             double right_mid = point + (1 - flat_percentage) * (upper - point);
 
@@ -541,6 +545,7 @@ public:
             left_child.ranges = node->ranges;
             left_child.parent = node;
             left_child.ranges[feature].second = right_mid;
+            left_child.numerical_features_used.insert(feature);
 
             Node right_child;
             right_child.f = trapezoid_right(right_mid,
@@ -550,6 +555,7 @@ public:
             right_child.ranges = node->ranges;
             right_child.ranges[feature].first = left_mid;
             right_child.parent = node;
+            right_child.numerical_features_used.insert(feature);
 
             fill_node_properties_modified(node, &left_child, &right_child, left_mid, right_mid, feature, point);
 
@@ -671,7 +677,7 @@ public:
         double sum = 0;
         for (auto kv : memberships_per_class) {
             double proba = kv.second / node->cardinality;
-            double softmax_val = exp(proba);
+            double softmax_val = proba;//exp(proba);
             probs.push_back(softmax_val);
             sum += softmax_val;
         }
@@ -711,17 +717,19 @@ public:
             return this->random_feature_generator();
         }
 
+        int req = int(ceil(sqrt(node->ranges.size() - ( node->numerical_features_used.size() + node->categorical_features_used.size() ))));
+
         vector<int> features;
-        for (int i = 0; i < p and features.size() < p; i++) {
-            int rand_ind = rand();
+        for (int i = 0; features.size() < req; i++) {
             int n = feature_n;
 
-            while (rand_ind >= RAND_MAX - (RAND_MAX % n)) {
-                rand_ind = rand();
-            }
-            rand_ind %= n;
+            std::random_device rd;  //Will be used to obtain a seed for the random number engine
+            std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+            std::uniform_int_distribution<> dis(0, (int) (n - 1));
 
-            if (not in(node->categorical_features_used, rand_ind)) {
+            int rand_ind = dis(gen);
+
+            if (not in(node->categorical_features_used, rand_ind) and not in(node->numerical_features_used, rand_ind)) {
                 features.push_back(rand_ind);
             }
         }

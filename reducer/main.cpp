@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     if (local) {
         clock_t begin = clock();
 
-        int clasifier_n = 20;
+        int clasifier_n = 100;
         int job_n = 4;
         int fold_n = 10;
 

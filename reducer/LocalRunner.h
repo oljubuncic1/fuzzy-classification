@@ -27,22 +27,22 @@ public:
                                    "APP",
                                    "PIM",
                                    "GLA",
-//                                   "SAH",
-//                                   "WIS",
-//                                   "CLE",
-//                                   "HEA",
-//                                   "WIN",
-//                                   "AUS",
-//                                   "VEH",
-//                                   "BAN",
-//                                   "HEP",
-//                                   "IMA",
-//                                   "THY",
-//                                   "WDB",
-//                                   "DER",
-//                                   "ION",
-//                                   "SON"};
-        };
+                                   "SAH",
+                                   "WIS",
+                                   "CLE",
+                                   "HEA",
+                                   "WIN",
+                                   "AUS",
+                                   "VEH",
+                                   "BAN",
+                                   "HEP",
+                                   "IMA",
+                                   "THY",
+                                   "WDB",
+                                   "DER",
+                                   "ION",
+                                   "SON"};
+//        };
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
 //        datasets = {"BUP", "APP", "HEA", "CLE", "VEH", "BAN", "HEP"};
 //        datasets = { "VEH" };
@@ -75,17 +75,17 @@ public:
                     istringstream os(val);
                     os >> real_val;
 
-                    if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-                        if((double)rand() / RAND_MAX < 0) {
-                            bool negative = (rand() % 2 == 0);
-                            double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
-                            if(negative) {
-                                real_val *= -perc;
-                            } else {
-                                real_val *= perc;
-                            }
-                        }
-                    }
+//                    if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
+//                        if((double)rand() / RAND_MAX < 0) {
+//                            bool negative = (rand() % 2 == 0);
+//                            double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
+//                            if(negative) {
+//                                real_val *= -perc;
+//                            } else {
+//                                real_val *= perc;
+//                            }
+//                        }
+//                    }
 
                     item.push_back(real_val);
                     i++;
@@ -112,7 +112,7 @@ public:
 
             double max_total_score = -1000;
 
-            for(int k = 0; k < 10; k++) {
+            for(int k = 0; k < 1; k++) {
                 RandomFuzzyForest rff(clasifier_n, job_n);
 
                 double total_score = 0;
