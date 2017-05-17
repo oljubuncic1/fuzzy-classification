@@ -16,8 +16,23 @@ using namespace std;
 
 class LocalRunner {
 public:
+    bool isOnlyDouble(const char* str) const {
+        char* endptr = 0;
+        try {
+            strtod(str, &endptr);
+        } catch(...) {
+            return false;
+        }
+
+
+        if(*endptr != '\0' || endptr == str)
+            return false;
+        return true;
+    }
+
     void run(bool shuffle, bool debug, int clasifier_n, int job_n, int fold_n) {
         vector<string> datasets = {"HAB",
+                                   "KDD",
 //                                   "HAY",
 //                                   "IRI",
 //                                   "MAM",
@@ -68,14 +83,28 @@ public:
 
             data_t data;
             string last_label = "";
+            map<string, int> vals;
+            int curr = 0;
             for (auto &x : string_data) {
                 vector<double> item;
                 int i = 0;
                 for (auto val : x.first) {
                     double real_val;
-
                     istringstream os(val);
+
+                    if(not isOnlyDouble(val.c_str())) {
+                        if(vals[val] == 0) {
+                            vals[val] = curr;
+                            curr++;
+                        }
+
+                        real_val = (double)vals[val];
+                    } else {
+                        os >> real_val;
+                    }
+
                     os >> real_val;
+
                     int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
                     if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
                         if((double)rand() / RAND_MAX < 0.2) {

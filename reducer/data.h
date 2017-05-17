@@ -27,6 +27,22 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
+bool isOnlyDouble(const char* str) {
+    char* endptr = 0;
+    try {
+        strtod(str, &endptr);
+    } catch(...) {
+        return false;
+    }
+
+
+    if(*endptr != '\0' || endptr == str)
+        return false;
+    return true;
+}
+
+map<string, int> vals;
+
 example_t example_from_line(
         const string &line,
         const vector<int> &attribute_indices,
@@ -37,7 +53,16 @@ example_t example_from_line(
     string classification = parts[class_index];
 
     vector<string> data;
+    int curr = 0;
     for (auto i : attribute_indices) {
+        if(not isOnlyDouble(parts[i].c_str())) {
+            if(vals[parts[i]] == 0) {
+                vals[parts[i]] = curr;
+                curr++;
+            }
+
+            parts[i] = to_string( vals[parts[i]] );
+        }
         data.push_back(parts[i]);
     }
 
@@ -408,6 +433,13 @@ void load_data(const string &dataset,
         numerical_features = generate_range(60);
         categorical_features = {};
         accuracy = 0.7993;
+    } else if (dataset.compare("KDD") == 0) {
+        data = load_csv_data("/home/faruk/workspace/thesis/data/kddcup.dat",
+                             generate_range(41),
+                             41,
+                             1000);
+        numerical_features = {};
+        categorical_features = {1, 2, 3, 18, 17, 19, 20, 21, 6, 7, 8, 10, 11, 13};
     }
 }
 
