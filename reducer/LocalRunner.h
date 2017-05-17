@@ -18,26 +18,28 @@ class LocalRunner {
 public:
     void run(bool shuffle, bool debug, int clasifier_n, int job_n, int fold_n) {
         vector<string> datasets = {"HAB",
-                                   "HAY",
-                                   "IRI",
-                                   "MAM",
-                                   "NEW",
-                                   "TAE",
-                                   "BUP",
-                                   "APP",
-                                   "PIM",
-                                   "GLA",
-                                   "SAH",
-                                   "WIS",
-                                   "CLE",
-                                   "HEA",
-                                   "WIN",
-                                   "AUS",
-                                   "VEH",
-                                   "BAN",
-                                   "HEP",
+//                                   "HAY",
+//                                   "IRI",
+//                                   "MAM",
+//                                   "NEW",
+//                                   "TAE",
+//                                   "BUP",
+//                                   "APP",
+//                                   "PIM",
+//                                   "GLA",
+//                                   "SAH",
+//                                   "WIS",
+//                                   "CLE",
+//                                   "HEA",
+//                                   "WIN",
+//                                   "AUS",
+//                                   "VEH",
+//                                   "BAN",
+//                                   "HEP",
+
                                    "IMA",
                                    "THY",
+
                                    "WDB",
                                    "DER",
                                    "ION",
@@ -74,18 +76,18 @@ public:
 
                     istringstream os(val);
                     os >> real_val;
-
-//                    if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-//                        if((double)rand() / RAND_MAX < 0) {
-//                            bool negative = (rand() % 2 == 0);
-//                            double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
-//                            if(negative) {
-//                                real_val *= -perc;
-//                            } else {
-//                                real_val *= perc;
-//                            }
-//                        }
-//                    }
+                    int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
+                    if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
+                        if((double)rand() / RAND_MAX < 0.2) {
+                            bool negative = (rand() % 2 == 0);
+                            double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
+                            if(negative) {
+                                real_val *= -perc;
+                            } else {
+                                real_val *= perc;
+                            }
+                        }
+                    }
 
                     item.push_back(real_val);
                     i++;
@@ -112,7 +114,9 @@ public:
 
             double max_total_score = -1000;
 
-            for(int k = 0; k < 1; k++) {
+            clock_t bgn = clock();
+            int k_max = 1;
+            for(int k = 0; k < k_max; k++) {
                 RandomFuzzyForest rff(clasifier_n, job_n);
 
                 double total_score = 0;
@@ -146,10 +150,12 @@ public:
                     max_total_score = total_score;
                 }
 
-                if(max_total_score / fold_n >= accuracy) {
-                    break;
-                }
+//                if(max_total_score / fold_n >= accuracy) {
+//                    break;
+//                }
             }
+            clock_t end = clock();
+
 
             if (debug) {
                 cout << endl << endl;
@@ -158,6 +164,7 @@ public:
             cout << dataset << "\t\t";
             double achieved_acc = max_total_score / fold_n;
             cout << 100 * achieved_acc << "\t" << 100 * accuracy << endl;
+//            cout << "\tRun time: " << (1.0 / k_max) * double(end - bgn) / (CLOCKS_PER_SEC) << endl;
             cout << string(25, '-') << endl;
 
             if(accuracy > achieved_acc) {

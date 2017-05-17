@@ -352,7 +352,7 @@ public:
         map<double, vector<Node>> children_per_point;
 
         if (method == "RANDOM") {
-            int n = 1;//(int) ceil(log2(node->data.size()));
+            int n = (int) ceil(log2(node->data.size()));
 
             for (int i = 0; i < n; i++) {
                 std::random_device rd;  //Will be used to obtain a seed for the random number engine
@@ -717,7 +717,7 @@ public:
             return this->random_feature_generator();
         }
 
-        int req = int(ceil(sqrt(node->ranges.size() - ( node->numerical_features_used.size() + node->categorical_features_used.size() ))));
+        int req = int(ceil(log2(node->ranges.size() - ( node->numerical_features_used.size() + node->categorical_features_used.size() ))));
 
         vector<int> features;
         for (int i = 0; features.size() < req; i++) {
