@@ -1,3 +1,3 @@
--D mapreduce.reduce.memory.mb=8000 -cmdenv TREEN=10 -cmdenv REDUCERN=1600 -cmdenv DATASETSTR=SUS -cmdenv K=4 -cmdenv PERGROUP=10 -cmdenv GROUPN=400
+-D mapreduce.reduce.memory.mb=4000 -cmdenv TREEN=10 -cmdenv REDUCERN=25 -cmdenv DATASETSTR=SUS -cmdenv K=1 -cmdenv PERGROUP=1 -cmdenv GROUPN=25
 
 sudo yum install git -y && sudo mkdir /usr/workspace && sudo mkdir /usr/local/bin/measurementsbin && sudo cp /bin/cat /usr/local/bin/measurementsbin && cd /usr/workspace && sudo git clone https://github.com/tms1337/fuzzy-classification.git && cd fuzzy-classification

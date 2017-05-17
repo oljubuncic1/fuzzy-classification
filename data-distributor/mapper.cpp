@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     string line;
     int i = 0;
     int FOLD_N = 5;
-    int EVERY_N_LINES = 50;
+    int EVERY_N_LINES = 10;
 
     while (getline(cin, line)) {
         if(line.find("?") == string::npos && rand() % EVERY_N_LINES == 0) {
