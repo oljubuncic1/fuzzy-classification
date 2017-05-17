@@ -150,17 +150,49 @@ public:
         }
     }
 
+    inline bool isInteger(const std::string & s)
+    {
+        if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false ;
+
+        char * p ;
+        strtol(s.c_str(), &p, 10) ;
+
+        return (*p == 0) ;
+    }
+
+    bool isOnlyDouble(const char* str) const {
+        char* endptr = 0;
+        strtod(str, &endptr);
+
+        if(*endptr != '\0' || endptr == str)
+            return false;
+        return true;
+    }
+
+
     data_t convert(const vector<pair<vector<string>, string>> &curr_data) const {
         data_t data;
+        map<string, int> vals;
+        int curr = 0;
         for (int i = 0; i < curr_data.size(); i++) {
             auto x = curr_data[i];
             vector<double> item;
             for (auto val : x.first) {
                 istringstream os(val);
-                double d;
-                os >> d;
 
-                item.push_back(d);
+                if(not isOnlyDouble(val.c_str())) {
+                    if(vals[val] == 0) {
+                        vals[val] = curr;
+                        curr++;
+                    }
+
+                    item.push_back((double)vals[val]);
+                } else {
+                    double d;
+                    os >> d;
+
+                    item.push_back(d);
+                }
             }
             string classification = x.second;
             data.push_back(make_pair(item, classification));
