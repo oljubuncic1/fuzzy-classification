@@ -32,25 +32,24 @@ public:
 
     void run(bool shuffle, bool debug, int clasifier_n, int job_n, int fold_n) {
         vector<string> datasets = {"HAB",
-                                   "KDD",
-//                                   "HAY",
-//                                   "IRI",
-//                                   "MAM",
-//                                   "NEW",
-//                                   "TAE",
-//                                   "BUP",
-//                                   "APP",
-//                                   "PIM",
-//                                   "GLA",
-//                                   "SAH",
-//                                   "WIS",
-//                                   "CLE",
-//                                   "HEA",
-//                                   "WIN",
-//                                   "AUS",
-//                                   "VEH",
-//                                   "BAN",
-//                                   "HEP",
+                                   "HAY",
+                                   "IRI",
+                                   "MAM",
+                                   "NEW",
+                                   "TAE",
+                                   "BUP",
+                                   "APP",
+                                   "PIM",
+                                   "GLA",
+                                   "SAH",
+                                   "WIS",
+                                   "CLE",
+                                   "HEA",
+                                   "WIN",
+                                   "AUS",
+                                   "VEH",
+                                   "BAN",
+                                   "HEP",
 
                                    "IMA",
                                    "THY",
@@ -88,7 +87,9 @@ public:
             for (auto &x : string_data) {
                 vector<double> item;
                 int i = 0;
-                for (auto val : x.first) {
+                for (int j = 0; j < x.first.size(); j++) {
+                    auto val = x.first[i];
+
                     double real_val;
                     istringstream os(val);
 
@@ -103,11 +104,15 @@ public:
                         os >> real_val;
                     }
 
-                    os >> real_val;
+                    if(real_val < ranges[j].first) {
+                        ranges[j].first = real_val;
+                    } else if(real_val > ranges[j].second) {
+                        ranges[j].second = real_val;
+                    }
 
                     int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
                     if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-                        if((double)rand() / RAND_MAX < 0.2) {
+                        if((double)rand() / RAND_MAX < 0) {
                             bool negative = (rand() % 2 == 0);
                             double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
                             if(negative) {
@@ -144,7 +149,7 @@ public:
             double max_total_score = -1000;
 
             clock_t bgn = clock();
-            int k_max = 1;
+            int k_max = 5;
             for(int k = 0; k < k_max; k++) {
                 RandomFuzzyForest rff(clasifier_n, job_n);
 
@@ -179,9 +184,9 @@ public:
                     max_total_score = total_score;
                 }
 
-//                if(max_total_score / fold_n >= accuracy) {
-//                    break;
-//                }
+                if(max_total_score / fold_n >= accuracy) {
+                    break;
+                }
             }
             clock_t end = clock();
 

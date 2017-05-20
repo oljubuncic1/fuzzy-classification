@@ -58,12 +58,12 @@ public:
              vector<range_t > &ranges,
              vector<int> categorical_features,
              vector<int> numerical_features,
-             double a_cut = 0,
+             double a_cut = 0.5,
              double min_gain_threshold = 0.000001) {
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
-        this->p = int(ceil(sqrt(feature_n)));
+        this->p = int(ceil(log2(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
 
         this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
@@ -132,7 +132,7 @@ public:
 
                             if (not(are_only_categorical() and
                                     no_categorical_left(node)) and
-                                child->data.size() >= 5 and
+                                child->data.size() >= 2 and
                                 not all_same(child) and
                                     (child->categorical_features_used.size() + child->numerical_features_used.size() < child->ranges.size())) {
                                 frontier.push(make_pair(child, lvl + 1));
@@ -338,6 +338,52 @@ public:
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
 
+    vector<Node> generate_discrete_children(Node *parent, int n, int feature) {
+        double lower = parent->ranges[feature].first;
+        double upper = parent->ranges[feature].second;
+
+        double per_chunk = (upper - lower) / ( (n - 1) / 2 );
+
+        vector<Node> children;
+        vector<double> sums((unsigned long) n, 0.0);
+        for(int i = 0; i < n; i++) {
+            Node curr_child;
+
+            curr_child.parent = parent;
+            curr_child.ranges = root.ranges;
+            curr_child.ranges[feature].first = (i - 1) * (per_chunk / 2);
+            curr_child.ranges[feature].second = i * (per_chunk / 2);
+            double point = lower + 0.5 * i * per_chunk;
+            curr_child.f = triangular(point,
+                                      per_chunk,
+                                      feature);
+            curr_child.cardinality = 0.0;
+
+            children.push_back(curr_child);
+        }
+
+        for(int i = 0; i < parent->data.size(); i++) {
+            auto &d = parent->data[i];
+            int bucket = int((d.first[feature] - lower) / per_chunk);
+            if(bucket >= children.size()) {
+                bucket = (int) (children.size() - 1);
+            }
+
+            double curr_membership = parent->memberships[i] * children[bucket].f(d);
+            children[bucket].memberships.push_back(curr_membership);
+            children[bucket].cardinality += curr_membership;
+
+            children[bucket + 1].memberships.push_back(curr_membership);
+            children[bucket + 1].cardinality += curr_membership;
+        }
+
+        for(int i = 0; i < children.size(); i++) {
+            children[i].entropy = fuzzy_entropy(&children[i]);
+        }
+
+        return children;
+    }
+
     vector<Node> generate_best_children_numerical_feature(Node *node, int feature, double &cut_point) {
         string method = "RANDOM";
         int uniform_steps = 20;
@@ -399,6 +445,15 @@ public:
                     children_per_point[point] = children;
                 }
             }
+        } else if(method == "DISCRETIZE") {
+            vector<Node> best_children;
+            double best_gain = -100000;
+            int child_n = 5;
+//            for(int child_n = 3; child_n < 10; child_n++) {
+                vector<Node> children = generate_discrete_children(node, child_n, feature);
+//            }
+
+            return children;
         }
 
         if (children_per_point.size() == 0) {
@@ -533,7 +588,7 @@ public:
             double lower = node->ranges[feature].first;
             double upper = node->ranges[feature].second;
 
-            double flat_percentage = 0.99;
+            double flat_percentage = 0.8;
             double left_mid = lower + flat_percentage * (point - lower);
             double right_mid = point + (1 - flat_percentage) * (upper - point);
 
@@ -547,6 +602,17 @@ public:
             left_child.ranges[feature].second = right_mid;
             left_child.numerical_features_used.insert(feature);
 
+            Node middle_child;
+            middle_child.f = composite_triangular(point,
+                                                  (point - left_mid),
+                                                  (right_mid - point),
+                                                  feature);
+            middle_child.ranges = node->ranges;
+            middle_child.parent = node;
+            middle_child.ranges[feature].first = left_mid;
+            middle_child.ranges[feature].second = right_mid;
+            middle_child.numerical_features_used.insert(feature);
+
             Node right_child;
             right_child.f = trapezoid_right(right_mid,
                                             (right_mid - left_mid),
@@ -557,18 +623,20 @@ public:
             right_child.parent = node;
             right_child.numerical_features_used.insert(feature);
 
-            fill_node_properties_modified(node, &left_child, &right_child, left_mid, right_mid, feature, point);
+            fill_node_properties_modified(node, &left_child, &middle_child, &right_child, left_mid, right_mid, feature, point);
 
             children.push_back(left_child);
             children.push_back(right_child);
+            children.push_back(middle_child);
 
             return children;
         }
     }
 
-    void fill_node_properties_modified(Node *parent, Node *left, Node *right, double left_mid, double right_mid, int feature, double point) {
+    void fill_node_properties_modified(Node *parent, Node *left, Node *middle, Node *right, double left_mid, double right_mid, int feature, double point) {
         double left_sum = 0;
         double right_sum = 0;
+        double middle_sum = 0;
 
         for(int i = 0; i < parent->data.size(); i++) {
             auto d = parent->data[i];
@@ -578,16 +646,33 @@ public:
                 left->memberships.push_back(parent->memberships[i]);
                 left_sum += parent->memberships[i];
             } else if(d.first[feature] < point) {
-                left->data.push_back(d);
-
                 double curr_membership = parent->memberships[i] * left->f(d);
-                left->memberships.push_back(curr_membership);
-                left_sum += curr_membership;
+                if(left->f(d) > a_cut) {
+                    left->data.push_back(d);
+                    left->memberships.push_back(curr_membership);
+                    left_sum += curr_membership;
+                }
+
+                curr_membership = parent->memberships[i] * middle->f(d);
+                if(middle->f(d) > a_cut) {
+                    middle->data.push_back(d);
+                    middle->memberships.push_back(curr_membership);
+                    middle_sum += curr_membership;
+                }
             } else if(d.first[feature] < right_mid) {
-                right->data.push_back(d);
                 double curr_membership = parent->memberships[i] * right->f(d);
-                right->memberships.push_back(curr_membership);
-                right_sum += curr_membership;
+                if(right->f(d) > a_cut) {
+                    right->data.push_back(d);
+                    right->memberships.push_back(curr_membership);
+                    right_sum += curr_membership;
+                }
+
+                curr_membership = parent->memberships[i] * middle->f(d);
+                if(middle->f(d) > a_cut) {
+                    middle->data.push_back(d);
+                    middle->memberships.push_back(curr_membership);
+                    middle_sum += curr_membership;
+                }
             } else {
                 right->data.push_back(d);
                 right->memberships.push_back(parent->memberships[i]);
@@ -597,9 +682,11 @@ public:
 
         left->cardinality = left_sum;
         right->cardinality = right_sum;
+        middle->cardinality = middle_sum;
 
         left->entropy = fuzzy_entropy(left);
         right->entropy = fuzzy_entropy(right);
+        middle->entropy = fuzzy_entropy(middle);
     }
 
     void fill_node_properties(Node *parent, Node *node) {

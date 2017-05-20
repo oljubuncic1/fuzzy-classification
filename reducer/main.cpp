@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     bool shuffle = true;
     bool debug = false;
     bool run_tests = false;
-    bool local = false;
+    bool local = true;
 
     if (run_tests) {
         run_all_tests();
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     if (local) {
         clock_t begin = clock();
 
-        int clasifier_n = 10;
+        int clasifier_n = 50;
         int job_n = 4;
         int fold_n = 10;
 
