@@ -421,9 +421,9 @@ void load_data(const string &dataset,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
                              33,
                              351);
-        numerical_features = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        numerical_features = {0,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
-        categorical_features = {0};
+        categorical_features = {};
         accuracy = 0.9201;
     } else if (dataset.compare("SON") == 0) {
         data = load_csv_data("/home/faruk/workspace/thesis/data/sonar.dat",

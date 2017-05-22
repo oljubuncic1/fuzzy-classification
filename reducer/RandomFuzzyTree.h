@@ -63,7 +63,7 @@ public:
         root = generate_root_node(data, ranges);
         this->a_cut = a_cut;
         this->feature_n = (int) ranges.size();
-        this->p = int(ceil(log2(feature_n)));
+        this->p = int(ceil(sqrt(feature_n)));
         this->min_gain_threshold = min_gain_threshold;
 
         this->all_categorical_features = set<int>(categorical_features.begin(), categorical_features.end());
@@ -546,41 +546,100 @@ public:
             left_child.ranges = node->ranges;
             left_child.parent = node;
             left_child.ranges[feature].second = (lower + point) / 2;
-            fill_node_properties(node, &left_child);
-            children.push_back(left_child);
 
             Node left_center_child;
             left_center_child.f = triangular((point + lower) / 2, (point - lower), feature);
             left_center_child.ranges = node->ranges;
             left_center_child.parent = node;
             left_center_child.ranges[feature].second = point;
-            fill_node_properties(node, &left_center_child);
             children.push_back(left_center_child);
 
-            Node middle_child;
-            middle_child.f = composite_triangular(point,
+            Node center_child;
+            center_child.f = composite_triangular(point,
                                                   (point - lower),
                                                   (upper - point),
                                                   feature);
-            middle_child.ranges = node->ranges;
-            middle_child.parent = node;
-            fill_node_properties(node, &middle_child);
-            children.push_back(middle_child);
+            center_child.ranges = node->ranges;
+            center_child.parent = node;
 
             Node right_center_child;
             right_center_child.f = triangular((upper + point) / 2, (upper - point), feature);
             right_center_child.ranges = node->ranges;
             right_center_child.ranges[feature].first = point;
             right_center_child.parent = node;
-            fill_node_properties(node, &right_center_child);
-            children.push_back(right_center_child);
 
             Node right_child;
             right_child.f = triangular(upper, (upper - point), feature);
             right_child.ranges = node->ranges;
             right_child.ranges[feature].first = (upper + point) / 2;
             right_child.parent = node;
-            fill_node_properties(node, &right_child);
+
+            for(int i = 0; i < node->data.size(); i++) {
+                pair<vector<double>, string> &d = node->data[i];
+                double curr_membership = node->memberships[i];
+                if(d.first[feature] < (lower + point) / 2) {
+                    double left_f = left_child.f(d);
+                    if(left_f >= a_cut) {
+                        left_child.data.push_back(d);
+                        left_child.memberships.push_back(left_f * curr_membership);
+                        left_child.cardinality += left_f * curr_membership;
+                    }
+
+                    double left_center_f = left_center_child.f(d);
+                    if(left_center_f >= a_cut) {
+                        left_center_child.data.push_back(d);
+                        left_center_child.memberships.push_back(left_center_f * curr_membership);
+                        left_center_child.cardinality += left_center_f * curr_membership;
+                    }
+                } else if(d.first[feature] < point) {
+                    double left_center_f = left_center_child.f(d);
+                    if(left_center_f >= a_cut) {
+                        left_center_child.data.push_back(d);
+                        left_center_child.memberships.push_back(left_center_f * curr_membership);
+                        left_center_child.cardinality += left_center_f * curr_membership;
+                    }
+
+                    double center_f = center_child.f(d);
+                    if(center_f >= a_cut) {
+                        center_child.data.push_back(d);
+                        center_child.memberships.push_back(center_f * curr_membership);
+                        center_child.cardinality += center_f * curr_membership;
+                    }
+                } else if(d.first[feature] < (point + upper) / 2) {
+                    double center_f = center_child.f(d);
+                    if(center_f >= a_cut) {
+                        center_child.data.push_back(d);
+                        center_child.memberships.push_back(center_f * curr_membership);
+                        center_child.cardinality += center_f * curr_membership;
+                    }
+
+                    double right_center_f = right_center_child.f(d);
+                    if(right_center_f >= a_cut) {
+                        right_center_child.data.push_back(d);
+                        right_center_child.memberships.push_back(right_center_f * curr_membership);
+                        right_center_child.cardinality += right_center_f * curr_membership;
+                    }
+                } else {
+                    double right_center_f = right_center_child.f(d);
+                    if(right_center_f >= a_cut) {
+                        right_center_child.data.push_back(d);
+                        right_center_child.memberships.push_back(right_center_f * curr_membership);
+                        right_center_child.cardinality += right_center_f * curr_membership;
+                    }
+
+                    double right_f = right_child.f(d);
+                    if(right_f >= a_cut) {
+                        right_child.data.push_back(d);
+                        right_child.memberships.push_back(right_f * curr_membership);
+                        right_child.cardinality += right_f * curr_membership;
+                    }
+                }
+            }
+
+            children.push_back(left_child);
+            children.push_back(left_center_child);
+            children.push_back(center_child);
+            children.push_back(right_center_child);
             children.push_back(right_child);
 
             return children;
@@ -595,7 +654,7 @@ public:
             Node left_child;
             left_child.f = trapezoid_left(left_mid,
                                           (left_mid - lower),
-                                          (right_mid - left_mid),
+                                          (upper - left_mid),
                                           feature);
             left_child.ranges = node->ranges;
             left_child.parent = node;
@@ -615,8 +674,8 @@ public:
 
             Node right_child;
             right_child.f = trapezoid_right(right_mid,
-                                            (right_mid - left_mid),
-                                            (upper - right_mid),
+                                            (right_mid - lower),
+                                            (upper - point),
                                             feature);
             right_child.ranges = node->ranges;
             right_child.ranges[feature].first = left_mid;
@@ -627,19 +686,43 @@ public:
 
             children.push_back(left_child);
             children.push_back(right_child);
-            children.push_back(middle_child);
+//            children.push_back(middle_child);
 
             return children;
         }
     }
 
-    void fill_node_properties_modified(Node *parent, Node *left, Node *middle, Node *right, double left_mid, double right_mid, int feature, double point) {
+    void fill_node_properties_modified(Node *parent,
+                                       Node *left,
+                                       Node *middle,
+                                       Node *right,
+                                       double left_mid,
+                                       double right_mid,
+                                       int feature,
+                                       double point) {
         double left_sum = 0;
         double right_sum = 0;
         double middle_sum = 0;
 
         for(int i = 0; i < parent->data.size(); i++) {
             auto d = parent->data[i];
+
+            if(left->f(d) > 0.5) {
+                left->data.push_back(d);
+                double m = parent->memberships[i] * left->f(d);
+                left->memberships.push_back(m);
+                left_sum += m;
+            }
+
+            if(right->f(d) > 0.5) {
+                right->data.push_back(d);
+                double m = parent->memberships[i] * right->f(d);
+                right->memberships.push_back(m);
+                right_sum += m;
+            }
+
+            // jello
+            continue;
 
             if(d.first[feature] < left_mid) {
                 left->data.push_back(d);
@@ -682,11 +765,11 @@ public:
 
         left->cardinality = left_sum;
         right->cardinality = right_sum;
-        middle->cardinality = middle_sum;
+//        middle->cardinality = middle_sum;
 
         left->entropy = fuzzy_entropy(left);
         right->entropy = fuzzy_entropy(right);
-        middle->entropy = fuzzy_entropy(middle);
+//        middle->entropy = fuzzy_entropy(middle);
     }
 
     void fill_node_properties(Node *parent, Node *node) {
@@ -816,7 +899,8 @@ public:
 
             int rand_ind = dis(gen);
 
-            if (not in(node->categorical_features_used, rand_ind) and not in(node->numerical_features_used, rand_ind)) {
+//            and not in(node->numerical_features_used, rand_ind)
+            if (not in(node->categorical_features_used, rand_ind)) {
                 features.push_back(rand_ind);
             }
         }

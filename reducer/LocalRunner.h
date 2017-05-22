@@ -112,7 +112,7 @@ public:
 
                     int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
                     if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-                        if((double)rand() / RAND_MAX < 0) {
+                        if((double)rand() / RAND_MAX < 0.0) {
                             bool negative = (rand() % 2 == 0);
                             double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
                             if(negative) {
@@ -198,7 +198,7 @@ public:
             cout << dataset << "\t\t";
             double achieved_acc = max_total_score / fold_n;
             cout << 100 * achieved_acc << "\t" << 100 * accuracy << endl;
-//            cout << "\tRun time: " << (1.0 / k_max) * double(end - bgn) / (CLOCKS_PER_SEC) << endl;
+            cout << "\tRun time: " << (1.0 / k_max) * double(end - bgn) / (CLOCKS_PER_SEC) << endl;
             cout << string(25, '-') << endl;
 
             if(accuracy > achieved_acc) {
