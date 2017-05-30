@@ -51,8 +51,8 @@ public:
                                    "BAN",
                                    "HEP",
 
-                                   "IMA",
-                                   "THY",
+//                                   "IMA",
+//                                   "THY",
 
                                    "WDB",
                                    "DER",
@@ -112,9 +112,9 @@ public:
 
                     int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
                     if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-                        if((double)rand() / RAND_MAX < 0.0) {
+                        if((double)rand() / RAND_MAX < 0.4) {
                             bool negative = (rand() % 2 == 0);
-                            double perc = 1 + 0.2 * (double)rand() / RAND_MAX;
+                            double perc = 1 + 0.4 * (double)rand() / RAND_MAX;
                             if(negative) {
                                 real_val *= -perc;
                             } else {

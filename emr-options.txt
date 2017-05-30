@@ -1,3 +1,64 @@
--D mapreduce.reduce.memory.mb=4000 -cmdenv TREEN=10 -cmdenv REDUCERN=25 -cmdenv DATASETSTR=SUS -cmdenv K=1 -cmdenv PERGROUP=1 -cmdenv GROUPN=25
+-D mapreduce.reduce.memory.mb=4000 -cmdenv TREEN=30 -cmdenv REDUCERN=25 -cmdenv DATASETSTR=SUS -cmdenv K=1 -cmdenv PERGROUP=1 -cmdenv GROUPN=25
 
 sudo yum install git -y && sudo mkdir /usr/workspace && sudo mkdir /usr/local/bin/measurementsbin && sudo cp /bin/cat /usr/local/bin/measurementsbin && cd /usr/workspace && sudo git clone https://github.com/tms1337/fuzzy-classification.git && cd fuzzy-classification
+
+HAB		71.67	70.72
+	Run time: 3.77
+-------------------------
+HAY		78.46	80.82
+	Run time: 0.42
+-------------------------
+IRI		94.67	95.33
+	Run time: 1.68
+-------------------------
+MAM		83.37	83.80
+	Run time: 5.15
+-------------------------
+NEW		91.90	97.27
+	Run time: 2.31
+-------------------------
+TAE		64.00	62.55
+	Run time: 0.86
+-------------------------
+BUP		69.71	72.20
+	Run time: 16.00
+-------------------------
+APP		87.00	87.73
+	Run time: 2.10
+-------------------------
+PIM		76.32	76.48
+	Run time: 31.66
+-------------------------
+GLA		94.76	75.13
+	Run time: 5.79
+-------------------------
+SAH		64.57	75.13
+	Run time: 4.65
+-------------------------
+WIS		97.65	97.28
+	Run time: 5.79
+-------------------------
+CLE		58.62	58.36
+	Run time: 5.84
+-------------------------
+HEA		82.22	83.89
+	Run time: 3.38
+-------------------------
+WIN		97.06	97.28
+	Run time: 2.77
+-------------------------
+AUS		85.36	86.00
+	Run time: 14.18
+-------------------------
+VEH		71.79	75.38
+	Run time: 100.75
+-------------------------
+BAN		65.56	70.89
+	Run time: 17.38
+-------------------------
+HEP		85.00	89.58
+	Run time: 0.92
+-------------------------
+IMA		95.67	96.20
+	Run time: 150.13
+-------------------------
