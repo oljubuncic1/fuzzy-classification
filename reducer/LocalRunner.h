@@ -32,33 +32,34 @@ public:
 
     void run(bool shuffle, bool debug, int clasifier_n, int job_n, int fold_n) {
         vector<string> datasets = {"HAB",
-                                   "HAY",
-                                   "IRI",
-                                   "MAM",
-                                   "NEW",
-                                   "TAE",
-                                   "BUP",
-                                   "APP",
-                                   "PIM",
-                                   "GLA",
-                                   "SAH",
-                                   "WIS",
-                                   "CLE",
-                                   "HEA",
-                                   "WIN",
-                                   "AUS",
-                                   "VEH",
-                                   "BAN",
-                                   "HEP",
+//                                   "HAY",
+//                                   "IRI",
+//                                   "MAM",
+//                                   "NEW",
+//                                   "TAE",
+//                                   "BUP",
+//                                   "APP",
+//                                   "PIM",
+//                                   "GLA",
+//                                   "SAH",
+//                                   "WIS",
+//                                   "CLE",
+//                                   "HEA",
+//                                   "WIN",
+//                                   "AUS",
+//                                   "VEH",
+//                                   "BAN",
+//                                   "HEP",
 
 //                                   "IMA",
 //                                   "THY",
 
-                                   "WDB",
-                                   "DER",
-                                   "ION",
-                                   "SON"};
-//        };
+//                                   "WDB",
+//                                   "DER",
+//                                   "ION",
+//                                   "SON"};
+                                    "VEH"
+        };
 //    datasets = {"HAB", "HAY", "TAE", "BUP"};
 //        datasets = {"BUP", "APP", "HEA", "CLE", "VEH", "BAN", "HEP"};
 //        datasets = { "VEH" };
@@ -110,11 +111,12 @@ public:
                         ranges[j].second = real_val;
                     }
 
+                    double Q = 0;
                     int numerical_feature_n = (int) (ranges.size() - categorical_features.size());
                     if(find(categorical_features.begin(), categorical_features.end(), i) == categorical_features.end()) {
-                        if((double)rand() / RAND_MAX < 0.4) {
+                        if((double)rand() / RAND_MAX < Q) {
                             bool negative = (rand() % 2 == 0);
-                            double perc = 1 + 0.4 * (double)rand() / RAND_MAX;
+                            double perc = 1 + Q * (double)rand() / RAND_MAX;
                             if(negative) {
                                 real_val *= -perc;
                             } else {

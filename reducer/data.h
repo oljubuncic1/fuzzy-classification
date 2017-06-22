@@ -356,7 +356,9 @@ void load_data(const string &dataset,
         categorical_features = {0, 7, 8, 10};
         accuracy = 0.8600;
     } else if (dataset.compare("VEH") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/data/vehicle.dat",
+        string name = "/home/faruk/workspace/thesis/data/vehicle.dat";
+        name = "/home/faruk/Desktop/vehicle-pca.csv";
+        data = load_csv_data(name,
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17},
                              18,
                              846);
@@ -416,7 +418,9 @@ void load_data(const string &dataset,
                                 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32};
         accuracy = 0.9764;
     } else if (dataset.compare("ION") == 0) {
-        data = load_csv_data("/home/faruk/workspace/thesis/data/ionosphere.dat",
+        string name = "/home/faruk/workspace/thesis/data/ionosphere.dat";
+        name = "/home/faruk/Desktop/ion-pca.csv";
+        data = load_csv_data(name,
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
                               16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
                              33,
@@ -440,6 +444,13 @@ void load_data(const string &dataset,
                              1000);
         numerical_features = {};
         categorical_features = {1, 2, 3, 18, 17, 19, 20, 21, 6, 7, 8, 10, 11, 13};
+    } else if (dataset.compare("SUSY") == 0) {
+        data = load_csv_data("/home/faruk/Desktop/susy-pca.csv",
+                             generate_range(9),
+                             9,
+                             1000);
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+        categorical_features = {};
     }
 }
 
