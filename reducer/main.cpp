@@ -15,7 +15,7 @@ using namespace std;
 int main(int argc, char **argv) {
     bool shuffle = true;
     bool debug = false;
-    bool run_tests = false;
+    bool run_tests = true;
     bool local = true;
 
     if (run_tests) {

@@ -1,3 +1,6 @@
+#ifndef MATH_F
+#define MATH_F
+
 #include <functional>
 #include <vector>
 #include <string>
@@ -122,3 +125,5 @@ function<double(pair<vector<double>, string>)> trapezoid_right(double center, do
         }
     };
 }
+
+#endif
