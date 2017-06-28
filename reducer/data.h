@@ -304,7 +304,7 @@ void load_data(const string &dataset,
                              {0, 1, 2, 3, 4, 5, 6, 7, 8},
                              9,
                              699);
-        numerical_features = {0, 1, 2, 3, 5, 6, 7, 8};
+        numerical_features = {0, 1, 2, 3, 4, 5, 6, 7, 8};
         categorical_features = {};
         accuracy = 0.9728;
         if(noise == 10) {

@@ -13,7 +13,7 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-    bool shuffle = false;
+    bool shuffle = true;
     bool debug = true;
     bool run_tests = false;
     bool local = true;

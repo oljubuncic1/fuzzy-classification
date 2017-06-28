@@ -54,7 +54,7 @@ public:
 
         bool _is_root = false;
 
-        vector<int> features_left;
+        unordered_map<string, double> per_class;
 
         Node() {}
 
@@ -78,6 +78,7 @@ public:
     vector<ul> data_inds;
     vector<Node> nodes;
     double min_elements;
+    vector<int> features_left;
 
     FastRandomFuzzyTree() {}
 
@@ -96,8 +97,9 @@ public:
                       ul node_ind,
                       map<string, double> &membs) {
         if (nodes[node_ind].is_leaf()) {
-                membs[nodes[node_ind].label] = 1;
-
+            for(auto &kv : nodes[node_ind].per_class) {
+                membs[kv.first] = kv.second;
+            }
         } else {
             double val = x.first[nodes[node_ind].feature];
             if (val < nodes[node_ind].point) {
@@ -133,6 +135,8 @@ public:
         }
 
         build_tree();
+
+//        print();
     }
 
     void build_tree() {
@@ -157,8 +161,6 @@ public:
                 build_leaf(curr);
             }
         }
-
-        print();
     }
 
     void print(ul node_ind = 0, int lvl = 0) {
@@ -168,7 +170,7 @@ public:
             for(ul i = node.from; i < node.to; i++) {
                 cout << data->operator[](data_inds[i]).second << ", ";
             }
-            cout << ")" << endl;
+            cout << ") -> " << nodes[node_ind].label << endl;
         } else {
             cout << string(lvl, '\t') << "(" << node.from <<
                  ", " << node.to << ")" << endl;
@@ -185,11 +187,12 @@ public:
             all_features[i] = i;
         }
 
+        this->features_left = all_features;
+
         Node root = Node();
         root._is_root = true;
         root.from = 0;
         root.to = data->size();
-        root.features_left = all_features;
         nodes.push_back(root);
     }
 
@@ -198,36 +201,40 @@ public:
         unsigned long to = nodes[node_ind].to;
 
         int max_cnt = -1000;
-        string max_label = data->operator[](data_inds[from]).second;
-        
-        unordered_map<string, int> per_class;
+
+        unordered_map<string, double> per_class;
+        double total = 0;
         for(ul i = from; i < to; i++) {
             string &curr_label = data->operator[](data_inds[i]).second;
             per_class[curr_label]++;
-            if(per_class[curr_label] > max_cnt) {
-                max_cnt = per_class[curr_label];
-                max_label = curr_label;
-            }
+            total++;
         }
 
+        double max_perc = INT_MIN;
+        string max_label;
+        for(auto &kv : per_class) {
+            if(kv.second > max_perc) {
+                max_perc = kv.second;
+                max_label = kv.first;
+            }
+            kv.second /= total;
+        }
+
+        nodes[node_ind].per_class = per_class;
         nodes[node_ind].label = max_label;
     }
 
     bool build_children(ul parent_ind) {
-        if (nodes[parent_ind].features_left.size() == 0 or
-            nodes[parent_ind].to - nodes[parent_ind].from < min_elements or
-            nodes[parent_ind].to == nodes[parent_ind].from or
-            all_same(parent_ind)) {
+        if (nodes[parent_ind].to - nodes[parent_ind].from < min_elements) {
             return false;
         }
 
         ul from = nodes[parent_ind].from;
         ul to = nodes[parent_ind].to;
 
-        vector<int> features_left = nodes[parent_ind].features_left;
-
         random_shuffle(features_left.begin(),
                        features_left.end());
+
 
         Split best_split = Split::get_worst_split();
         for (int i = 0;
@@ -241,12 +248,12 @@ public:
             }
         }
 
-//        if (best_split.gain < min_gain) {
-//            return false;
-//        } else {
+        if (best_split.gain < min_gain) {
+            return false;
+        } else {
             apply_split(from, to, parent_ind, best_split);
             return true;
-//        }
+        }
     }
 
     bool all_same(ul node_ind) {
@@ -278,12 +285,6 @@ public:
         left_child.to = split.index;
         right_child.from = split.index;
 
-        vector<int> vec = nodes[node_ind].features_left;
-        vec.erase(std::remove(vec.begin(), vec.end(), split.feature), vec.end());
-
-        left_child.features_left = vec;
-        right_child.features_left = vec;
-
         nodes.push_back(left_child);
         nodes[node_ind].children.push_back(nodes.size() - 1);
 
@@ -298,17 +299,24 @@ public:
                  return this->data->operator[](a).first[feature] < this->data->operator[](b).first[feature];
              });
 
+        vector< map<string, int> > histograms;
+        map<string, int> curr_histogram;
+        for(ul i = from; i < to; i++) {
+            curr_histogram[ this->data->operator[](data_inds[i]).second ]++;
+            histograms.push_back(curr_histogram);
+        }
+
         Split best_split = Split::get_worst_split();
 
         for (int j = 0; j < sqrt(to - from); j++) {
-            ul random_index = (unsigned long) (from + (rand() / (1.0 * RAND_MAX)) * (to - from - 1));
+            ul random_index = (unsigned long) (from +  (rand() / (1.0 * RAND_MAX)) * (to - from - 1));
             double point = data->operator[](data_inds[random_index]).first[feature];
 
             Split split;
             split.feature = feature;
             split.point = point;
             split.index = random_index;
-            split.gain = calc_gain(feature, from, to, random_index);
+            split.gain = calc_gain(feature, from, to, random_index, histograms);
 
             if (split > best_split) {
                 best_split = split;
@@ -323,7 +331,7 @@ public:
         double entropy;
     };
 
-    double calc_gain(int feature, ul from, ul to, ul index) {
+    double calc_gain(int feature, ul from, ul to, ul index, vector< map<string, int> > &histograms) {
         NodeProperties left_child_prop = calc_properties(feature, from, to, index, LEFT);
         NodeProperties right_child_prop = calc_properties(feature, from, to, index, RIGHT);
 
@@ -340,8 +348,10 @@ public:
         }
 
         double total = to - from;
-        double gain = (left_child_prop.cardinality / total) * left_child_prop.entropy +
-                      (right_child_prop.cardinality / total) * right_child_prop.entropy;
+        double left_perc = left_child_prop.cardinality / total;
+        double right_perc = right_child_prop.cardinality / total;
+        double gain = left_perc * left_child_prop.entropy +
+                      right_perc * right_child_prop.entropy;
         gain = entropy - gain;
         return gain;
     }
@@ -373,9 +383,7 @@ public:
 
     double calc_entropy(unordered_map<string, double> &per_class, double total) {
         double entropy = 0;
-        for (auto &kv : per_class) {
-            total += kv.second;
-        }
+
         for (auto &kv : per_class) {
             double p = kv.second / total;
             entropy += p * (1 - p);

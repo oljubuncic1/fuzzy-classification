@@ -71,14 +71,6 @@ public:
             sample.push_back(data[rand_ind]);
         }
 
-//        sort(sample.begin(), sample.end(), [](item_t a, item_t b) -> bool {
-//            return a.first[0] < b.first[0];
-//        });
-//
-//        cout << sample << endl;
-//        cout << data.size() << " " << sample.size() << endl;
-//        cin.get();
-
         return sample;
     }
 
