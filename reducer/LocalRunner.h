@@ -31,10 +31,10 @@ public:
     }
 
     void run(bool shuffle, bool debug, int clasifier_n, int job_n, int fold_n) {
-        vector<string> datasets = {"BUP",
+        vector<string> datasets = {
+                                    "BUP",
                                    "APP",
                                    "PIM",
-                                   "IMA",
 //                                   "GLA",
 //                                   "WIS",
 //                                   "CLE",

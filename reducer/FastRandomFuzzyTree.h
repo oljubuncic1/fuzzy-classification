@@ -112,9 +112,9 @@ public:
              vector<range_t > &ranges,
              vector<int> categorical_features,
              double a_cut = 0.5,
-             double min_gain = -0.5,
+             double min_gain = 1e-7,
              double q = 0.2,
-             double min_elements = 3) {
+             double min_elements = 2) {
 
         this->categorical_features = set<int>(categorical_features.begin(),
                                               categorical_features.end());
@@ -158,12 +158,21 @@ public:
             }
         }
 
+        print();
     }
 
     void print(ul node_ind = 0, int lvl = 0) {
         Node &node = nodes[node_ind];
-        cout << string(lvl, '\t') << "(" << node.from <<
-             ", " << node.to << ")" << endl;
+        if(node.is_leaf()) {
+            cout << string(lvl, '\t') << "(";
+            for(ul i = node.from; i < node.to; i++) {
+                cout << data->operator[](data_inds[i]).second << ", ";
+            }
+            cout << ")" << endl;
+        } else {
+            cout << string(lvl, '\t') << "(" << node.from <<
+                 ", " << node.to << ")" << endl;
+        }
 
         for (auto &c : node.children) {
             print(c, lvl + 1);
@@ -232,12 +241,12 @@ public:
             }
         }
 
-        if (best_split.gain < min_gain) {
-            return false;
-        } else {
+//        if (best_split.gain < min_gain) {
+//            return false;
+//        } else {
             apply_split(from, to, parent_ind, best_split);
             return true;
-        }
+//        }
     }
 
     bool all_same(ul node_ind) {
@@ -292,7 +301,7 @@ public:
         Split best_split = Split::get_worst_split();
 
         for (int j = 0; j < sqrt(to - from); j++) {
-            ul random_index = from + (rand() / RAND_MAX) * (to - from - 1);
+            ul random_index = (unsigned long) (from + (rand() / (1.0 * RAND_MAX)) * (to - from - 1));
             double point = data->operator[](data_inds[random_index]).first[feature];
 
             Split split;
@@ -369,7 +378,7 @@ public:
         }
         for (auto &kv : per_class) {
             double p = kv.second / total;
-            entropy -= p * log2(p);
+            entropy += p * (1 - p);
         }
 
         return entropy;
