@@ -13,9 +13,9 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-    bool shuffle = true;
-    bool debug = false;
-    bool run_tests = true;
+    bool shuffle = false;
+    bool debug = true;
+    bool run_tests = false;
     bool local = true;
 
     if (run_tests) {
@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     if (local) {
         clock_t begin = clock();
 
-        int clasifier_n = 100;
+        int clasifier_n = 10;
         int job_n = 4;
         int fold_n = 10;
 

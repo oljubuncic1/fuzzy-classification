@@ -66,6 +66,10 @@ example_t example_from_line(
         data.push_back(parts[i]);
     }
 
+    while(*(classification.end() - 1) == '\n') {
+        classification.pop_back();
+    }
+
     example_t example = make_pair(data, classification);
     return example;
 }
@@ -357,7 +361,7 @@ void load_data(const string &dataset,
         accuracy = 0.8600;
     } else if (dataset.compare("VEH") == 0) {
         string name = "/home/faruk/workspace/thesis/data/vehicle.dat";
-        name = "/home/faruk/Desktop/vehicle-pca.csv";
+//        name = "/home/faruk/Desktop/vehicle-pca.csv";
         data = load_csv_data(name,
                              {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17},
                              18,

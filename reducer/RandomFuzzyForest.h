@@ -4,14 +4,15 @@
 #include "includes.h"
 #include "RandomFuzzyTree.h"
 #include "definitions.h"
+#include "FastRandomFuzzyTree.h"
 
 class RandomFuzzyForest {
 private:
-    vector<RandomFuzzyTree> classifiers;
+    vector<FastRandomFuzzyTree> classifiers;
     int job_n;
 public:
     RandomFuzzyForest(int classifier_n, int job_n = 4) {
-        classifiers = vector<RandomFuzzyTree>(classifier_n);
+        classifiers = vector<FastRandomFuzzyTree>(classifier_n);
         this->job_n = job_n;
     }
 
@@ -38,7 +39,7 @@ public:
                          vector<int> categorical_features = vector<int>(),
                          vector<int> numerical_features = vector<int>()) {
         for (int i = 0; i < classifiers.size(); i++) {
-            double factor = (double)i / classifiers.size();
+            double factor = 1;
             fit_classifier(&classifiers[i],
                            data,
                            ranges,
@@ -48,21 +49,21 @@ public:
         }
     }
 
-    void fit_classifier(RandomFuzzyTree *classifier,
+    void fit_classifier(FastRandomFuzzyTree *classifier,
                         data_t data,
                         vector<range_t > ranges,
                         double factor,
                         vector<int> categorical_features = vector<int>(),
                         vector<int> numerical_features = vector<int>()) {
         data_t data_sample = random_sample(data, factor);
-        classifier->fit(data_sample, ranges, categorical_features, numerical_features);
+        classifier->fit(data_sample, ranges, categorical_features);
     }
 
     data_t random_sample(data_t &data, double factor = 1) {
         vector<item_t > sample;
         for (int i = 0; i < factor * data.size(); i++) {
-            std::random_device rd;  //Will be used to obtain a seed for the random number engine
-            std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+            std::random_device rd;
+            std::mt19937 gen(rd());
             std::uniform_int_distribution<> dis(0, (int) (data.size() - 1));
 
             int rand_ind = dis(gen);
@@ -70,21 +71,30 @@ public:
             sample.push_back(data[rand_ind]);
         }
 
+//        sort(sample.begin(), sample.end(), [](item_t a, item_t b) -> bool {
+//            return a.first[0] < b.first[0];
+//        });
+//
+//        cout << sample << endl;
+//        cout << data.size() << " " << sample.size() << endl;
+//        cin.get();
+
         return sample;
     }
 
     string predict(item_t &x) {
         map<string, double> membs_per_class = predict_memberships(x);
 
-        if(membs_per_class.size() == 0) {
+        if (membs_per_class.size() == 0) {
             return "CAN NOT PREDICT";
         }
 
-        return std::max_element(membs_per_class.begin(),
-                                membs_per_class.end(),
-                                [](const pair<string, int> &p1, const pair<string, int> &p2) {
-                                    return p1.second < p2.second;
-                                })->first;
+        string max_label = std::max_element(membs_per_class.begin(),
+                                            membs_per_class.end(),
+                                            [](const pair<string, double> &p1, const pair<string, double> &p2) {
+                                                return p1.second < p2.second;
+                                            })->first;
+        return max_label;
     }
 
     map<string, double> predict_memberships(pair<vector<double>, string> &x) const {
